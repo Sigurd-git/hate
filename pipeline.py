@@ -1,4 +1,4 @@
-"""Simple data extraction and OpenRouter submission pipeline."""
+"""用于数据提取与 OpenRouter 提交的精简流水线。"""
 from __future__ import annotations
 
 import csv
@@ -44,7 +44,7 @@ class Sample:
 
 
 def load_samples(path: str, limit: Optional[int] = None) -> List[Sample]:
-    """Load samples from a CSV file with `text` and `language` columns."""
+    """从含有 `text` 与 `language` 列的 CSV 中载入样本。"""
     samples: List[Sample] = []
     with open(path, newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
@@ -62,7 +62,7 @@ def load_samples(path: str, limit: Optional[int] = None) -> List[Sample]:
 def build_prompt(sample: Sample) -> str:
     try:
         template = PROMPTS[sample.language]
-    except KeyError as exc:  # pragma: no cover - defensive
+    except KeyError as exc:  # pragma: no cover - 防御性分支
         raise ValueError(f"Unsupported language: {sample.language}") from exc
     return template.format(text=sample.text)
 
@@ -84,7 +84,7 @@ def request_score(
     metadata: Optional[Dict[str, str]] = None,
     timeout: int = 60,
 ) -> Dict[str, object]:
-    """Send a single prompt to OpenRouter and return the structured output."""
+    """向 OpenRouter 发送单条提示并返回结构化结果。"""
     api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("Missing OpenRouter API key")
@@ -116,18 +116,18 @@ def _post_json(url: str, headers: Dict[str, str], payload: Dict[str, object], ti
         with urlrequest.urlopen(req, timeout=timeout) as response:
             body = response.read().decode("utf-8")
             return json.loads(body)
-    except HTTPError as exc:  # pragma: no cover - network guardrail
+    except HTTPError as exc:  # pragma: no cover - 网络保护
         raise RuntimeError(f"OpenRouter request failed: {exc.read().decode('utf-8', 'ignore')}") from exc
 
 
 def _parse_structured_response(data: Dict[str, object]) -> Dict[str, object]:
     try:
         content = data["choices"][0]["message"]["content"]
-    except (KeyError, IndexError) as exc:  # pragma: no cover - defensive
+    except (KeyError, IndexError) as exc:  # pragma: no cover - 防御性分支
         raise ValueError("Malformed OpenRouter response") from exc
 
     if isinstance(content, list):
-        # structured outputs may arrive as a list with a single json dict
+        # 结构化输出可能以只包含一个 JSON 字典的列表形式返回
         content = content[0]
     if isinstance(content, str):
         return json.loads(content)
@@ -148,19 +148,19 @@ def run_batch(
     return results
 
 
-def _cli():  # pragma: no cover - convenience only
+def _cli():  # pragma: no cover - 仅供命令行便利使用
     import argparse
 
-    parser = argparse.ArgumentParser(description="Submit hate-speech prompts to OpenRouter.")
-    parser.add_argument("csv", help="Path to CSV file with text,language columns")
-    parser.add_argument("model", help="OpenRouter model identifier")
-    parser.add_argument("--limit", type=int, default=None, help="Process only the first N rows")
-    parser.add_argument("--api-key", dest="api_key", help="Explicit OpenRouter API key")
+    parser = argparse.ArgumentParser(description="将仇恨言论提示提交至 OpenRouter。")
+    parser.add_argument("csv", help="包含 text,language 列的 CSV 路径")
+    parser.add_argument("model", help="OpenRouter 模型标识符")
+    parser.add_argument("--limit", type=int, default=None, help="仅处理前 N 行")
+    parser.add_argument("--api-key", dest="api_key", help="显式提供 OpenRouter API Key")
 
     args = parser.parse_args()
     results = run_batch(args.csv, args.model, limit=args.limit, api_key=args.api_key)
     print(json.dumps(results, ensure_ascii=False, indent=2))
 
 
-if __name__ == "__main__":  # pragma: no cover - CLI
+if __name__ == "__main__":  # pragma: no cover - 命令行入口
     _cli()

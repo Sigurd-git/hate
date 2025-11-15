@@ -1,0 +1,21 @@
+[project]
+name = "hate-speech-prompt-runner"
+version = "0.1.0"
+description = "CLI pipeline for loading hate-speech samples and submitting them to OpenRouter"
+readme = "README.md"
+authors = [{ name = "Hate Speech Prompt Runner" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["pipeline"]
+
+[tool.uv]
+dev-dependencies = ["pytest>=8.0"]
