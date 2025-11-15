@@ -5,7 +5,12 @@ description = "CLI pipeline for loading hate-speech samples and submitting them 
 readme = "README.md"
 authors = [{ name = "Hate Speech Prompt Runner" }]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "openai>=2.8.0",
+    "python-dotenv>=1.0",
+    "polars>=1.1.0",
+    "xlsxwriter>=3.2.0",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
