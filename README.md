@@ -1,63 +1,60 @@
-# Hate Speech Prompt Runner
+# 仇恨言论提示运行器
 
-This repository currently focuses on two steps of the planned study pipeline:
+该仓库目前聚焦于计划中研究流程的两个步骤：
 
-1. **Data extraction** – load bilingual hate-speech stimuli from a flat CSV file.
-2. **Structured OpenRouter submission** – send each sample to a selected model while
-   forcing JSON-schema output (score + optional reason).
+1. **数据提取** —— 从 CSV 文件中加载双语仇恨言论刺激样本。
+2. **结构化 OpenRouter 提交** —— 将每条样本发送至指定模型，并强制返回 JSON Schema（分数 + 可选理由）。
 
-The code is intentionally flat (single `pipeline.py`) so it is easy to audit and extend.
+代码保持扁平结构（单个 `pipeline.py`），便于审计与扩展。
 
-## Getting started
+## 快速开始
+
+安装 [uv](https://docs.astral.sh/uv/)（高速 Python 依赖管理器），并用它创建本地虚拟环境及开发依赖：
 
 ```bash
-python -m venv .venv
+uv sync
 source .venv/bin/activate
-pip install pytest
 ```
 
-### Prepare data
+### 准备数据
 
-Use any CSV file with at least two columns:
+使用包含至少两列的 CSV 文件：
 
 | text | language |
 | --- | --- |
 | `"I hate all dogs"` | `en` |
 | `"我喜欢每个人"` | `zh` |
 
-A tiny example is provided in `sample_data.csv`.
+示例文件位于 `sample_data.csv`。
 
-### Run a batch
+### 批量运行
 
 ```bash
 export OPENROUTER_API_KEY="sk-or-..."
 python pipeline.py sample_data.csv openrouter/auto --limit 2
 ```
 
-The script prints JSON with the structured responses. Every request uses
-OpenRouter's structured-output channel (`response_format=json_schema`) so models
-that support deterministic JSON will always be preferred.
+脚本会打印包含结构化响应的 JSON。所有请求均使用 OpenRouter 的结构化输出通道（`response_format=json_schema`），从而优先选择支持确定性 JSON 的模型。
 
-### Run tests
+### 运行测试
 
 ```bash
-pytest
+uv run pytest
 ```
 
-The suite checks CSV loading, prompt construction, and verifies that requests are
-wired to use the structured schema.
+测试套件会检查 CSV 读取、提示构造，并确保请求使用约定的结构化模式。
 
-## What is implemented
+## 已完成内容
 
-- ✅ CSV ingestion with language-aware prompt templates.
-- ✅ Deterministic prompts for both Chinese and English sentences.
-- ✅ OpenRouter client that requests structured output (score 0–5 + reason).
-- ✅ Minimal CLI for ad-hoc runs plus pytest coverage for all critical helpers.
+- ✅ 具备语言感知模板的 CSV 读取流程。
+- ✅ 针对中英文句子的确定性提示词。
+- ✅ 请求结构化输出（0–5 分 + 理由）的 OpenRouter 客户端。
+- ✅ 可临时调用的精简 CLI，并对关键辅助函数提供 pytest 覆盖。
 
-## TODO / next steps
+## TODO / 后续规划
 
-- ⏳ Expand the schema to carry model confidence, binary flags, and metadata.
-- ⏳ Implement batching + backoff utilities for high-throughput evaluation.
-- ⏳ Add downstream fairness metrics (ΔHATE-rate, Δs, flip rate, etc.).
-- ⏳ Persist structured responses (e.g., parquet) for later statistical analysis.
-- ⏳ Add prompt variants for few-shot and CoT paradigms.
+- ⏳ 扩展 schema，使其携带模型置信度、二元标记及其他元数据。
+- ⏳ 实现批处理与退避工具，以支持高吞吐评估。
+- ⏳ 增加下游公平性指标（ΔHATE-rate、Δs、flip rate 等）。
+- ⏳ 将结构化响应持久化（如 parquet），便于后续统计分析。
+- ⏳ 添加少样本与 CoT 场景的提示变体。
