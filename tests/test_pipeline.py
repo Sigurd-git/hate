@@ -54,7 +54,7 @@ def test_request_score_uses_structured_output(monkeypatch):
     result = pipeline.request_score(
         sample,
         model="openrouter/test-model",
-        prompt_paradigm="few_shot",
+        prompt_paradigm="zero_shot",
         metadata={"referer": "https://example.com", "title": "demo-app"},
     )
     assert isinstance(result, pipeline.ScoreResponse)
