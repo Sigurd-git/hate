@@ -1,12 +1,12 @@
 """用于数据提取与 OpenRouter 提交的精简流水线。"""
 from __future__ import annotations
 
-import csv
 import json
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 import pandas as pd
 from dotenv import load_dotenv
@@ -46,6 +46,24 @@ class ScoreResponse:
     finish_reason: Optional[str]
 
 
+@dataclass(frozen=True)
+class DatasetLanguageRule:
+    default_language: str
+    allowed_languages: Tuple[str, ...]
+
+
+DATASET_LANGUAGE_CONFIG: Dict[str, DatasetLanguageRule] = {
+    "5_new_chinesehatedata_2400_balanced": DatasetLanguageRule(
+        default_language="zh",
+        allowed_languages=("zh",),
+    ),
+    "5_new_englishhatedata_2400_balanced": DatasetLanguageRule(
+        default_language="en",
+        allowed_languages=("en",),
+    ),
+}
+
+
 # def load_samples(
 #     path: str, limit: Optional[int] = None, language: Optional[str] = None
 # ) -> List[Sample]:
@@ -67,45 +85,92 @@ class ScoreResponse:
 #     return samples
 
 def load_samples(
-    path: str, 
-    limit: Optional[int] = None, 
-    language: Optional[str] = "zh"  # 默认中文
+    path: str,
+    limit: Optional[int] = None,
+    language: Optional[str] = None,
 ) -> List[Sample]:
     """
-    从新的数据格式文件中加载样本。
-    文件必须包含列：text
-    新文件中没有 language 列，因此使用传入的 language 参数。
-    自动识别 CSV 或 Excel。
+    从新的数据格式文件中加载样本，并根据配置约束语言。
+    文件必须包含列：text。自动识别 CSV 或 Excel。
     """
-    # 自动判断文件类型
+    dataset_identifier = Path(path).stem
+    rule = DATASET_LANGUAGE_CONFIG.get(dataset_identifier)
+    allowed_languages = (
+        tuple(lang.lower() for lang in rule.allowed_languages)
+        if rule
+        else tuple(lang.lower() for lang in LANGUAGES)
+    )
+    if not allowed_languages:
+        raise ValueError(f"No allowed languages configured for dataset={dataset_identifier}")
+
+    default_language = (
+        rule.default_language.lower()
+        if rule
+        else allowed_languages[0]
+    )
+    if default_language not in allowed_languages:
+        raise ValueError(
+            f"Default language must be included in allowed languages for dataset={dataset_identifier}"
+        )
+    requested_language = language.lower() if language else None
+    if requested_language and requested_language not in allowed_languages:
+        logger.info(
+            "Skip dataset=%s for requested_language=%s allowed=%s",
+            dataset_identifier,
+            requested_language,
+            allowed_languages,
+        )
+        return []
+
+    resolved_language = requested_language or default_language
+
     if path.endswith(".csv"):
-        df = pd.read_csv(path)
+        dataset_frame = pd.read_csv(path)
     elif path.endswith(".xlsx") or path.endswith(".xls"):
-        df = pd.read_excel(path)
+        dataset_frame = pd.read_excel(path)
     else:
         raise ValueError("Unsupported file type. Use CSV or Excel.")
 
-    # 保证存在 text 列
-    if "text" not in df.columns:
+    if "text" not in dataset_frame.columns:
         raise ValueError("Input file must contain a 'text' column.")
 
-    # 设置语言
-    lang = language.lower() if language else "zh"
-
-    # 清洗 text
-    df["text"] = df["text"].astype(str).str.strip()
+    dataset_frame["text"] = dataset_frame["text"].astype(str).str.strip()
+    has_language_column = "language" in dataset_frame.columns
+    if has_language_column:
+        dataset_frame["language"] = (
+            dataset_frame["language"].astype(str).str.strip().str.lower()
+        )
 
     samples: List[Sample] = []
 
-    for _, row in df.iterrows():
+    for _, row in dataset_frame.iterrows():
         if limit is not None and len(samples) >= limit:
             break
-        
+
         text = row["text"]
         if not text:
             continue
-        
-        samples.append(Sample(text=text, language=lang))
+
+        if has_language_column:
+            row_language = row["language"]
+            if not row_language:
+                continue
+            if row_language not in allowed_languages:
+                continue
+            if row_language != resolved_language:
+                continue
+            samples.append(Sample(text=text, language=row_language))
+            continue
+
+        samples.append(Sample(text=text, language=resolved_language))
+
+    logger.info(
+        "Loaded samples=%s dataset=%s language=%s limit=%s",
+        len(samples),
+        dataset_identifier,
+        resolved_language,
+        limit,
+    )
 
     return samples
 

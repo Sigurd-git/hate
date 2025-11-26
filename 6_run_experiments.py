@@ -20,13 +20,14 @@ logging.basicConfig(
 
 DATASET_PATTERNS: Dict[str, str] = {
     "natural": "data/5_new_chinesehatedata_2400_balanced.xlsx",
+    "natural": "data/5_new_englishhatedata_2400_balanced.xlsx",
     # "group_swap": "data/group_swap/*.csv",
     # "test": "data/sample.csv",
 }
 
 MODELS: Sequence[str] = (
     "openai/gpt-5.1",
-    "anthropic/claude-sonnet-4.5",
+    "anthropic/claude-opus-4.5",
     # "z-ai/glm-4.6",
     # "meta-llama/llama-4-maverick",
     # "deepseek/deepseek-r1-0528",
@@ -224,7 +225,7 @@ def run_experiments(limit: int | None = None) -> None:
                                 continue
                             if batch_aborted:
                                 logging.warning(
-                                    "Skip saving batch due to length finish_reason model=%s language=%s paradigm=%s dataset=%s batch=%s",
+                                    "S[kip saving batch due to length finish_reason model=%s language=%s paradigm=%s dataset=%s batch=%s",
                                     model,
                                     language,
                                     paradigm,
