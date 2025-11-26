@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 
 DATASET_PATTERNS: Dict[str, str] = {
-    "natural": "/Users/baoxuan/Desktop/研究生研究/llm毕业论文/5_new_chinesehatedata_2400_balanced.xlsx",
+    "natural": "data/5_new_chinesehatedata_2400_balanced.xlsx",
     # "group_swap": "data/group_swap/*.csv",
     # "test": "data/sample.csv",
 }
