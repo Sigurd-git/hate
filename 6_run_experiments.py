@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from glob import glob
 from pathlib import Path
-from typing import Dict, List, Sequence
+from typing import DefaultDict, Dict, List, Sequence, Tuple
 
 import polars as pl
 
@@ -36,6 +37,7 @@ MODELS: Sequence[str] = (
 
 OUTPUT_ROOT = Path("outputs")
 BATCH_SIZE = 10
+BatchKey = Tuple[str, str, str, str, PromptParadigm]
 
 
 def discover_datasets(pattern: str) -> List[Path]:
@@ -144,6 +146,7 @@ def save_batch_results(
 def run_experiments(limit: int | None = None) -> None:
     """Iterate every combination of language, paradigm, dataset, and model."""
     dataset_map = iter_dataset_map()
+    failed_batches: DefaultDict[BatchKey, List[int]] = defaultdict(list)
     for dataset_type, files in dataset_map.items():
         for dataset_path in files:
             dataset_label = dataset_path.stem
@@ -187,6 +190,13 @@ def run_experiments(limit: int | None = None) -> None:
                             batch_samples = samples[start:end]
                             if not batch_samples:
                                 continue
+                            batch_key: BatchKey = (
+                                dataset_type,
+                                dataset_label,
+                                model,
+                                language,
+                                paradigm,
+                            )
                             logging.info(
                                 "Scoring batch model=%s language=%s paradigm=%s dataset=%s batch=%s",
                                 model,
@@ -195,11 +205,23 @@ def run_experiments(limit: int | None = None) -> None:
                                 dataset_label,
                                 batch_index,
                             )
-                            results, batch_aborted = pipeline.score_samples_with_status(
-                                batch_samples,
-                                model=model,
-                                prompt_paradigm=paradigm,
-                            )
+                            try:
+                                results, batch_aborted = pipeline.score_samples_with_status(
+                                    batch_samples,
+                                    model=model,
+                                    prompt_paradigm=paradigm,
+                                )
+                            except Exception as error:
+                                logging.exception(
+                                    "Batch error model=%s language=%s paradigm=%s dataset=%s batch=%s",
+                                    model,
+                                    language,
+                                    paradigm,
+                                    dataset_label,
+                                    batch_index,
+                                )
+                                failed_batches[batch_key].append(batch_index)
+                                continue
                             if batch_aborted:
                                 logging.warning(
                                     "Skip saving batch due to length finish_reason model=%s language=%s paradigm=%s dataset=%s batch=%s",
@@ -209,6 +231,7 @@ def run_experiments(limit: int | None = None) -> None:
                                     dataset_label,
                                     batch_index,
                                 )
+                                failed_batches[batch_key].append(batch_index)
                                 continue
                             metadata = {
                                 "model": model,
@@ -225,7 +248,36 @@ def run_experiments(limit: int | None = None) -> None:
                                 paradigm,
                                 batch_index,
                             )
-                            save_batch_results(target, results, metadata)
+                            try:
+                                save_batch_results(target, results, metadata)
+                            except Exception as error:
+                                logging.exception(
+                                    "Batch persist error model=%s language=%s paradigm=%s dataset=%s batch=%s target=%s",
+                                    model,
+                                    language,
+                                    paradigm,
+                                    dataset_label,
+                                    batch_index,
+                                    target,
+                                )
+                                failed_batches[batch_key].append(batch_index)
+    if failed_batches:
+        for batch_key, indexes in failed_batches.items():
+            dataset_type, dataset_label, model, language, paradigm = batch_key
+            logging.warning(
+                "Pending batches model=%s language=%s paradigm=%s dataset_type=%s dataset_label=%s indexes=%s",
+                model,
+                language,
+                paradigm,
+                dataset_type,
+                dataset_label,
+                sorted(indexes),
+            )
+        logging.warning(
+            "Detected pending batches. Re-run run_experiments() to process only missing outputs; completed XLSX files remain cached."
+        )
+    else:
+        logging.info("All batches completed successfully without pending retries.")
 
 
 if __name__ == "__main__":

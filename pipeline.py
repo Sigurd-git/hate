@@ -5,6 +5,7 @@ import csv
 import json
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 import pandas as pd
@@ -377,17 +378,44 @@ def _score_samples_internal(
     model: str,
     prompt_paradigm: PromptParadigm,
 ) -> Tuple[List[Dict[str, object]], bool]:
+    ordered_samples = list(samples)
     batch_rows: List[Dict[str, object]] = []
     aborted = False
-    for sample in samples:
-        response = request_score(sample, model=model, prompt_paradigm=prompt_paradigm)
-        if response.finish_reason == "length":
-            aborted = True
-            batch_rows.clear()
-            break
-        batch_rows.append(
-            {"text": sample.text, "language": sample.language, **response.payload}
-        )
+    total_samples = len(ordered_samples)
+    if total_samples == 0:
+        logger.info("No samples detected for scoring; returning empty batch.")
+        return batch_rows, aborted
+
+    logger.info(
+        "Scoring %d samples using ThreadPoolExecutor with %d workers",
+        total_samples,
+        total_samples,
+    )
+
+    with ThreadPoolExecutor(max_workers=total_samples) as executor:
+        scheduled_futures = [
+            (
+                sample,
+                executor.submit(request_score, sample, model, prompt_paradigm),
+            )
+            for sample in ordered_samples
+        ]
+
+        for sample, future in scheduled_futures:
+            response = future.result()
+            if response.finish_reason == "length":
+                aborted = True
+                batch_rows.clear()
+                break
+            batch_rows.append(
+                {"text": sample.text, "language": sample.language, **response.payload}
+            )
+
+        if aborted:
+            for _, future in scheduled_futures:
+                if not future.done():
+                    future.cancel()
+
     return batch_rows, aborted
 
 
