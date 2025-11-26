@@ -80,7 +80,7 @@ PROMPTS: Dict[str, Dict[PromptParadigm, PromptTemplate]] = {
 }
 
 LANGUAGES = tuple(PROMPTS.keys())
-PARADIGMS = ("zero_shot", "few_shot", "chain_of_thought")
+PARADIGMS = ("zero_shot", "chain_of_thought")
 
 
 def render_prompt(language: str, paradigm: PromptParadigm, text: str) -> str:

@@ -7,7 +7,7 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
-
+import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -45,25 +45,70 @@ class ScoreResponse:
     finish_reason: Optional[str]
 
 
+# def load_samples(
+#     path: str, limit: Optional[int] = None, language: Optional[str] = None
+# ) -> List[Sample]:
+#     """从含有 `text` 与 `language` 列的 CSV 中载入样本，可选按语言筛选。"""
+#     samples: List[Sample] = []
+#     language_filter = language.lower() if language else None
+#     with open(path, newline="", encoding="utf-8") as handle:
+#         reader = csv.DictReader(handle)
+#         for row in reader:
+#             if limit is not None and len(samples) >= limit:
+#                 break
+#             text = (row.get("text") or "").strip()
+#             lang_value = (row.get("language") or "").strip().lower()
+#             if language_filter and lang_value != language_filter:
+#                 continue
+#             if not text or lang_value not in LANGUAGES:
+#                 continue
+#             samples.append(Sample(text=text, language=lang_value))
+#     return samples
+
 def load_samples(
-    path: str, limit: Optional[int] = None, language: Optional[str] = None
+    path: str, 
+    limit: Optional[int] = None, 
+    language: Optional[str] = "zh"  # 默认中文
 ) -> List[Sample]:
-    """从含有 `text` 与 `language` 列的 CSV 中载入样本，可选按语言筛选。"""
+    """
+    从新的数据格式文件中加载样本。
+    文件必须包含列：text
+    新文件中没有 language 列，因此使用传入的 language 参数。
+    自动识别 CSV 或 Excel。
+    """
+    # 自动判断文件类型
+    if path.endswith(".csv"):
+        df = pd.read_csv(path)
+    elif path.endswith(".xlsx") or path.endswith(".xls"):
+        df = pd.read_excel(path)
+    else:
+        raise ValueError("Unsupported file type. Use CSV or Excel.")
+
+    # 保证存在 text 列
+    if "text" not in df.columns:
+        raise ValueError("Input file must contain a 'text' column.")
+
+    # 设置语言
+    lang = language.lower() if language else "zh"
+
+    # 清洗 text
+    df["text"] = df["text"].astype(str).str.strip()
+
     samples: List[Sample] = []
-    language_filter = language.lower() if language else None
-    with open(path, newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            if limit is not None and len(samples) >= limit:
-                break
-            text = (row.get("text") or "").strip()
-            lang_value = (row.get("language") or "").strip().lower()
-            if language_filter and lang_value != language_filter:
-                continue
-            if not text or lang_value not in LANGUAGES:
-                continue
-            samples.append(Sample(text=text, language=lang_value))
+
+    for _, row in df.iterrows():
+        if limit is not None and len(samples) >= limit:
+            break
+        
+        text = row["text"]
+        if not text:
+            continue
+        
+        samples.append(Sample(text=text, language=lang))
+
     return samples
+
+
 
 
 def _build_response_format(
@@ -319,7 +364,11 @@ def run_batch(
     language: Optional[str] = None,
     prompt_paradigm: PromptParadigm = "zero_shot",
 ) -> List[Dict[str, object]]:
-    samples = load_samples(csv_path, limit=limit, language=language)
+    # samples = load_samples(csv_path, limit=limit, language=language)
+    samples = load_samples(
+    "/Users/baoxuan/Desktop/研究生研究/llm毕业论文/5_new_chinesehatedata_2400_balanced.xlsx",
+    language="zh",   # 固定为中文
+    limit=2400)
     return score_samples(samples, model=model, prompt_paradigm=prompt_paradigm)
 
 
