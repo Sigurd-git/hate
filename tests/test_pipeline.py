@@ -72,6 +72,142 @@ def test_request_score_uses_structured_output(monkeypatch):
     }
 
 
+def test_request_score_uses_anthropic_schema_for_opus(monkeypatch):
+    sample = pipeline.Sample(text="Test", language="en")
+
+    class DummyResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def model_dump(self):
+            return self._payload
+
+    class DummyClient:
+        def __init__(self):
+            self.captured_kwargs = None
+            self.chat = SimpleNamespace(
+                completions=SimpleNamespace(create=self._create)
+            )
+
+        def _create(self, **kwargs):
+            self.captured_kwargs = kwargs
+            return DummyResponse(
+                {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"score": 2, "reason": "short"})
+                            },
+                            "finish_reason": "stop",
+                        }
+                    ]
+                }
+            )
+
+    dummy_client = DummyClient()
+    monkeypatch.setattr(pipeline, "_get_openrouter_client", lambda: dummy_client)
+
+    pipeline.request_score(
+        sample,
+        model="anthropic/claude-opus-4.5",
+        prompt_paradigm="few_shot",
+        metadata={"referer": "https://example.com", "title": "demo-app"},
+    )
+    assert dummy_client.captured_kwargs is not None
+    schema = dummy_client.captured_kwargs["response_format"]["json_schema"]["schema"]
+    score_schema = schema["properties"]["score"]
+    assert "minimum" not in score_schema
+    assert "maximum" not in score_schema
+
+
+def test_request_score_zero_shot_omits_response_format(monkeypatch):
+    sample = pipeline.Sample(text="Test", language="en")
+
+    class DummyResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def model_dump(self):
+            return self._payload
+
+    class DummyClient:
+        def __init__(self):
+            self.captured_kwargs = None
+            self.chat = SimpleNamespace(
+                completions=SimpleNamespace(create=self._create)
+            )
+
+        def _create(self, **kwargs):
+            self.captured_kwargs = kwargs
+            return DummyResponse(
+                {
+                    "choices": [
+                        {
+                            "message": {"content": "4"},
+                            "finish_reason": "stop",
+                        }
+                    ]
+                }
+            )
+
+    dummy_client = DummyClient()
+    monkeypatch.setattr(pipeline, "_get_openrouter_client", lambda: dummy_client)
+
+    result = pipeline.request_score(
+        sample,
+        model="anthropic/claude-opus-4.5",
+        prompt_paradigm="zero_shot",
+        metadata={"referer": "https://example.com", "title": "demo-app"},
+    )
+    assert result.payload == {"score": 4, "reason": ""}
+    assert dummy_client.captured_kwargs is not None
+    assert "response_format" not in dummy_client.captured_kwargs
+    assert dummy_client.captured_kwargs["max_tokens"] == pipeline.ZERO_SHOT_MAX_TOKENS
+
+def test_request_score_uses_score_only_schema_for_zero_shot(monkeypatch):
+    sample = pipeline.Sample(text="Test", language="en")
+
+    class DummyResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def model_dump(self):
+            return self._payload
+
+    class DummyClient:
+        def __init__(self):
+            self.captured_kwargs = None
+            self.chat = SimpleNamespace(
+                completions=SimpleNamespace(create=self._create)
+            )
+
+        def _create(self, **kwargs):
+            self.captured_kwargs = kwargs
+            return DummyResponse(
+                {
+                    "choices": [
+                        {
+                            "message": {"parsed": {"score": 2}},
+                            "finish_reason": "stop",
+                        }
+                    ]
+                }
+            )
+
+    dummy_client = DummyClient()
+    monkeypatch.setattr(pipeline, "_get_openrouter_client", lambda: dummy_client)
+
+    result = pipeline.request_score(
+        sample,
+        model="openrouter/test-model",
+        prompt_paradigm="zero_shot",
+    )
+    assert result.payload == {"score": 2, "reason": ""}
+    assert dummy_client.captured_kwargs is not None
+    schema = dummy_client.captured_kwargs["response_format"]["json_schema"]["schema"]
+    assert schema["required"] == ["score"]
+
+
 def test_run_batch_filters_language(monkeypatch, tmp_path):
     source = tmp_path / "data.csv"
     source.write_text("text,language\nA,en\nB,zh\n", encoding="utf-8")

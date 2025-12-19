@@ -20,13 +20,13 @@ logging.basicConfig(
 
 DATASET_PATTERNS: Dict[str, str] = {
     "natural": "data/5_new_chinesehatedata_2400_balanced.xlsx",
-    "natural": "data/5_new_englishhatedata_2400_balanced.xlsx",
+    # "natural": "data/5_new_englishhatedata_2400_balanced.xlsx",
     # "group_swap": "data/group_swap/*.csv",
     # "test": "data/sample.csv",
 }
 
 MODELS: Sequence[str] = (
-    "openai/gpt-5.1",
+    # "openai/gpt-5.1",
     "anthropic/claude-opus-4.5",
     # "z-ai/glm-4.6",
     # "meta-llama/llama-4-maverick",

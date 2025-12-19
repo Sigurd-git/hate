@@ -8,6 +8,8 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
+
+import re
 import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -15,7 +17,9 @@ from openai import OpenAI
 from prompts import LANGUAGES, PromptParadigm, render_prompt
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-MAX_TOKENS_PER_COMPLETION = 512
+# Allow more room for chain-of-thought JSON responses to avoid finish_reason=length.
+MAX_TOKENS_PER_COMPLETION = 4096
+ZERO_SHOT_MAX_TOKENS = 16
 
 load_dotenv()
 
@@ -30,6 +34,13 @@ STRUCTURE_SCHEMA = {
         "reason": {"type": "string"},
     },
     "required": ["score", "reason"],
+    "additionalProperties": False,
+}
+
+SCORE_ONLY_SCHEMA = {
+    "type": "object",
+    "properties": {"score": {"type": "integer", "minimum": 0, "maximum": 5}},
+    "required": ["score"],
     "additionalProperties": False,
 }
 
@@ -157,7 +168,7 @@ def load_samples(
                 continue
             if row_language not in allowed_languages:
                 continue
-            if row_language != resolved_language:
+            if requested_language and row_language != requested_language:
                 continue
             samples.append(Sample(text=text, language=row_language))
             continue
@@ -168,7 +179,7 @@ def load_samples(
         "Loaded samples=%s dataset=%s language=%s limit=%s",
         len(samples),
         dataset_identifier,
-        resolved_language,
+        requested_language or "all",
         limit,
     )
 
@@ -216,14 +227,26 @@ def _build_structure_schema(include_score_bounds: bool = True) -> Dict[str, obje
     return schema
 
 
+def _build_score_only_schema(include_score_bounds: bool = True) -> Dict[str, object]:
+    schema = json.loads(json.dumps(SCORE_ONLY_SCHEMA))
+    if not include_score_bounds:
+        score_schema = schema["properties"]["score"]
+        score_schema.pop("minimum", None)
+        score_schema.pop("maximum", None)
+        score_schema["description"] = "Integer between 0 and 5 inclusive."
+    return schema
+
+
 def _compose_request_kwargs(
     sample: Sample,
     model: str,
     prompt_paradigm: PromptParadigm,
     metadata: Optional[Dict[str, str]],
     timeout: int,
-    schema: Dict[str, object],
+    schema: Optional[Dict[str, object]],
     extra_options: Optional[Dict[str, object]] = None,
+    include_response_format: bool = True,
+    max_tokens: Optional[int] = None,
 ) -> Dict[str, object]:
     prompt_text = render_prompt(sample.language, prompt_paradigm, sample.text)
     messages = [{"role": "user", "content": prompt_text}]
@@ -231,11 +254,12 @@ def _compose_request_kwargs(
         "model": model,
         "temperature": 0,
         "messages": messages,
-        "response_format": _build_response_format(schema),
         "timeout": timeout,
         "extra_headers": _build_extra_headers(metadata),
-        "max_tokens": MAX_TOKENS_PER_COMPLETION,
+        "max_tokens": max_tokens if max_tokens is not None else MAX_TOKENS_PER_COMPLETION,
     }
+    if include_response_format:
+        request_kwargs["response_format"] = _build_response_format(schema or STRUCTURE_SCHEMA)
     extra_body: Dict[str, object] = {}
     if metadata:
         extra_body["metadata"] = metadata
@@ -253,6 +277,17 @@ def _build_default_request_kwargs(
     metadata: Optional[Dict[str, str]],
     timeout: int,
 ) -> Dict[str, object]:
+    if prompt_paradigm == "zero_shot":
+        return _compose_request_kwargs(
+            sample,
+            model,
+            prompt_paradigm,
+            metadata,
+            timeout,
+            schema=None,
+            include_response_format=False,
+            max_tokens=ZERO_SHOT_MAX_TOKENS,
+        )
     return _compose_request_kwargs(
         sample,
         model,
@@ -270,6 +305,17 @@ def _build_anthropic_request_kwargs(
     metadata: Optional[Dict[str, str]],
     timeout: int,
 ) -> Dict[str, object]:
+    if prompt_paradigm == "zero_shot":
+        return _compose_request_kwargs(
+            sample,
+            model,
+            prompt_paradigm,
+            metadata,
+            timeout,
+            schema=None,
+            include_response_format=False,
+            max_tokens=ZERO_SHOT_MAX_TOKENS,
+        )
     request_kwargs = _compose_request_kwargs(
         sample,
         model,
@@ -361,6 +407,7 @@ RequestBuilder = Callable[
 MODEL_REQUEST_BUILDERS: Dict[str, RequestBuilder] = {
     "openai/gpt-5.1": _build_default_request_kwargs,
     "anthropic/claude-sonnet-4.5": _build_anthropic_request_kwargs,
+    "anthropic/claude-opus-4.5": _build_anthropic_request_kwargs,
     "z-ai/glm-4.6": _build_glm_request_kwargs,
     "meta-llama/llama-4-maverick:free": _build_meta_llama_request_kwargs,
     "deepseek/deepseek-r1-0528:free": _build_deepseek_r1_request_kwargs,
@@ -407,20 +454,143 @@ def request_score(
     response = client.chat.completions.create(**request_kwargs)
     data = response.model_dump()
     finish_reason = data["choices"][0].get("finish_reason")
-    payload = _parse_structured_response(data)
+    if prompt_paradigm == "zero_shot":
+        message = data["choices"][0]["message"]
+        content = _coerce_message_text(message.get("content"))
+        if not content:
+            payload = {"score": 0, "reason": ""}
+        else:
+            sanitized = _strip_code_fences(content)
+            normalized = (
+                sanitized.replace("“", '"')
+                .replace("”", '"')
+                .replace("’", "'")
+                .replace("\r", "")
+            )
+            score_value = _extract_score(normalized)
+            payload = {"score": score_value, "reason": ""}
+    else:
+        payload = _parse_structured_response(data)
     return ScoreResponse(payload=payload, finish_reason=finish_reason)
 
 
-def _parse_structured_response(data: Dict[str, object]) -> Dict[str, object]:
-    content = data["choices"][0]["message"]["content"]
-    message = data["choices"][0]["message"]
-    reason = message.get("reasoning", None)
+def _coerce_message_text(content: object) -> str:
     if isinstance(content, list):
-        # 结构化输出可能以只包含一个 JSON 字典的列表形式返回
-        content = content[0]
+        preferred_chunks: List[str] = []
+        fallback_chunks: List[str] = []
+        for chunk in content:
+            if isinstance(chunk, str):
+                fallback_chunks.append(chunk.strip())
+                continue
+            if isinstance(chunk, dict):
+                chunk_type = chunk.get("type")
+                text_value = chunk.get("text") or chunk.get("content")
+                if isinstance(text_value, str):
+                    stripped = text_value.strip()
+                    if chunk_type == "output_text":
+                        preferred_chunks.append(stripped)
+                    else:
+                        fallback_chunks.append(stripped)
+        chunks = preferred_chunks or fallback_chunks
+        return "\n".join(chunk for chunk in chunks if chunk).strip()
+    if isinstance(content, dict):
+        text_value = content.get("text") or content.get("content")
+        if isinstance(text_value, str):
+            return text_value.strip()
     if isinstance(content, str):
-        return json.loads(content)
-    return content
+        return content.strip()
+    return ""
+
+
+def _strip_code_fences(text: str) -> str:
+    stripped = text.strip()
+    if not stripped.startswith("```"):
+        return stripped
+    lines = stripped.splitlines()
+    cleaned_lines: List[str] = []
+    for line in lines:
+        if line.strip().startswith("```"):
+            continue
+        cleaned_lines.append(line)
+    return "\n".join(cleaned_lines).strip()
+
+
+def _extract_json_block(text: str) -> str:
+    start = text.find("{")
+    if start == -1:
+        return text
+    depth = 0
+    for index in range(start, len(text)):
+        char = text[index]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : index + 1]
+    return text[start:]
+
+
+_SCORE_PATTERN = re.compile(r'"score"\s*:\s*(-?\d+)')
+_SCORE_FALLBACK_PATTERN = re.compile(r"score\s*[:=]\s*(-?\d+)")
+_BARE_INT_PATTERN = re.compile(r"-?\d+")
+
+
+def _extract_score(text: str) -> int:
+    match = _SCORE_PATTERN.search(text)
+    if match is None:
+        match = _SCORE_FALLBACK_PATTERN.search(text)
+    if match is None:
+        match = _BARE_INT_PATTERN.search(text)
+    if match is None:
+        raise ValueError("Missing score value in model response.")
+    value = int(match.group(1))
+    return max(0, min(5, value))
+
+
+def _extract_reason(text: str) -> str:
+    lowered = text.lower()
+    marker = lowered.rfind("reason")
+    if marker == -1:
+        return ""
+    segment = text[marker:]
+    colon_index = segment.find(":")
+    if colon_index == -1:
+        return segment.strip()
+    value_section = segment[colon_index + 1 :].strip()
+    closing_brace = value_section.find("}")
+    if closing_brace != -1:
+        value_section = value_section[:closing_brace]
+    cleaned = value_section.strip().rstrip(",")
+    cleaned = cleaned.strip()
+    if len(cleaned) >= 2 and cleaned[0] == cleaned[-1] and cleaned[0] in {'"', "'"}:
+        cleaned = cleaned[1:-1]
+    return cleaned.strip()
+
+
+def _parse_structured_response(data: Dict[str, object]) -> Dict[str, object]:
+    message = data["choices"][0]["message"]
+    parsed = message.get("parsed")
+    if isinstance(parsed, dict):
+        score_value = parsed.get("score", 0)
+        reason_value = parsed.get("reason", "")
+        return {"score": score_value, "reason": reason_value}
+
+    content = _coerce_message_text(message.get("content"))
+    if not content:
+        return {"score": 0, "reason": ""}
+
+    sanitized = _strip_code_fences(content)
+    normalized = (
+        sanitized.replace("“", '"')
+        .replace("”", '"')
+        .replace("’", "'")
+        .replace("\r", "")
+    )
+    json_candidate = _extract_json_block(normalized).strip()
+    score_value = _extract_score(json_candidate)
+    reason_value = _extract_reason(json_candidate)
+    return {"score": score_value, "reason": reason_value}
 
 
 def run_batch(
@@ -430,11 +600,8 @@ def run_batch(
     language: Optional[str] = None,
     prompt_paradigm: PromptParadigm = "zero_shot",
 ) -> List[Dict[str, object]]:
-    # samples = load_samples(csv_path, limit=limit, language=language)
-    samples = load_samples(
-    "/Users/baoxuan/Desktop/研究生研究/llm毕业论文/5_new_chinesehatedata_2400_balanced.xlsx",
-    language="zh",   # 固定为中文
-    limit=2400)
+    # Load samples from the provided path and optionally filter by language.
+    samples = load_samples(csv_path, limit=limit, language=language)
     return score_samples(samples, model=model, prompt_paradigm=prompt_paradigm)
 
 
