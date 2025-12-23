@@ -1,12 +1,12 @@
-"""Batch runner covering languages, prompt paradigms, datasets, and model choices."""
+"""Sample runner covering languages, prompt paradigms, datasets, and model choices."""
 
 from __future__ import annotations
 
 import logging
-from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from glob import glob
 from pathlib import Path
-from typing import DefaultDict, Dict, List, Sequence, Tuple
+from typing import Dict, List, Sequence
 
 import polars as pl
 
@@ -37,8 +37,7 @@ MODELS: Sequence[str] = (
 )
 
 OUTPUT_ROOT = Path("outputs")
-BATCH_SIZE = 10
-BatchKey = Tuple[str, str, str, str, PromptParadigm]
+MAX_WORKERS = 1
 
 
 def discover_datasets(pattern: str) -> List[Path]:
@@ -63,50 +62,50 @@ def build_output_directory(
     language: str,
     paradigm: PromptParadigm,
 ) -> Path:
-    """Return the directory where batch XLSX files should live."""
+    """Return the directory where sample XLSX files should live."""
     return OUTPUT_ROOT / dataset_type / dataset_label / language / paradigm
 
 
-def build_batch_prefix(model: str) -> str:
-    """Return the filename prefix for a batch file."""
+def build_sample_prefix(model: str) -> str:
+    """Return the filename prefix for a sample file."""
     return model.replace("/", "_")
 
 
-def build_batch_path(
+def build_sample_path(
     dataset_type: str,
     dataset_label: str,
     model: str,
     language: str,
     paradigm: PromptParadigm,
-    batch_index: int,
+    sample_index: int,
 ) -> Path:
-    """Return path for a single XLSX batch."""
+    """Return path for a single XLSX sample."""
     output_dir = build_output_directory(dataset_type, dataset_label, language, paradigm)
-    prefix = build_batch_prefix(model)
-    return output_dir / f"{prefix}_batch_{batch_index:03d}.xlsx"
+    prefix = build_sample_prefix(model)
+    return output_dir / f"{prefix}_sample_{sample_index:06d}.xlsx"
 
 
-def discover_existing_batches(
+def discover_existing_samples(
     dataset_type: str,
     dataset_label: str,
     model: str,
     language: str,
     paradigm: PromptParadigm,
 ) -> Dict[int, Path]:
-    """Find already generated XLSX batches for a given configuration."""
+    """Find already generated XLSX samples for a given configuration."""
     output_dir = build_output_directory(dataset_type, dataset_label, language, paradigm)
-    prefix = build_batch_prefix(model)
-    pattern = str(output_dir / f"{prefix}_batch_*.xlsx")
+    prefix = build_sample_prefix(model)
+    pattern = str(output_dir / f"{prefix}_sample_*.xlsx")
     matches = sorted(Path(candidate) for candidate in glob(pattern))
     existing: Dict[int, Path] = {}
     for match in matches:
         stem = match.stem
-        marker = stem.split("_batch_")[-1]
+        marker = stem.split("_sample_")[-1]
         if marker.isdigit():
             existing[int(marker)] = match
     if matches:
         logging.info(
-            "Found %s existing batches for model=%s language=%s paradigm=%s dataset=%s",
+            "Found %s existing samples for model=%s language=%s paradigm=%s dataset=%s",
             len(matches),
             model,
             language,
@@ -116,38 +115,88 @@ def discover_existing_batches(
     return existing
 
 
-def save_batch_results(
+def save_sample_results(
     target: Path,
-    rows: List[Dict[str, object]],
+    row: Dict[str, object],
     metadata: Dict[str, object],
+    sample_index: int,
 ) -> None:
-    """Write batch results to XLSX."""
+    """Write sample results to XLSX."""
     target.parent.mkdir(parents=True, exist_ok=True)
-    enriched_rows = [
-        {
-            **row,
-            "model": metadata["model"],
-            "prompt_paradigm": metadata["paradigm"],
-            "dataset_type": metadata["dataset_type"],
-            "dataset_label": metadata["dataset_label"],
-            "batch_index": metadata["batch_index"],
-        }
-        for row in rows
-    ]
-    frame = pl.DataFrame(enriched_rows)
+    enriched_row = {
+        **row,
+        "model": metadata["model"],
+        "prompt_paradigm": metadata["paradigm"],
+        "dataset_type": metadata["dataset_type"],
+        "dataset_label": metadata["dataset_label"],
+        "sample_index": sample_index,
+    }
+    frame = pl.DataFrame([enriched_row])
     frame.write_excel(target, worksheet="results")
     logging.info(
-        "Saved batch_index=%s samples=%s target=%s",
-        metadata["batch_index"],
-        len(rows),
+        "Saved sample_index=%s target=%s",
+        sample_index,
         target,
     )
+
+
+def score_and_save_sample(
+    sample: pipeline.Sample,
+    dataset_type: str,
+    dataset_label: str,
+    model: str,
+    language: str,
+    paradigm: PromptParadigm,
+    sample_index: int,
+    target: Path,
+) -> None:
+    """Score a single sample and persist its result."""
+    logging.info(
+        "Scoring sample model=%s language=%s paradigm=%s dataset=%s sample_index=%s",
+        model,
+        language,
+        paradigm,
+        dataset_label,
+        sample_index,
+    )
+    try:
+        response = pipeline.request_score(
+            sample,
+            model=model,
+            prompt_paradigm=paradigm,
+        )
+        if response.finish_reason == "length":
+            logging.warning(
+                "Sample finish_reason=length model=%s language=%s paradigm=%s dataset=%s sample_index=%s",
+                model,
+                language,
+                paradigm,
+                dataset_label,
+                sample_index,
+            )
+        row = {"text": sample.text, "language": sample.language, **response.payload}
+        metadata = {
+            "model": model,
+            "paradigm": paradigm,
+            "dataset_type": dataset_type,
+            "dataset_label": dataset_label,
+        }
+        save_sample_results(target, row, metadata, sample_index)
+    except Exception:
+        logging.exception(
+            "Sample error model=%s language=%s paradigm=%s dataset=%s sample_index=%s",
+            model,
+            language,
+            paradigm,
+            dataset_label,
+            sample_index,
+        )
+        return
 
 
 def run_experiments(limit: int | None = None) -> None:
     """Iterate every combination of language, paradigm, dataset, and model."""
     dataset_map = iter_dataset_map()
-    failed_batches: DefaultDict[BatchKey, List[int]] = defaultdict(list)
     for dataset_type, files in dataset_map.items():
         for dataset_path in files:
             dataset_label = dataset_path.stem
@@ -167,118 +216,67 @@ def run_experiments(limit: int | None = None) -> None:
                         )
                         continue
                     for paradigm in PARADIGMS:
-                        existing_map = discover_existing_batches(
+                        existing_map = discover_existing_samples(
                             dataset_type,
                             dataset_label,
                             model,
                             language,
                             paradigm,
                         )
-                        total_batches = (len(samples) + BATCH_SIZE - 1) // BATCH_SIZE
-                        for batch_index in range(total_batches):
-                            if batch_index in existing_map:
-                                logging.info(
-                                    "Skip existing batch model=%s language=%s paradigm=%s dataset=%s batch=%s",
-                                    model,
-                                    language,
-                                    paradigm,
-                                    dataset_label,
-                                    batch_index,
-                                )
-                                continue
-                            start = batch_index * BATCH_SIZE
-                            end = min(start + BATCH_SIZE, len(samples))
-                            batch_samples = samples[start:end]
-                            if not batch_samples:
-                                continue
-                            batch_key: BatchKey = (
-                                dataset_type,
-                                dataset_label,
-                                model,
-                                language,
-                                paradigm,
-                            )
+                        if existing_map:
                             logging.info(
-                                "Scoring batch model=%s language=%s paradigm=%s dataset=%s batch=%s",
+                                "Using %s cached sample outputs model=%s language=%s paradigm=%s dataset=%s",
+                                len(existing_map),
                                 model,
                                 language,
                                 paradigm,
                                 dataset_label,
-                                batch_index,
                             )
-                            try:
-                                results, batch_aborted = pipeline.score_samples_with_status(
-                                    batch_samples,
-                                    model=model,
-                                    prompt_paradigm=paradigm,
-                                )
-                            except Exception as error:
-                                logging.exception(
-                                    "Batch error model=%s language=%s paradigm=%s dataset=%s batch=%s",
+                        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                            scheduled_futures = []
+                            for sample_index, sample in enumerate(samples):
+                                if sample_index in existing_map:
+                                    logging.info(
+                                        "Skip existing sample model=%s language=%s paradigm=%s dataset=%s sample_index=%s",
+                                        model,
+                                        language,
+                                        paradigm,
+                                        dataset_label,
+                                        sample_index,
+                                    )
+                                    continue
+                                target = build_sample_path(
+                                    dataset_type,
+                                    dataset_label,
                                     model,
                                     language,
                                     paradigm,
-                                    dataset_label,
-                                    batch_index,
+                                    sample_index,
                                 )
-                                failed_batches[batch_key].append(batch_index)
-                                continue
-                            if batch_aborted:
-                                logging.warning(
-                                    "S[kip saving batch due to length finish_reason model=%s language=%s paradigm=%s dataset=%s batch=%s",
-                                    model,
-                                    language,
-                                    paradigm,
-                                    dataset_label,
-                                    batch_index,
+                                scheduled_futures.append(
+                                    executor.submit(
+                                        score_and_save_sample,
+                                        sample,
+                                        dataset_type,
+                                        dataset_label,
+                                        model,
+                                        language,
+                                        paradigm,
+                                        sample_index,
+                                        target,
+                                    )
                                 )
-                                failed_batches[batch_key].append(batch_index)
-                                continue
-                            metadata = {
-                                "model": model,
-                                "paradigm": paradigm,
-                                "dataset_type": dataset_type,
-                                "dataset_label": dataset_label,
-                                "batch_index": batch_index,
-                            }
-                            target = build_batch_path(
-                                dataset_type,
-                                dataset_label,
-                                model,
-                                language,
-                                paradigm,
-                                batch_index,
-                            )
-                            try:
-                                save_batch_results(target, results, metadata)
-                            except Exception as error:
-                                logging.exception(
-                                    "Batch persist error model=%s language=%s paradigm=%s dataset=%s batch=%s target=%s",
-                                    model,
-                                    language,
-                                    paradigm,
-                                    dataset_label,
-                                    batch_index,
-                                    target,
-                                )
-                                failed_batches[batch_key].append(batch_index)
-    if failed_batches:
-        for batch_key, indexes in failed_batches.items():
-            dataset_type, dataset_label, model, language, paradigm = batch_key
-            logging.warning(
-                "Pending batches model=%s language=%s paradigm=%s dataset_type=%s dataset_label=%s indexes=%s",
-                model,
-                language,
-                paradigm,
-                dataset_type,
-                dataset_label,
-                sorted(indexes),
-            )
-        logging.warning(
-            "Detected pending batches. Re-run run_experiments() to process only missing outputs; completed XLSX files remain cached."
-        )
-    else:
-        logging.info("All batches completed successfully without pending retries.")
+                            for future in as_completed(scheduled_futures):
+                                future.result()
+                        logging.info(
+                            "Completed samples model=%s language=%s paradigm=%s dataset=%s total=%s",
+                            model,
+                            language,
+                            paradigm,
+                            dataset_label,
+                            len(samples),
+                        )
+    logging.info("All samples completed successfully.")
 
 
 if __name__ == "__main__":

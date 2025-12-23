@@ -18,8 +18,8 @@ from prompts import LANGUAGES, PromptParadigm, render_prompt
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 # Allow more room for chain-of-thought JSON responses to avoid finish_reason=length.
-MAX_TOKENS_PER_COMPLETION = 4096
-ZERO_SHOT_MAX_TOKENS = 16
+MAX_TOKENS_PER_COMPLETION = None
+ZERO_SHOT_MAX_TOKENS = None
 
 load_dotenv()
 
