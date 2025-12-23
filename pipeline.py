@@ -533,7 +533,7 @@ def _extract_json_block(text: str) -> str:
 
 _SCORE_PATTERN = re.compile(r'"score"\s*:\s*(-?\d+)')
 _SCORE_FALLBACK_PATTERN = re.compile(r"score\s*[:=]\s*(-?\d+)")
-_BARE_INT_PATTERN = re.compile(r"-?\d+")
+_BARE_INT_PATTERN = re.compile(r"(-?\d+)")
 
 
 def _extract_score(text: str) -> int:

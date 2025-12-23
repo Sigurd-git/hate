@@ -6,7 +6,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from glob import glob
 from pathlib import Path
-from typing import Dict, List, Sequence
+from typing import Dict, Iterable, List, Sequence
 
 import polars as pl
 
@@ -18,41 +18,46 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-DATASET_PATTERNS: Dict[str, str] = {
-    "natural": "data/5_new_chinesehatedata_2400_balanced.xlsx",
-    # "natural": "data/5_new_englishhatedata_2400_balanced.xlsx",
-    # "group_swap": "data/group_swap/*.csv",
-    # "test": "data/sample.csv",
+DATASET_PATTERNS: Dict[str, Sequence[str]] = {
+    "natural": [
+        "data/5_new_chinesehatedata_2400_balanced.xlsx",
+        "data/5_new_englishhatedata_2400_balanced.xlsx",
+    ],
+    # "group_swap": ["data/group_swap/*.csv"],
+    # "test": ["data/sample.csv"],
 }
 
 MODELS: Sequence[str] = (
     # "openai/gpt-5.1",
-    "anthropic/claude-opus-4.5",
+    # "anthropic/claude-opus-4.5",
     # "z-ai/glm-4.6",
     # "meta-llama/llama-4-maverick",
     # "deepseek/deepseek-r1-0528",
-    # "deepseek/deepseek-v3.2-exp",
+    "deepseek/deepseek-v3.2-exp",
     # "baidu/ernie-x1",
     # "bigscience/bloomz",
 )
 
 OUTPUT_ROOT = Path("outputs")
-MAX_WORKERS = 1
+MAX_WORKERS = 16
 
 
-def discover_datasets(pattern: str) -> List[Path]:
-    """Return sorted dataset paths for a given glob pattern."""
-    matches = sorted(Path(candidate) for candidate in glob(pattern))
-    if not matches:
-        logging.warning("No datasets found for pattern: %s", pattern)
-    return matches
+def discover_datasets(patterns: Iterable[str]) -> List[Path]:
+    """Return sorted dataset paths for a set of glob patterns."""
+    matches: List[Path] = []
+    for pattern in patterns:
+        pattern_matches = [Path(candidate) for candidate in glob(pattern)]
+        if not pattern_matches:
+            logging.warning("No datasets found for pattern: %s", pattern)
+        matches.extend(pattern_matches)
+    return sorted(matches)
 
 
 def iter_dataset_map() -> Dict[str, List[Path]]:
     """Map dataset categories to their resolved files."""
     dataset_map: Dict[str, List[Path]] = {}
-    for category, pattern in DATASET_PATTERNS.items():
-        dataset_map[category] = discover_datasets(pattern)
+    for category, patterns in DATASET_PATTERNS.items():
+        dataset_map[category] = discover_datasets(patterns)
     return dataset_map
 
 
