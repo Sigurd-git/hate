@@ -164,7 +164,7 @@ def test_request_score_zero_shot_omits_response_format(monkeypatch):
     assert "response_format" not in dummy_client.captured_kwargs
     assert dummy_client.captured_kwargs["max_tokens"] == pipeline.ZERO_SHOT_MAX_TOKENS
 
-def test_request_score_uses_score_only_schema_for_zero_shot(monkeypatch):
+def test_request_score_zero_shot_uses_parsed_score_when_available(monkeypatch):
     sample = pipeline.Sample(text="Test", language="en")
 
     class DummyResponse:
@@ -204,8 +204,7 @@ def test_request_score_uses_score_only_schema_for_zero_shot(monkeypatch):
     )
     assert result.payload == {"score": 2, "reason": ""}
     assert dummy_client.captured_kwargs is not None
-    schema = dummy_client.captured_kwargs["response_format"]["json_schema"]["schema"]
-    assert schema["required"] == ["score"]
+    assert "response_format" not in dummy_client.captured_kwargs
 
 
 def test_run_batch_filters_language(monkeypatch, tmp_path):

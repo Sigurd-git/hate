@@ -196,7 +196,15 @@ def merge_language_outputs(language_root: Path, output_path: Path) -> None:
         model_frame = build_model_frame(model_inputs)
         model_frames.append(model_frame)
 
-    base_frame = model_frames[0][["text", "language", "sample_index"]].copy()
+    base_frame = pd.concat(
+        [frame[["text", "language", "sample_index"]] for frame in model_frames],
+        ignore_index=True,
+    )
+    base_frame = (
+        base_frame.drop_duplicates("sample_index")
+        .sort_values("sample_index")
+        .reset_index(drop=True)
+    )
     for model_frame in model_frames:
         extra_columns = [
             column

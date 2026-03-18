@@ -1,8 +1,8 @@
 import logging
-from pathlib import Path
 from typing import List
 
 import pandas as pd
+from model_metrics_common import DATASET_SPECS, build_language_evaluation_frame
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -28,18 +28,14 @@ def calculate_brier_score(probabilities: pd.Series, labels: pd.Series) -> float:
 
 
 def compute_brier_for_all_models(
-    excel_path: str,
+    dataset_frame: pd.DataFrame,
     label_column: str = "label/2classes",
     zeroshot_suffix: str = "_zeroshot_score",
     cot_suffix: str = "_cot_score",
 ) -> pd.DataFrame:
     """
-    Calculate Brier scores for every model column pair (zeroshot / CoT) in an Excel file.
+    Calculate Brier scores for every model column pair (zeroshot / CoT) in a DataFrame.
     """
-    dataset_path = Path(excel_path)
-    logger.info("Loading annotated scores from %s", dataset_path)
-    dataset_frame = pd.read_excel(dataset_path)
-
     ground_truth = dataset_frame[label_column].astype(int)
     rows: List[dict] = []
 
@@ -78,21 +74,14 @@ def compute_brier_for_all_models(
 
 
 if __name__ == "__main__":
-    base_dir = Path("/Users/baoxuan/Desktop/研究生研究/llm毕业论文/hate/data")
-    dataset_specs = [
-        (
-            base_dir / "8_new_chinesehatedata+zeroshot+cot.xlsx",
-            base_dir / "9_new_chinesehatedata_model_brier_scores.xlsx",
-        ),
-        (
-            base_dir / "8_new_englishhatedata_2400+zeroshot+cot.xlsx",
-            base_dir / "9_new_englishhatedata_model_brier_scores.xlsx",
-        ),
-    ]
-
-    for excel_path, output_path in dataset_specs:
-        logger.info("Starting Brier score evaluation for %s", excel_path.name)
-        brier_table = compute_brier_for_all_models(str(excel_path))
-        brier_table.to_excel(output_path, index=False)
-        logger.info("Brier scores saved to %s", output_path)
-        print(f"Brier scores saved to: {output_path}")
+    for language in ("zh", "en"):
+        dataset_spec = DATASET_SPECS[language]
+        logger.info("Starting Brier score evaluation for language=%s", language)
+        evaluation_frame = build_language_evaluation_frame(dataset_spec, save_combined_output=True)
+        brier_table = compute_brier_for_all_models(
+            evaluation_frame,
+            label_column=dataset_spec.label_column,
+        )
+        brier_table.to_excel(dataset_spec.brier_output_path, index=False)
+        logger.info("Brier scores saved to %s", dataset_spec.brier_output_path)
+        print(f"Brier scores saved to: {dataset_spec.brier_output_path}")

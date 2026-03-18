@@ -1,6 +1,6 @@
 import pandas as pd
-from pathlib import Path
 from sklearn.metrics import f1_score, precision_score, recall_score
+from model_metrics_common import DATASET_SPECS, build_language_evaluation_frame
 
 
 def scores_to_binary(score_series: pd.Series) -> pd.Series:
@@ -26,7 +26,7 @@ def scores_to_binary(score_series: pd.Series) -> pd.Series:
 
 
 def compute_f1_for_all_models(
-    excel_path: str,
+    dataset_frame: pd.DataFrame,
     label_column: str = "label/2classes",
     zeroshot_suffix: str = "_zeroshot_score",
     cot_suffix: str = "_cot_score",
@@ -47,8 +47,8 @@ def compute_f1_for_all_models(
 
     参数
     ----
-    excel_path : str
-        含标签与模型评分的 Excel 路径。
+    dataset_frame : pd.DataFrame
+        包含标签与模型评分列的数据表。
     label_column : str, optional
         真实标签列名（默认 "label/2classes"）。
     zeroshot_suffix : str, optional
@@ -66,22 +66,19 @@ def compute_f1_for_all_models(
         - 'recall'    : 召回率
         - 'f1'        : F1 分数
     """
-    excel_path = Path(excel_path)
-    df = pd.read_excel(excel_path)
-
     # Ground-truth labels (0/1)
-    y_true = df[label_column].astype(int)
+    y_true = dataset_frame[label_column].astype(int)
 
     results = []
 
-    for col in df.columns:
+    for col in dataset_frame.columns:
         # Only look at zeroshot columns; infer corresponding CoT columns from them
         if col.endswith(zeroshot_suffix):
             # Extract model name by stripping the zeroshot suffix
             model_name = col[: -len(zeroshot_suffix)]
 
             # Zeroshot scores and predictions
-            zs_scores = df[col]
+            zs_scores = dataset_frame[col]
             y_pred_zs = scores_to_binary(zs_scores)
             precision_zs = precision_score(y_true, y_pred_zs, zero_division=0)
             recall_zs = recall_score(y_true, y_pred_zs, zero_division=0)
@@ -99,8 +96,8 @@ def compute_f1_for_all_models(
 
             # Now check if the corresponding CoT column exists
             cot_col = f"{model_name}{cot_suffix}"
-            if cot_col in df.columns:
-                cot_scores = df[cot_col]
+            if cot_col in dataset_frame.columns:
+                cot_scores = dataset_frame[cot_col]
                 y_pred_cot = scores_to_binary(cot_scores)
                 precision_cot = precision_score(y_true, y_pred_cot, zero_division=0)
                 recall_cot = recall_score(y_true, y_pred_cot, zero_division=0)
@@ -125,22 +122,11 @@ def compute_f1_for_all_models(
 
 
 if __name__ == "__main__":
-    # 输入 Excel 文件路径（含标签与模型评分的数据集）
-    excel_file = (
-        "/Users/baoxuan/Desktop/研究生研究/llm毕业论文/hate/data/"
-        "8_new_chinesehatedata+zeroshot+cot.xlsx"
+    dataset_spec = DATASET_SPECS["zh"]
+    evaluation_frame = build_language_evaluation_frame(dataset_spec, save_combined_output=True)
+    f1_table = compute_f1_for_all_models(
+        evaluation_frame,
+        label_column=dataset_spec.label_column,
     )
-
-    # 输出 F1 表格的目录
-    output_dir = Path("/Users/baoxuan/Desktop/研究生研究/llm毕业论文/hate/data")
-
-    # 计算所有模型及设定的 F1 分数
-    f1_table = compute_f1_for_all_models(excel_file)
-
-    # 保存 F1 结果的文件名
-    output_path = output_dir / "9_new_chinesehatedata_model_f1_scores.xlsx"
-
-    # 将 F1 表格写入 Excel 文件
-    f1_table.to_excel(output_path, index=False)
-
-    print(f"F1 scores saved to: {output_path}")
+    f1_table.to_excel(dataset_spec.f1_output_path, index=False)
+    print(f"F1 scores saved to: {dataset_spec.f1_output_path}")

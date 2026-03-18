@@ -36,12 +36,12 @@ echo 'OPENROUTER_API_KEY=sk-or-...' >> .env
 ### 批量运行
 
 ```bash
-uv run python run_experiments.py
+uv run python 6_run_experiments.py
 ```
 
-`run_experiments.py` 会按照 `DATASET_PATTERNS` 字典里维护的 `glob` 模式去发现 CSV（默认只启用 `test: data/sample.csv`，需要评估更多语料时直接把路径写进字典即可）。脚本会针对每个匹配到的文件、`prompts.py` 暴露的语言/提示范式，以及 `MODELS` 中列出的模型组合进行迭代，并以 `BATCH_SIZE=10` 切片调用 `pipeline.score_samples_with_status`；`discover_existing_batches` 会用同名 `glob` 路径检查是否已经产出过同一批次，从而支持断点续跑。
+`6_run_experiments.py` 会按照 `DATASET_PATTERNS` 字典里维护的 `glob` 模式去发现数据文件（当前配置为 Excel）。脚本会针对每个匹配到的文件、`prompts.py` 暴露的语言/提示范式，以及 `MODELS` 中列出的模型组合进行迭代，并用线程池逐条样本评分；`discover_existing_samples` 会用同名 `glob` 路径检查是否已产出过同一条样本，从而支持断点续跑。
 
-每个批次会以 Excel 形式落盘：`outputs/<dataset_type>/<dataset_label>/<language>/<paradigm>/<model>_batch_<index>.xlsx`（模型名中的 `/` 会替换成 `_`）。`save_batch_results` 会为每行补充模型、提示范式、数据集标签与批次编号，便于后续用 polars/numpy 继续聚合。`limit` 参数会直接传给 `pipeline.load_samples`，因此可以按语言裁剪样本数量，在真实跑批前快速 smoke test。
+每条样本会以 Excel 形式落盘：`outputs/<dataset_type>/<dataset_label>/<language>/<paradigm>/<model>_sample_<index>.xlsx`（模型名中的 `/` 会替换成 `_`）。`save_sample_results` 会为每行补充模型、提示范式、数据集标签与样本编号，便于后续用 polars/numpy 继续聚合。`limit` 参数会直接传给 `pipeline.load_samples`，因此可以按语言裁剪样本数量，在真实跑批前快速 smoke test。
 
 如需在交互式环境里手动取回结果，可在 Python REPL 中导入 `pipeline.run_batch(csv_path, model, language="en", prompt_paradigm="few_shot")`，它会返回包含 `text`、`language`、`score`、`reason` 字段的列表，可自行写出更轻量的分析脚本。
 

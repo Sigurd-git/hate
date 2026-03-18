@@ -42,6 +42,10 @@ LLM_SCORE_COLUMNS: dict[str, str] = {
     "chatgpt5.1_cot_score": "ChatGPT5.1 CoT",
     "claude4.5_zeroshot_score": "Claude4.5 ZeroShot",
     "claude4.5_cot_score": "Claude4.5 CoT",
+    "deepseek_deepseek-v3.2-exp_zeroshot_score": "DeepSeek V3.2-Exp ZeroShot",
+    "deepseek_deepseek-v3.2-exp_cot_score": "DeepSeek V3.2-Exp CoT",
+    "moonshotai_kimi-k2-thinking_zeroshot_score": "Kimi K2 Thinking ZeroShot",
+    "moonshotai_kimi-k2-thinking_cot_score": "Kimi K2 Thinking CoT",
 }
 LLM_MAX_SCORE = 5.0
 

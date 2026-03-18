@@ -14,12 +14,13 @@ import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from prompts import LANGUAGES, PromptParadigm, render_prompt
+from prompts import LANGUAGES, PromptParadigm, render_attack_prompt, render_prompt
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 # Allow more room for chain-of-thought JSON responses to avoid finish_reason=length.
 MAX_TOKENS_PER_COMPLETION = None
 ZERO_SHOT_MAX_TOKENS = None
+MAX_THREAD_WORKERS = 16
 
 load_dotenv()
 
@@ -145,11 +146,11 @@ def load_samples(
     if "text" not in dataset_frame.columns:
         raise ValueError("Input file must contain a 'text' column.")
 
-    dataset_frame["text"] = dataset_frame["text"].astype(str).str.strip()
+    dataset_frame["text"] = dataset_frame["text"].fillna("").astype(str).str.strip()
     has_language_column = "language" in dataset_frame.columns
     if has_language_column:
         dataset_frame["language"] = (
-            dataset_frame["language"].astype(str).str.strip().str.lower()
+            dataset_frame["language"].fillna("").astype(str).str.strip().str.lower()
         )
 
     samples: List[Sample] = []
@@ -217,23 +218,29 @@ def _build_extra_headers(metadata: Optional[Dict[str, str]]) -> Dict[str, str]:
     return {"HTTP-Referer": referer, "X-Title": title}
 
 
-def _build_structure_schema(include_score_bounds: bool = True) -> Dict[str, object]:
+def _build_structure_schema(
+    include_score_bounds: bool = True, max_score: int = 5
+) -> Dict[str, object]:
     schema = json.loads(json.dumps(STRUCTURE_SCHEMA))
+    schema["properties"]["score"]["maximum"] = max_score
     if not include_score_bounds:
         score_schema = schema["properties"]["score"]
         score_schema.pop("minimum", None)
         score_schema.pop("maximum", None)
-        score_schema["description"] = "Integer between 0 and 5 inclusive."
+        score_schema["description"] = f"Integer between 0 and {max_score} inclusive."
     return schema
 
 
-def _build_score_only_schema(include_score_bounds: bool = True) -> Dict[str, object]:
+def _build_score_only_schema(
+    include_score_bounds: bool = True, max_score: int = 5
+) -> Dict[str, object]:
     schema = json.loads(json.dumps(SCORE_ONLY_SCHEMA))
+    schema["properties"]["score"]["maximum"] = max_score
     if not include_score_bounds:
         score_schema = schema["properties"]["score"]
         score_schema.pop("minimum", None)
         score_schema.pop("maximum", None)
-        score_schema["description"] = "Integer between 0 and 5 inclusive."
+        score_schema["description"] = f"Integer between 0 and {max_score} inclusive."
     return schema
 
 
@@ -245,11 +252,17 @@ def _compose_request_kwargs(
     timeout: int,
     schema: Optional[Dict[str, object]],
     extra_options: Optional[Dict[str, object]] = None,
+    schema_override: Optional[Dict[str, object]] = None,
+    prompt_text_override: Optional[str] = None,
     include_response_format: bool = True,
     max_tokens: Optional[int] = None,
 ) -> Dict[str, object]:
-    prompt_text = render_prompt(sample.language, prompt_paradigm, sample.text)
+    if prompt_text_override is None:
+        prompt_text = render_prompt(sample.language, prompt_paradigm, sample.text)
+    else:
+        prompt_text = prompt_text_override
     messages = [{"role": "user", "content": prompt_text}]
+    schema_to_apply = schema_override if schema_override is not None else schema
     request_kwargs: Dict[str, object] = {
         "model": model,
         "temperature": 0,
@@ -259,7 +272,9 @@ def _compose_request_kwargs(
         "max_tokens": max_tokens if max_tokens is not None else MAX_TOKENS_PER_COMPLETION,
     }
     if include_response_format:
-        request_kwargs["response_format"] = _build_response_format(schema or STRUCTURE_SCHEMA)
+        request_kwargs["response_format"] = _build_response_format(
+            schema_to_apply or STRUCTURE_SCHEMA
+        )
     extra_body: Dict[str, object] = {}
     if metadata:
         extra_body["metadata"] = metadata
@@ -276,7 +291,14 @@ def _build_default_request_kwargs(
     prompt_paradigm: PromptParadigm,
     metadata: Optional[Dict[str, str]],
     timeout: int,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Dict[str, object]:
+    prompt_text = (
+        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
+        if prompt_mode == "attack"
+        else None
+    )
     if prompt_paradigm == "zero_shot":
         return _compose_request_kwargs(
             sample,
@@ -287,6 +309,7 @@ def _build_default_request_kwargs(
             schema=None,
             include_response_format=False,
             max_tokens=ZERO_SHOT_MAX_TOKENS,
+            prompt_text_override=prompt_text,
         )
     return _compose_request_kwargs(
         sample,
@@ -294,7 +317,8 @@ def _build_default_request_kwargs(
         prompt_paradigm,
         metadata,
         timeout,
-        schema=_build_structure_schema(),
+        schema=_build_structure_schema(max_score=score_max),
+        prompt_text_override=prompt_text,
     )
 
 
@@ -304,7 +328,14 @@ def _build_anthropic_request_kwargs(
     prompt_paradigm: PromptParadigm,
     metadata: Optional[Dict[str, str]],
     timeout: int,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Dict[str, object]:
+    prompt_text = (
+        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
+        if prompt_mode == "attack"
+        else None
+    )
     if prompt_paradigm == "zero_shot":
         return _compose_request_kwargs(
             sample,
@@ -315,6 +346,7 @@ def _build_anthropic_request_kwargs(
             schema=None,
             include_response_format=False,
             max_tokens=ZERO_SHOT_MAX_TOKENS,
+            prompt_text_override=prompt_text,
         )
     request_kwargs = _compose_request_kwargs(
         sample,
@@ -322,9 +354,50 @@ def _build_anthropic_request_kwargs(
         prompt_paradigm,
         metadata,
         timeout,
-        schema=_build_structure_schema(include_score_bounds=False),
+        schema=_build_structure_schema(
+            include_score_bounds=False, max_score=score_max
+        ),
+        prompt_text_override=prompt_text,
     )
     return request_kwargs
+
+
+def _build_text_json_request_kwargs(
+    sample: Sample,
+    model: str,
+    prompt_paradigm: PromptParadigm,
+    metadata: Optional[Dict[str, str]],
+    timeout: int,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
+) -> Dict[str, object]:
+    prompt_text = (
+        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
+        if prompt_mode == "attack"
+        else None
+    )
+    if prompt_paradigm == "zero_shot":
+        return _compose_request_kwargs(
+            sample,
+            model,
+            prompt_paradigm,
+            metadata,
+            timeout,
+            schema=None,
+            include_response_format=False,
+            max_tokens=ZERO_SHOT_MAX_TOKENS,
+            prompt_text_override=prompt_text,
+        )
+    return _compose_request_kwargs(
+        sample,
+        model,
+        prompt_paradigm,
+        metadata,
+        timeout,
+        schema=None,
+        include_response_format=False,
+        prompt_text_override=prompt_text,
+    )
 
 
 def _build_glm_request_kwargs(
@@ -333,14 +406,22 @@ def _build_glm_request_kwargs(
     prompt_paradigm: PromptParadigm,
     metadata: Optional[Dict[str, str]],
     timeout: int,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Dict[str, object]:
+    prompt_text = (
+        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
+        if prompt_mode == "attack"
+        else None
+    )
     request_kwargs = _compose_request_kwargs(
         sample,
         model,
         prompt_paradigm,
         metadata,
         timeout,
-        schema=_build_structure_schema(),
+        schema=_build_structure_schema(max_score=score_max),
+        prompt_text_override=prompt_text,
     )
     return request_kwargs
 
@@ -351,14 +432,22 @@ def _build_meta_llama_request_kwargs(
     prompt_paradigm: PromptParadigm,
     metadata: Optional[Dict[str, str]],
     timeout: int,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Dict[str, object]:
+    prompt_text = (
+        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
+        if prompt_mode == "attack"
+        else None
+    )
     request_kwargs = _compose_request_kwargs(
         sample,
         model,
         prompt_paradigm,
         metadata,
         timeout,
-        schema=_build_structure_schema(),
+        schema=_build_structure_schema(max_score=score_max),
+        prompt_text_override=prompt_text,
     )
     return request_kwargs
 
@@ -369,14 +458,22 @@ def _build_deepseek_r1_request_kwargs(
     prompt_paradigm: PromptParadigm,
     metadata: Optional[Dict[str, str]],
     timeout: int,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Dict[str, object]:
+    prompt_text = (
+        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
+        if prompt_mode == "attack"
+        else None
+    )
     return _compose_request_kwargs(
         sample,
         model,
         prompt_paradigm,
         metadata,
         timeout,
-        schema=_build_structure_schema(),
+        schema=_build_structure_schema(max_score=score_max),
+        prompt_text_override=prompt_text,
         extra_options={"reasoning": {"effort": "medium"}, "include_reasoning": True},
     )
 
@@ -387,27 +484,38 @@ def _build_deepseek_v3_request_kwargs(
     prompt_paradigm: PromptParadigm,
     metadata: Optional[Dict[str, str]],
     timeout: int,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Dict[str, object]:
+    prompt_text = (
+        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
+        if prompt_mode == "attack"
+        else None
+    )
     request_kwargs = _compose_request_kwargs(
         sample,
         model,
         prompt_paradigm,
         metadata,
         timeout,
-        schema=_build_structure_schema(),
+        schema=_build_structure_schema(max_score=score_max),
+        prompt_text_override=prompt_text,
         extra_options={"reasoning": {"enabled": True}},
     )
     return request_kwargs
 
 
 RequestBuilder = Callable[
-    [Sample, str, PromptParadigm, Optional[Dict[str, str]], int], Dict[str, object]
+    [Sample, str, PromptParadigm, Optional[Dict[str, str]], int, str, int],
+    Dict[str, object],
 ]
 
 MODEL_REQUEST_BUILDERS: Dict[str, RequestBuilder] = {
     "openai/gpt-5.1": _build_default_request_kwargs,
     "anthropic/claude-sonnet-4.5": _build_anthropic_request_kwargs,
     "anthropic/claude-opus-4.5": _build_anthropic_request_kwargs,
+    "baidu/ernie-4.5-21b-a3b": _build_text_json_request_kwargs,
+    "qwen/qwen-2.5-72b-instruct": _build_text_json_request_kwargs,
     "z-ai/glm-4.6": _build_glm_request_kwargs,
     "meta-llama/llama-4-maverick:free": _build_meta_llama_request_kwargs,
     "deepseek/deepseek-r1-0528:free": _build_deepseek_r1_request_kwargs,
@@ -421,9 +529,11 @@ def _build_model_request_kwargs(
     prompt_paradigm: PromptParadigm,
     metadata: Optional[Dict[str, str]],
     timeout: int,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Dict[str, object]:
     builder = MODEL_REQUEST_BUILDERS.get(model, _build_default_request_kwargs)
-    return builder(sample, model, prompt_paradigm, metadata, timeout)
+    return builder(sample, model, prompt_paradigm, metadata, timeout, prompt_mode, score_max)
 
 
 def request_score(
@@ -432,14 +542,17 @@ def request_score(
     prompt_paradigm: PromptParadigm = "zero_shot",
     metadata: Optional[Dict[str, str]] = None,
     timeout: int = 60,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> ScoreResponse:
     """向 OpenRouter 发送单条提示并返回结构化结果。"""
     client = _get_openrouter_client()
     logger.info(
-        "Requesting OpenRouter score language=%s model=%s paradigm=%s",
+        "Requesting OpenRouter score language=%s model=%s paradigm=%s mode=%s",
         sample.language,
         model,
         prompt_paradigm,
+        prompt_mode,
     )
 
     request_kwargs = _build_model_request_kwargs(
@@ -448,6 +561,8 @@ def request_score(
         prompt_paradigm,
         metadata,
         timeout,
+        prompt_mode,
+        score_max,
     )
     logger.debug("Request payload keys: %s", sorted(request_kwargs))
 
@@ -456,21 +571,26 @@ def request_score(
     finish_reason = data["choices"][0].get("finish_reason")
     if prompt_paradigm == "zero_shot":
         message = data["choices"][0]["message"]
-        content = _coerce_message_text(message.get("content"))
-        if not content:
-            payload = {"score": 0, "reason": ""}
-        else:
-            sanitized = _strip_code_fences(content)
-            normalized = (
-                sanitized.replace("“", '"')
-                .replace("”", '"')
-                .replace("’", "'")
-                .replace("\r", "")
-            )
-            score_value = _extract_score(normalized)
+        parsed = message.get("parsed")
+        if isinstance(parsed, dict) and "score" in parsed:
+            score_value = _extract_score(str(parsed.get("score")), score_max=score_max)
             payload = {"score": score_value, "reason": ""}
+        else:
+            content = _coerce_message_text(message.get("content"))
+            if not content:
+                payload = {"score": 0, "reason": ""}
+            else:
+                sanitized = _strip_code_fences(content)
+                normalized = (
+                    sanitized.replace("“", '"')
+                    .replace("”", '"')
+                    .replace("’", "'")
+                    .replace("\r", "")
+                )
+                score_value = _extract_score(normalized, score_max=score_max)
+                payload = {"score": score_value, "reason": ""}
     else:
-        payload = _parse_structured_response(data)
+        payload = _parse_structured_response(data, score_max=score_max)
     return ScoreResponse(payload=payload, finish_reason=finish_reason)
 
 
@@ -536,7 +656,7 @@ _SCORE_FALLBACK_PATTERN = re.compile(r"score\s*[:=]\s*(-?\d+)")
 _BARE_INT_PATTERN = re.compile(r"(-?\d+)")
 
 
-def _extract_score(text: str) -> int:
+def _extract_score(text: str, score_max: int = 5) -> int:
     match = _SCORE_PATTERN.search(text)
     if match is None:
         match = _SCORE_FALLBACK_PATTERN.search(text)
@@ -545,7 +665,7 @@ def _extract_score(text: str) -> int:
     if match is None:
         raise ValueError("Missing score value in model response.")
     value = int(match.group(1))
-    return max(0, min(5, value))
+    return max(0, min(score_max, value))
 
 
 def _extract_reason(text: str) -> str:
@@ -568,11 +688,14 @@ def _extract_reason(text: str) -> str:
     return cleaned.strip()
 
 
-def _parse_structured_response(data: Dict[str, object]) -> Dict[str, object]:
+def _parse_structured_response(
+    data: Dict[str, object], score_max: int = 5
+) -> Dict[str, object]:
     message = data["choices"][0]["message"]
     parsed = message.get("parsed")
     if isinstance(parsed, dict):
-        score_value = parsed.get("score", 0)
+        raw_score = parsed.get("score", 0)
+        score_value = _extract_score(str(raw_score), score_max=score_max)
         reason_value = parsed.get("reason", "")
         return {"score": score_value, "reason": reason_value}
 
@@ -588,7 +711,7 @@ def _parse_structured_response(data: Dict[str, object]) -> Dict[str, object]:
         .replace("\r", "")
     )
     json_candidate = _extract_json_block(normalized).strip()
-    score_value = _extract_score(json_candidate)
+    score_value = _extract_score(json_candidate, score_max=score_max)
     reason_value = _extract_reason(json_candidate)
     return {"score": score_value, "reason": reason_value}
 
@@ -599,16 +722,26 @@ def run_batch(
     limit: Optional[int] = None,
     language: Optional[str] = None,
     prompt_paradigm: PromptParadigm = "zero_shot",
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> List[Dict[str, object]]:
     # Load samples from the provided path and optionally filter by language.
     samples = load_samples(csv_path, limit=limit, language=language)
-    return score_samples(samples, model=model, prompt_paradigm=prompt_paradigm)
+    return score_samples(
+        samples,
+        model=model,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
+        score_max=score_max,
+    )
 
 
 def _score_samples_internal(
     samples: Sequence[Sample],
     model: str,
     prompt_paradigm: PromptParadigm,
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Tuple[List[Dict[str, object]], bool]:
     ordered_samples = list(samples)
     batch_rows: List[Dict[str, object]] = []
@@ -618,17 +751,25 @@ def _score_samples_internal(
         logger.info("No samples detected for scoring; returning empty batch.")
         return batch_rows, aborted
 
+    worker_count = min(total_samples, MAX_THREAD_WORKERS)
     logger.info(
         "Scoring %d samples using ThreadPoolExecutor with %d workers",
         total_samples,
-        total_samples,
+        worker_count,
     )
 
-    with ThreadPoolExecutor(max_workers=total_samples) as executor:
+    with ThreadPoolExecutor(max_workers=worker_count) as executor:
         scheduled_futures = [
             (
                 sample,
-                executor.submit(request_score, sample, model, prompt_paradigm),
+                executor.submit(
+                    request_score,
+                    sample,
+                    model=model,
+                    prompt_paradigm=prompt_paradigm,
+                    prompt_mode=prompt_mode,
+                    score_max=score_max,
+                ),
             )
             for sample in ordered_samples
         ]
@@ -655,9 +796,17 @@ def score_samples(
     samples: Sequence[Sample],
     model: str,
     prompt_paradigm: PromptParadigm = "zero_shot",
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> List[Dict[str, object]]:
     """Request structured scores for a provided sample collection."""
-    results, _ = _score_samples_internal(samples, model, prompt_paradigm)
+    results, _ = _score_samples_internal(
+        samples,
+        model=model,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
+        score_max=score_max,
+    )
     return results
 
 
@@ -665,6 +814,14 @@ def score_samples_with_status(
     samples: Sequence[Sample],
     model: str,
     prompt_paradigm: PromptParadigm = "zero_shot",
+    prompt_mode: str = "hate",
+    score_max: int = 5,
 ) -> Tuple[List[Dict[str, object]], bool]:
     """Request structured scores and return whether the batch was aborted."""
-    return _score_samples_internal(samples, model, prompt_paradigm)
+    return _score_samples_internal(
+        samples,
+        model=model,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
+        score_max=score_max,
+    )
