@@ -209,3 +209,14 @@ outputs*
 **/*.DS_Store
 outputsbackup
 artifacts
+#latex
+**/*.log
+**/*.aux
+**/*.out
+**/*.toc
+**/*.synctex.gz
+**/*.fdb_latexmk
+**/*.fls
+**/*.snm
+**/*.nav
+**/*.xdv

@@ -246,6 +246,18 @@ def save_figure(fig: plt.Figure, output_path: Path) -> None:
     fig.savefig(output_path.with_suffix(".pdf"), bbox_inches="tight")
 
 
+def save_axis_as_figure(axis: plt.Axes, output_path: Path) -> None:
+    """Save a single matplotlib axis as its own standalone figure file."""
+    figure = axis.figure
+    figure.canvas.draw()
+    renderer = figure.canvas.get_renderer()
+    tight_bbox = axis.get_tightbbox(renderer).expanded(1.03, 1.06)
+    tight_bbox_inches = tight_bbox.transformed(figure.dpi_scale_trans.inverted())
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(output_path, dpi=300, bbox_inches=tight_bbox_inches)
+    figure.savefig(output_path.with_suffix(".pdf"), bbox_inches=tight_bbox_inches)
+
+
 def prepare_frames(analysis_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     merged_df = pd.read_csv(analysis_dir / "merged_scores_with_dimensions.csv")
     difference_df = pd.read_csv(analysis_dir / "same_sentence_gender_differences.csv")
@@ -375,7 +387,12 @@ def compute_level1_statistics(difference_df: pd.DataFrame, bootstrap_iterations:
     return level1_df
 
 
-def plot_figure1_paired_scores(difference_df: pd.DataFrame, overall_df: pd.DataFrame, output_path: Path) -> None:
+def plot_figure1_paired_scores(
+    difference_df: pd.DataFrame,
+    overall_df: pd.DataFrame,
+    output_path: Path,
+    panel_output_dir: Path | None = None,
+) -> None:
     apply_journal_style()
     configure_matplotlib_fonts()
     fig, axes = plt.subplots(2, 2, figsize=(15.4, 12.2), sharey=True)
@@ -476,10 +493,18 @@ def plot_figure1_paired_scores(difference_df: pd.DataFrame, overall_df: pd.DataF
     )
     fig.tight_layout(rect=(0, 0.035, 1, 0.968), w_pad=2.3, h_pad=2.5)
     save_figure(fig, output_path)
+    if panel_output_dir is not None:
+        for panel_index, axis in enumerate(axes.flat, start=1):
+            save_axis_as_figure(axis, panel_output_dir / f"fig1_paired_scores_panel_{panel_index}.png")
     plt.close(fig)
 
 
-def plot_figure2_difference_distribution(difference_df: pd.DataFrame, overall_df: pd.DataFrame, output_path: Path) -> None:
+def plot_figure2_difference_distribution(
+    difference_df: pd.DataFrame,
+    overall_df: pd.DataFrame,
+    output_path: Path,
+    panel_output_dir: Path | None = None,
+) -> None:
     apply_journal_style()
     configure_matplotlib_fonts()
     fig, axes = plt.subplots(2, 2, figsize=(15.2, 11.8), sharex=True, sharey=True)
@@ -531,6 +556,9 @@ def plot_figure2_difference_distribution(difference_df: pd.DataFrame, overall_df
     )
     fig.tight_layout(rect=(0, 0.035, 1, 0.968), w_pad=2.3, h_pad=2.5)
     save_figure(fig, output_path)
+    if panel_output_dir is not None:
+        for panel_index, axis in enumerate(axes.flat, start=1):
+            save_axis_as_figure(axis, panel_output_dir / f"fig2_difference_distribution_panel_{panel_index}.png")
     plt.close(fig)
 
 
@@ -589,7 +617,12 @@ def plot_figure3_directionality(direction_df: pd.DataFrame, output_path: Path) -
     plt.close(fig)
 
 
-def plot_figure4_level1_forest(level1_df: pd.DataFrame, output_path: Path, top_level1: int) -> None:
+def plot_figure4_level1_forest(
+    level1_df: pd.DataFrame,
+    output_path: Path,
+    top_level1: int,
+    panel_output_dir: Path | None = None,
+) -> None:
     apply_journal_style()
     configure_matplotlib_fonts()
     fig, axes = plt.subplots(2, 2, figsize=(18.4, 14.2), sharex=True)
@@ -636,6 +669,9 @@ def plot_figure4_level1_forest(level1_df: pd.DataFrame, output_path: Path, top_l
     fig.legend(handles=legend_handles, loc="lower center", ncol=3, frameon=True, bbox_to_anchor=(0.5, 0.012), fontsize=10.3)
     fig.tight_layout(rect=(0, 0.075, 1, 0.968), w_pad=2.4, h_pad=2.4)
     save_figure(fig, output_path)
+    if panel_output_dir is not None:
+        for panel_index, axis in enumerate(axes.flat, start=1):
+            save_axis_as_figure(axis, panel_output_dir / f"fig4_level1_forest_panel_{panel_index}.png")
     plt.close(fig)
 
 
@@ -650,6 +686,7 @@ def main() -> None:
     configure_matplotlib_fonts()
     arguments = parse_arguments()
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
+    panel_output_dir = arguments.output_dir / "panels"
 
     _, difference_df, _ = prepare_frames(arguments.analysis_dir)
     overall_df = compute_overall_statistics(difference_df, arguments.bootstrap_iterations)
@@ -657,10 +694,25 @@ def main() -> None:
     level1_df = compute_level1_statistics(difference_df, arguments.bootstrap_iterations)
     save_statistics_tables(arguments.output_dir, overall_df, direction_df, level1_df)
 
-    plot_figure1_paired_scores(difference_df, overall_df, arguments.output_dir / "fig1_paired_scores.png")
-    plot_figure2_difference_distribution(difference_df, overall_df, arguments.output_dir / "fig2_difference_distribution.png")
+    plot_figure1_paired_scores(
+        difference_df,
+        overall_df,
+        arguments.output_dir / "fig1_paired_scores.png",
+        panel_output_dir=panel_output_dir,
+    )
+    plot_figure2_difference_distribution(
+        difference_df,
+        overall_df,
+        arguments.output_dir / "fig2_difference_distribution.png",
+        panel_output_dir=panel_output_dir,
+    )
     plot_figure3_directionality(direction_df, arguments.output_dir / "fig3_directionality.png")
-    plot_figure4_level1_forest(level1_df, arguments.output_dir / "fig4_level1_forest.png", arguments.top_level1)
+    plot_figure4_level1_forest(
+        level1_df,
+        arguments.output_dir / "fig4_level1_forest.png",
+        arguments.top_level1,
+        panel_output_dir=panel_output_dir,
+    )
 
     print("Plotting finished.")
     print(f"Output directory: {arguments.output_dir}")
