@@ -15,6 +15,7 @@ dependencies = [
     "seaborn",
     "matplotlib",
     "scikit-learn>=1.7.2",
+    "xlsxwriter"
 ]
 
 [project.optional-dependencies]

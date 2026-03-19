@@ -1,0 +1,1 @@
+latexmk -xelatex -interaction=nonstopmode -halt-on-error -outdir=slides slides/1b_groupswap_bias_presentation.tex

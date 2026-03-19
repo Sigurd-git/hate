@@ -46,12 +46,14 @@ SCORE_REASON_COLUMN_MAP = {
     COT_SETTING: (MALE_COT_REASON_COLUMN, FEMALE_COT_REASON_COLUMN),
 }
 
-AGGREGATED_SCORE_PATTERN = re.compile(r"^(?P<model_prefix>.+)_group_swap_scores\.xlsx$")
+CSV_RESULT_PATTERN = re.compile(r"^(?P<model_prefix>.+)_results\.csv$")
+XLSX_RESULT_PATTERN = re.compile(r"^(?P<model_prefix>.+)_results\.xlsx$")
 ROW_SCORE_PATTERN = re.compile(
     r"^(?P<model_prefix>.+)_group_swap_row_(?P<row_index>\d+)\.xlsx$"
 )
 ROW_SOURCE_NAME = "row_files"
-AGGREGATED_SOURCE_NAME = "aggregated_file"
+CSV_SOURCE_NAME = "csv_results"
+XLSX_SOURCE_NAME = "xlsx_results"
 ANALYSIS_WORKBOOK_NAME = "1b_groupswap_analysis.xlsx"
 
 
@@ -66,7 +68,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--framework-path",
         type=Path,
-        default=Path("data/性别反转生成维度框架.xlsx"),
+        default=Path("data/1b_groupswap_demensionsentence.xlsx"),
         help="Path to the dimension framework Excel file.",
     )
     parser.add_argument(
@@ -74,9 +76,9 @@ def parse_arguments() -> argparse.Namespace:
         type=Path,
         default=None,
         help=(
-            "Directory containing group-swap score files. If omitted, the script "
-            "tries outputs/group_swap/<framework_stem> first, then falls back to "
-            "outputs/group_swap/1b_groupswap_demensionsentence."
+            "Directory containing group-swap result files. If omitted, the script "
+            "tries outputs/group_swap_1b/<framework_stem> first, then falls back to "
+            "outputs/group_swap_1b/1b_groupswap_demensionsentence."
         ),
     )
     parser.add_argument(
@@ -123,12 +125,12 @@ def resolve_score_directory(
     if requested_score_dir is not None:
         return requested_score_dir
 
-    preferred_directory = Path("outputs/group_swap") / framework_path.stem
+    preferred_directory = Path("outputs/group_swap_1b") / framework_path.stem
     if preferred_directory.exists():
         logger.info("Using score directory derived from framework stem: %s", preferred_directory)
         return preferred_directory
 
-    fallback_directory = Path("outputs/group_swap/1b_groupswap_demensionsentence")
+    fallback_directory = Path("outputs/group_swap_1b/1b_groupswap_demensionsentence")
     logger.info("Using fallback score directory: %s", fallback_directory)
     return fallback_directory
 
@@ -172,27 +174,39 @@ def load_framework_frame(framework_path: Path) -> pl.DataFrame:
 
 
 def discover_score_sources(score_directory: Path) -> Dict[str, Dict[str, List[Path]]]:
-    """Discover aggregated files and per-row files for each model prefix."""
+    """Discover consolidated CSV/XLSX result files and legacy per-row files for each model prefix."""
     discovered_sources: Dict[str, Dict[str, List[Path]]] = defaultdict(
-        lambda: {AGGREGATED_SOURCE_NAME: [], ROW_SOURCE_NAME: []}
+        lambda: {CSV_SOURCE_NAME: [], XLSX_SOURCE_NAME: [], ROW_SOURCE_NAME: []}
     )
 
-    aggregated_paths = sorted(
+    csv_result_paths = sorted(
         Path(candidate_path)
-        for candidate_path in glob(str(score_directory / "*_group_swap_scores.xlsx"))
+        for candidate_path in glob(str(score_directory / "*_results.csv"))
+    )
+    xlsx_result_paths = sorted(
+        Path(candidate_path)
+        for candidate_path in glob(str(score_directory / "*_results.xlsx"))
     )
     row_file_paths = sorted(
         Path(candidate_path)
         for candidate_path in glob(str(score_directory / "*_group_swap_row_*.xlsx"))
     )
 
-    for aggregated_path in aggregated_paths:
-        matched_result = AGGREGATED_SCORE_PATTERN.match(aggregated_path.name)
+    for csv_result_path in csv_result_paths:
+        matched_result = CSV_RESULT_PATTERN.match(csv_result_path.name)
         if matched_result is None:
-            logger.warning("Skipping unrecognized aggregated score file: %s", aggregated_path)
+            logger.warning("Skipping unrecognized CSV result file: %s", csv_result_path)
             continue
         model_prefix = matched_result.group("model_prefix")
-        discovered_sources[model_prefix][AGGREGATED_SOURCE_NAME].append(aggregated_path)
+        discovered_sources[model_prefix][CSV_SOURCE_NAME].append(csv_result_path)
+
+    for xlsx_result_path in xlsx_result_paths:
+        matched_result = XLSX_RESULT_PATTERN.match(xlsx_result_path.name)
+        if matched_result is None:
+            logger.warning("Skipping unrecognized XLSX result file: %s", xlsx_result_path)
+            continue
+        model_prefix = matched_result.group("model_prefix")
+        discovered_sources[model_prefix][XLSX_SOURCE_NAME].append(xlsx_result_path)
 
     for row_file_path in row_file_paths:
         matched_result = ROW_SCORE_PATTERN.match(row_file_path.name)
@@ -204,7 +218,7 @@ def discover_score_sources(score_directory: Path) -> Dict[str, Dict[str, List[Pa
 
     if not discovered_sources:
         raise FileNotFoundError(
-            f"No group-swap score files were found in directory: {score_directory}"
+            f"No group-swap result files were found in directory: {score_directory}"
         )
 
     logger.info(
@@ -261,10 +275,14 @@ def prepare_score_pandas_frame(score_pandas_frame: pd.DataFrame) -> pd.DataFrame
     return score_pandas_frame
 
 
-def load_aggregated_score_frame(aggregated_path: Path) -> pl.DataFrame:
-    """Load a pre-aggregated score workbook into a standardized Polars frame."""
-    aggregated_pandas_frame = prepare_score_pandas_frame(load_excel_with_pandas(aggregated_path))
-    return pl.from_pandas(aggregated_pandas_frame)
+def load_consolidated_score_frame(result_path: Path) -> pl.DataFrame:
+    """Load a consolidated CSV/XLSX result file into a standardized Polars frame."""
+    if result_path.suffix == ".csv":
+        result_pandas_frame = pd.read_csv(result_path)
+    else:
+        result_pandas_frame = load_excel_with_pandas(result_path)
+    prepared_pandas_frame = prepare_score_pandas_frame(result_pandas_frame)
+    return pl.from_pandas(prepared_pandas_frame)
 
 
 def load_row_score_frame(row_file_paths: Sequence[Path]) -> pl.DataFrame:
@@ -286,22 +304,28 @@ def select_best_score_frame(score_sources: Dict[str, Dict[str, List[Path]]]) -> 
     for model_prefix, source_map in sorted(score_sources.items()):
         candidate_frames: List[tuple[int, int, str, pl.DataFrame]] = []
 
-        if source_map[AGGREGATED_SOURCE_NAME]:
-            aggregated_path = source_map[AGGREGATED_SOURCE_NAME][0]
-            aggregated_frame = load_aggregated_score_frame(aggregated_path).with_columns(
+        if source_map[CSV_SOURCE_NAME]:
+            csv_path = source_map[CSV_SOURCE_NAME][0]
+            csv_frame = load_consolidated_score_frame(csv_path).with_columns(
                 pl.lit(model_prefix).alias("model_prefix"),
-                pl.lit(AGGREGATED_SOURCE_NAME).alias("score_source"),
+                pl.lit(CSV_SOURCE_NAME).alias("score_source"),
             )
-            candidate_frames.append(
-                (aggregated_frame.height, 0, AGGREGATED_SOURCE_NAME, aggregated_frame)
+            candidate_frames.append((csv_frame.height, 2, CSV_SOURCE_NAME, csv_frame))
+
+        if source_map[XLSX_SOURCE_NAME]:
+            xlsx_path = source_map[XLSX_SOURCE_NAME][0]
+            xlsx_frame = load_consolidated_score_frame(xlsx_path).with_columns(
+                pl.lit(model_prefix).alias("model_prefix"),
+                pl.lit(XLSX_SOURCE_NAME).alias("score_source"),
             )
+            candidate_frames.append((xlsx_frame.height, 1, XLSX_SOURCE_NAME, xlsx_frame))
 
         if source_map[ROW_SOURCE_NAME]:
             row_frame = load_row_score_frame(source_map[ROW_SOURCE_NAME]).with_columns(
                 pl.lit(model_prefix).alias("model_prefix"),
                 pl.lit(ROW_SOURCE_NAME).alias("score_source"),
             )
-            candidate_frames.append((row_frame.height, 1, ROW_SOURCE_NAME, row_frame))
+            candidate_frames.append((row_frame.height, 0, ROW_SOURCE_NAME, row_frame))
 
         if not candidate_frames:
             continue

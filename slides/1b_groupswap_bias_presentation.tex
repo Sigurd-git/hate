@@ -1,0 +1,349 @@
+\documentclass[aspectratio=169,professionalfonts]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+\IfFontExistsTF{Noto Serif CJK SC}{}{
+  \setCJKmainfont{Source Han Serif SC}
+}
+\IfFontExistsTF{Noto Sans CJK SC}{}{
+  \setCJKsansfont{Source Han Sans SC}
+}
+\IfFontExistsTF{Noto Sans Mono CJK SC}{}{
+  \setCJKmonofont{Source Han Sans SC}
+}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{ragged2e}
+\usepackage{xcolor}
+
+\title[1b 性别替换偏差]{攻击性评分中的性别替换偏差\\研究 1b 汇报}
+\author{Builder}
+\date{\today}
+
+\newcommand{\figdir}{outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{汇报结构}
+  \begin{enumerate}
+    \item 研究问题与实验设计
+    \item 数据结构与维度覆盖
+    \item 统计分析方案
+    \item 四张主图的核心结果
+    \item 维度层面的解释
+    \item 局限性与下一步工作
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{研究问题}
+  \begin{block}{核心问题}
+    如果仅仅把同一句攻击性文本中的性别目标词从男性版本替换为女性版本，
+    大语言模型会不会给出系统性不同的攻击性评分？
+  \end{block}
+
+  \vspace{0.6em}
+  \begin{itemize}
+    \item 配对设计：每一对句子只在性别指向措辞上不同。
+    \item 结果变量：0--6 分攻击性评分。
+    \item 两个模型：\textbf{Llama Maverick} 与 \textbf{Qwen 2.5 72B}。
+    \item 两种提示设置：\textbf{Zero-shot} 与 \textbf{Chain-of-Thought（CoT）}。
+    \item 本汇报统一使用的差值定义：\textbf{女人版评分 $-$ 男人版评分}。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{实验设计}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.52\textwidth}
+      \textbf{输入数据}
+      \begin{itemize}
+        \item 文件：\texttt{1b\_groupswap\_demensionsentence.xlsx}
+        \item 共 371 条可用配对样本
+        \item 每条样本包含：
+          \begin{itemize}
+            \item 原始语义模板
+            \item 男人版句子
+            \item 女人版句子
+          \end{itemize}
+      \end{itemize}
+
+      \vspace{0.4em}
+      \textbf{打分方式}
+      \begin{itemize}
+        \item 任务模式：攻击性评分
+        \item 分值区间：0--6
+        \item 每个配对共进行 4 次评估：
+          \begin{itemize}
+            \item 男人版 Zero-shot
+            \item 女人版 Zero-shot
+            \item 男人版 CoT
+            \item 女人版 CoT
+          \end{itemize}
+      \end{itemize}
+
+    \column{0.48\textwidth}
+      \textbf{为什么这个设计有说服力}
+      \begin{itemize}
+        \item 配对比较能最大限度消除内容层面的混杂因素。
+        \item 同一条语义内容、同一维度、同一结构下进行比较。
+        \item 被操纵的核心因素主要就是目标性别措辞。
+      \end{itemize}
+
+      \vspace{0.5em}
+      \textbf{结果解释规则}
+      \begin{itemize}
+        \item 若 $F-M>0$：说明女人版被打得更高，更“攻击”。
+        \item 若 $F-M<0$：说明男人版被打得更高。
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{数据结构与维度覆盖}
+  \small
+  \begin{table}
+    \centering
+    \begin{tabularx}{\textwidth}{>{\RaggedRight\arraybackslash}p{0.30\textwidth} >{\RaggedRight\arraybackslash}X}
+      \toprule
+      \textbf{属性} & \textbf{内容} \\
+      \midrule
+      可用配对样本数 & 371 \\
+      一级维度数量 & 10 \\
+      二级维度数量 & 71 \\
+      三级维度数量 & 183 \\
+      模型 & Llama Maverick；Qwen 2.5 72B \\
+      提示设置 & Zero-shot；CoT \\
+      总体分析面板 & 4 个模型 $\times$ 设置组合 \\
+      推断单位 & 同一条样本中的男人版句子 vs 女人版句子 \\
+      \bottomrule
+    \end{tabularx}
+  \end{table}
+
+  \vspace{0.5em}
+  \textbf{一级维度示例}
+  \begin{itemize}
+    \item 外貌形象攻击、能力才干攻击、智力理性攻击、情绪稳定攻击、道德品行攻击
+    \item 人际关系攻击、经济资源攻击、社会地位攻击
+    \item 性化攻击（性羞辱）、性别角色/性别表达攻击
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{统计分析方案}
+  \begin{itemize}
+    \item \textbf{主比较量}：每个配对样本的 \textbf{女人版评分 $-$ 男人版评分}。
+    \item \textbf{每个面板的总体配对统计}：
+      \begin{itemize}
+        \item 平均分差及 bootstrap 95\% CI
+        \item Wilcoxon signed-rank test
+        \item Cohen's $d_z$
+      \end{itemize}
+    \item \textbf{方向性分析}：
+      \begin{itemize}
+        \item 统计女人版更高 / 相同 / 男人版更高的数量
+        \item 对非零差值样本做 sign test
+      \end{itemize}
+    \item \textbf{维度层面分析}：
+      \begin{itemize}
+        \item 在每个一级维度内做配对比较
+        \item 在每个模型 $\times$ 设置切片内做 BH-FDR 校正
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{总体结果汇总}
+  \small
+  \begin{table}
+    \centering
+    \begin{tabular}{l l r r r r}
+      \toprule
+      模型 & 设置 & 平均分差 $F-M$ & 95\% CI & Wilcoxon $q$ & $d_z$ \\
+      \midrule
+      Llama Maverick & Zero-shot & 0.151 & [0.105, 0.197] & $6.97\times10^{-10}$ & 0.339 \\
+      Llama Maverick & CoT       & 0.210 & [0.154, 0.264] & $5.11\times10^{-12}$ & 0.390 \\
+      Qwen 2.5 72B  & Zero-shot & 0.224 & [0.178, 0.267] & $1.13\times10^{-18}$ & 0.520 \\
+      Qwen 2.5 72B  & CoT       & 0.302 & [0.253, 0.350] & $3.85\times10^{-25}$ & 0.648 \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  \vspace{0.7em}
+  \begin{block}{核心结论}
+    四个面板全部显示出稳定的正向分差：\textbf{女人版的攻击性评分系统性高于男人版}。
+    同时，\textbf{Qwen 的偏差强于 Llama}，而 \textbf{CoT 会进一步放大这种偏差}。
+  \end{block}
+\end{frame}
+
+\begin{frame}{图 1：配对攻击性评分}
+  \centering
+  \includegraphics[width=0.96\textwidth,height=0.82\textheight,keepaspectratio]{\figdir/fig1_paired_scores.png}
+\end{frame}
+
+\begin{frame}{图 1 解读}
+  \begin{itemize}
+    \item 每条灰线代表一条配对样本。
+    \item 线的两端分别是同一句语义内容下的男人版评分与女人版评分。
+    \item 黑色标记给出每个面板的总体均值和区间估计。
+    \item 四个面板都能看到从男人版到女人版的整体上移趋势。
+  \end{itemize}
+
+  \vspace{0.5em}
+  \begin{alertblock}{解释重点}
+    由于这里是同一条样本内部的比较，因此结果并不是由样本之间的异质性驱动，
+    而是更接近于“仅替换性别目标词后，模型给出的评分发生了系统偏移”。
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{图 2：配对分差分布}
+  \centering
+  \includegraphics[width=0.96\textwidth,height=0.82\textheight,keepaspectratio]{\figdir/fig2_difference_distribution.png}
+\end{frame}
+
+\begin{frame}{图 2 解读}
+  \begin{itemize}
+    \item 横轴定义为：\textbf{女人版评分 $-$ 男人版评分}。
+    \item 0 线表示完全没有偏差。
+    \item 红色实线表示每个面板的平均分差。
+    \item 所有面板的分布都整体向正值一侧偏移。
+  \end{itemize}
+
+  \vspace{0.5em}
+  \textbf{含义}
+  \begin{itemize}
+    \item 这不是少数极端样本拉出来的假象。
+    \item 更像是整个配对分差分布发生了系统右移。
+    \item Qwen 的右移幅度明显大于 Llama。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{图 3：分差方向比例}
+  \centering
+  \includegraphics[width=0.90\textwidth,height=0.78\textheight,keepaspectratio]{\figdir/fig3_directionality.png}
+\end{frame}
+
+\begin{frame}{方向性结果汇总}
+  \small
+  \begin{table}
+    \centering
+    \begin{tabular}{l l r r r r}
+      \toprule
+      模型 & 设置 & 女人版更高 & 相同 & 男人版更高 & Sign-test $q$ \\
+      \midrule
+      Llama Maverick & Zero-shot & 62 & 301 & 8 & $1.83\times10^{-11}$ \\
+      Llama Maverick & CoT       & 71 & 294 & 6 & $4.56\times10^{-15}$ \\
+      Qwen 2.5 72B  & Zero-shot & 83 & 287 & 1 & $1.76\times10^{-23}$ \\
+      Qwen 2.5 72B  & CoT       & 111 & 260 & 0 & $3.08\times10^{-33}$ \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  \vspace{0.5em}
+  \begin{block}{为什么这个结果重要}
+    即使把大量“相同分数”的样本算进去，在真正出现差异的样本里，方向依然极度偏向女人版更高。
+    尤其是 Qwen + CoT，几乎呈现压倒性的单边方向。
+  \end{block}
+\end{frame}
+
+\begin{frame}{图 4：一级维度 forest plot}
+  \centering
+  \includegraphics[width=0.96\textwidth,height=0.82\textheight,keepaspectratio]{\figdir/fig4_level1_forest.png}
+\end{frame}
+
+\begin{frame}{维度层面解释}
+  \small
+  \begin{table}
+    \centering
+    \begin{tabularx}{\textwidth}{>{\RaggedRight\arraybackslash}p{0.22\textwidth} >{\RaggedRight\arraybackslash}p{0.14\textwidth} >{\RaggedRight\arraybackslash}p{0.17\textwidth} >{\RaggedRight\arraybackslash}X}
+      \toprule
+      \textbf{模型} & \textbf{设置} & \textbf{维度} & \textbf{证据} \\
+      \midrule
+      Qwen 2.5 72B & CoT & 性化攻击（性羞辱） & 平均分差 $F-M=0.545$，FDR 校正后 Wilcoxon $q=5.70\times10^{-4}$ \\
+      Llama Maverick & CoT & 性化攻击（性羞辱） & 平均分差 $F-M=0.364$，FDR 校正后 Wilcoxon $q=8.999\times10^{-3}$ \\
+      Llama Maverick & CoT & 社会地位攻击 & 平均分差 $F-M=0.361$，FDR 校正后 Wilcoxon $q=3.01\times10^{-2}$ \\
+      Qwen 2.5 72B & Zero-shot & 性化攻击（性羞辱） & 平均分差 $F-M=0.394$，FDR 校正后 Wilcoxon $q=1.97\times10^{-3}$ \\
+      Qwen 2.5 72B & Zero-shot & 情绪稳定攻击 & 平均分差 $F-M=0.368$，FDR 校正后 Wilcoxon $q=1.77\times10^{-3}$ \\
+      \bottomrule
+    \end{tabularx}
+  \end{table}
+
+  \vspace{0.5em}
+  \begin{itemize}
+    \item 偏差并不是在所有语义维度上完全均匀分布的。
+    \item 性化攻击（性羞辱）是两个模型里都尤其敏感的偏差维度。
+    \item 相比 Llama，Qwen 在更多维度上表现出更强、更稳定的正向偏差。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{综合结论}
+  \begin{enumerate}
+    \item 研究 1b 清晰地显示出 \textbf{性别目标偏差} 的存在。
+    \item 这种偏差的方向高度一致：\textbf{女人版句子更容易被打成更高攻击性}。
+    \item 偏差强度具有 \textbf{模型差异}：Qwen $>$ Llama。
+    \item 偏差还具有 \textbf{提示方式差异}：CoT $>$ Zero-shot。
+    \item 这种偏差在若干具有明确语义含义的维度中更为集中和突出。
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{方法上的优势}
+  \begin{itemize}
+    \item 同一样本内部的配对比较，大幅削弱了内容差异带来的混杂。
+    \item 描述统计和推断统计给出了相互一致的证据：
+      \begin{itemize}
+        \item 平均分差与置信区间
+        \item signed-rank test
+        \item directionality sign test
+        \item 效应量与 FDR 校正后的维度结果
+      \end{itemize}
+    \item 因此，这组结果既有可解释性，也有统计稳健性。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{局限性与注意事项}
+  \begin{itemize}
+    \item 评分变量是离散 0--6 分，因此效应量解释需要结合量表粒度来看。
+    \item 相同分数的样本占比较高，说明偏差虽稳定存在，但并不是每条样本都会触发显著差异。
+    \item 本汇报重点展示一级维度；如果要进一步做机制层面的解释，仍应补充二级和三级维度分析。
+    \item 当前结论建立在这两个模型之上，对更广泛模型生态的泛化仍需继续验证。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{下一步建议}
+  \begin{itemize}
+    \item 增补二级维度与极端样本的补充页。
+    \item 建立 mixed-effects 或 ordinal regression 模型，同时纳入性别版本、模型、提示方式等因素。
+    \item 将该分析框架迁移到其他 toxicity / hate scoring 任务中，检验可重复性。
+    \item 继续测试不同措辞模板和不同维度子集下的稳健性。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{总结}
+  \begin{block}{一句话结论}
+    在研究 1b 中，仅仅替换攻击性句子中的性别目标词，就足以让模型对女人版给出系统性更高的攻击性评分。
+  \end{block}
+
+  \vspace{0.6em}
+  \begin{itemize}
+    \item 四个模型 $\times$ 设置面板全部显著。
+    \item Qwen 的偏差最强。
+    \item CoT 会放大这种偏差。
+    \item 偏差在若干语义维度上具有更明确的集中性。
+  \end{itemize}
+\end{frame}
+
+\end{document}

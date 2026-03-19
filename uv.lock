@@ -348,6 +348,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "scikit-learn", specifier = ">=1.7.2" },
     { name = "seaborn" },
+    { name = "xlsxwriter" },
     { name = "xlsxwriter", specifier = ">=3.2.0" },
 ]
 provides-extras = ["dev"]
