@@ -223,3 +223,4 @@ artifacts
 **/*.pdf
 **/*.pptx
 data/external
+slides/1b_groupswap_bias_presentation.pdf
