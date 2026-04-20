@@ -1,21 +1,22 @@
 """Generate the three placeholder figures referenced in the Results manuscript.
 
 Placeholder A:
-    Study-1a subgroup F1/Brier stratified by hate-target topic. For Chinese,
-    the validated dataset carries a ``topic`` column with values
-    {race, region, gender, lgbt}; rows are partitioned into a
-    gender-related subset (gender + lgbt) versus a race/region subset plus
-    the overall baseline. For English, the merged validated artifact does
-    not preserve the HateXplain ``target`` annotation, so this script joins
-    HateXplain's ``dataset.json`` (downloaded to
-    ``data/external/hatexplain/dataset.json``) on ``post_id`` and partitions
-    HateXplain-sourced rows by whether any annotator labelled the post with
-    a gender-related target (Women / Men / Homosexual / Heterosexual /
-    Bisexual / Asexual). HASOC-sourced rows (whose ``post_id`` starts with
-    ``hasoc_`` or consists of a bare numeric id) carry no target-group
-    label and therefore contribute only to the "all" baseline.
-    F1 uses the score>=1 -> positive rule; Brier uses the p=score/5
-    mapping.
+    Study-1a mean LLM attack score on female-targeted vs male-targeted
+    posts. This is the less-rigorous natural-data counterpart to Study 1b
+    and is intended to motivate the paired-design in 1b: under natural
+    data (i.e., without the 1b paired-sentence control), do LLMs already
+    score posts that target women higher than posts that target men?
+    For English, HateXplain's ``target`` annotation is used directly:
+    a post is female-targeted iff any annotator listed ``Women``, and
+    male-targeted iff any annotator listed ``Men``. Posts listed with
+    both (or neither) are dropped. For Chinese, the dataset carries no
+    male/female target field, so this script heuristically classifies
+    posts in the ``gender`` + ``lgbt`` topic subset by presence of
+    unambiguous female vs male lexical markers (e.g., 女人/她/妹 vs
+    男人/哥/弟); the generic pronoun 他 is excluded because it can refer
+    to either sex. Posts with both or neither marker type are dropped.
+    The metric plotted is the mean 0--5 LLM attack score per
+    (language, model, setting, gender-target) cell.
 
 Placeholder B:
     Pairwise scatter across the three 1b rating scales (attack_3pt,
@@ -113,39 +114,33 @@ LEVEL1_ORDER = [
 ]
 
 
-# Gender-related HateXplain target labels. Any post whose annotators list
-# at least one of these values is routed into the "gender+lgbt" subset; any
-# post that has at least one non-gender community target (e.g., African,
-# Islam, Jewish) is routed into the "race+religion" subset. A post can land
-# in both subsets if different annotators chose different targets; this is
-# rare and we tolerate the overlap because the union still cleanly separates
-# gender content from non-gender content within the subset it counts into.
-GENDER_RELATED_HATEXPLAIN_TARGETS = frozenset(
-    {"Women", "Men", "Homosexual", "Heterosexual", "Bisexual", "Asexual"}
-)
-NON_GENDER_COMMUNITY_TARGETS = frozenset(
-    {
-        "African",
-        "Arab",
-        "Asian",
-        "Caucasian",
-        "Christian",
-        "Hindu",
-        "Hispanic",
-        "Indian",
-        "Indigenous",
-        "Islam",
-        "Jewish",
-        "Refugee",
-        "Buddhism",
-        "Nonreligious",
-        "Minority",
-        "Disability",
-        "Economic",
-    }
-)
+# HateXplain target labels used to identify male- vs female-targeted posts.
+# A post is female-targeted iff any annotator listed "Women" as a target,
+# and male-targeted iff any annotator listed "Men". Posts listed with both
+# (rare) or neither are dropped from the comparison.
+FEMALE_TARGET_LABEL = "Women"
+MALE_TARGET_LABEL = "Men"
 HATEXPLAIN_JSON_PATH = (
     PROJECT_ROOT / "data" / "external" / "hatexplain" / "dataset.json"
+)
+
+
+# Chinese lexical markers used to heuristically assign a gender target to
+# posts in the zh `gender`+`lgbt` topic subset. Only unambiguous markers
+# are included: the generic pronoun 他 is deliberately excluded because
+# in Chinese it can refer to either sex; 她 is kept since it is written
+# exclusively to denote female referents. Multi-character markers are
+# listed before shorter substrings so substring matches behave as
+# expected under simple ``str.contains``.
+FEMALE_MARKERS_ZH: tuple[str, ...] = (
+    "女人", "女性", "女生", "女士", "女子", "女孩", "女友", "女朋友",
+    "妇女", "妇人", "太太", "老婆", "妻子", "媳妇", "姑娘", "少女",
+    "美女", "母亲", "妈妈", "姐姐", "妹妹", "阿姨", "娘", "她",
+)
+MALE_MARKERS_ZH: tuple[str, ...] = (
+    "男人", "男性", "男生", "男士", "男子", "男孩", "男友", "男朋友",
+    "丈夫", "老公", "父亲", "爸爸", "儿子", "哥哥", "弟弟", "叔叔",
+    "舅舅", "帅哥", "小伙",
 )
 
 
@@ -194,55 +189,56 @@ def parse_model_setting_from_column(column_name: str) -> tuple[str, str]:
     return model_prefix, setting
 
 
-def compute_stratified_one_a_metrics(
+def compute_one_a_mean_scores_by_gender_target(
     validated_frame: pd.DataFrame,
-    subset_definitions: dict[str, pd.Series],
+    gender_target_series: pd.Series,
     language: str,
-    label_column: str = "label/2classes",
 ) -> pd.DataFrame:
-    """Return long-form F1/Brier per (language, model, setting, subgroup)."""
+    """Return long-form mean 0-5 score per (language, model, setting, gender).
+
+    ``gender_target_series`` must be aligned with ``validated_frame``'s index
+    and carry either 'female', 'male', or NaN. Rows with NaN are dropped
+    before aggregation.
+    """
     metric_rows: list[dict] = []
     score_columns = [c for c in validated_frame.columns if c.endswith("_score")]
+    gender_assigned_mask = gender_target_series.notna()
+    assigned_frame = validated_frame.loc[gender_assigned_mask].copy()
+    assigned_frame["gender_target"] = gender_target_series.loc[gender_assigned_mask]
     for score_column in score_columns:
         model_prefix, setting = parse_model_setting_from_column(score_column)
         model_label = MODEL_LABEL_MAP.get(model_prefix, model_prefix)
-        for subgroup_name, subgroup_mask in subset_definitions.items():
-            subgroup_frame = validated_frame.loc[subgroup_mask]
+        for gender_target_value in ("female", "male"):
+            subgroup_frame = assigned_frame.loc[
+                assigned_frame["gender_target"] == gender_target_value
+            ]
             if subgroup_frame.empty:
                 continue
-            ground_truth = subgroup_frame[label_column].astype(int)
-            prediction_series = scores_to_binary_predictions(
-                subgroup_frame[score_column]
-            )
-            probability_series = scores_to_probabilities(
-                subgroup_frame[score_column]
-            )
+            score_series = subgroup_frame[score_column].astype(float)
             metric_rows.append(
                 {
                     "language": language,
-                    "subgroup": subgroup_name,
+                    "gender_target": gender_target_value,
                     "model_prefix": model_prefix,
                     "model_label": model_label,
                     "setting": setting,
-                    "n": int(len(subgroup_frame)),
-                    "f1": f1_score(ground_truth, prediction_series, zero_division=0),
-                    "brier": brier_score_from_probabilities(
-                        probability_series, ground_truth
-                    ),
+                    "n": int(score_series.notna().sum()),
+                    "mean_score": float(score_series.mean()),
+                    "sem_score": float(score_series.sem()),
                 }
             )
     return pd.DataFrame(metric_rows)
 
 
-def load_hatexplain_post_id_to_target_category(
+def load_hatexplain_post_id_to_gender_target(
     hatexplain_json_path: Path = HATEXPLAIN_JSON_PATH,
 ) -> dict[str, str]:
-    """Return a mapping from HateXplain post_id to 'gender+lgbt' / 'race+religion'.
+    """Return a mapping from HateXplain post_id to 'female' / 'male'.
 
-    Rule: if any annotator labelled the post with a gender-related target,
-    the post is marked 'gender+lgbt'. Otherwise, if any annotator labelled
-    it with a non-gender community target, it is marked 'race+religion'.
-    Posts where all annotators chose 'None' / 'Other' are not in the output.
+    Rule: if any annotator listed ``Women`` as a target but none listed
+    ``Men``, the post is 'female'. Symmetrically for 'male'. Posts where
+    annotators listed BOTH ``Women`` and ``Men`` are dropped as ambiguous,
+    as are posts where neither label appears.
     """
     if not hatexplain_json_path.exists():
         raise FileNotFoundError(
@@ -252,139 +248,193 @@ def load_hatexplain_post_id_to_target_category(
     with hatexplain_json_path.open("r", encoding="utf-8") as handle:
         hatexplain_raw = json.load(handle)
 
-    post_id_to_category: dict[str, str] = {}
+    post_id_to_gender_target: dict[str, str] = {}
     for post_id, entry in hatexplain_raw.items():
         all_targets: set[str] = set()
         for annotator_entry in entry.get("annotators", []):
             for target_label in annotator_entry.get("target", []):
                 all_targets.add(target_label)
-        gender_overlap = all_targets & GENDER_RELATED_HATEXPLAIN_TARGETS
-        non_gender_overlap = all_targets & NON_GENDER_COMMUNITY_TARGETS
-        if gender_overlap:
-            post_id_to_category[post_id] = "gender+lgbt"
-        elif non_gender_overlap:
-            post_id_to_category[post_id] = "race+religion"
-    return post_id_to_category
+        has_female_target = FEMALE_TARGET_LABEL in all_targets
+        has_male_target = MALE_TARGET_LABEL in all_targets
+        if has_female_target and not has_male_target:
+            post_id_to_gender_target[post_id] = "female"
+        elif has_male_target and not has_female_target:
+            post_id_to_gender_target[post_id] = "male"
+    return post_id_to_gender_target
+
+
+def classify_zh_text_by_gender_markers(text_value: str) -> str | None:
+    """Classify a Chinese post as 'female', 'male', or None.
+
+    The heuristic counts unambiguous female vs male lexical markers in the
+    text (see ``FEMALE_MARKERS_ZH`` and ``MALE_MARKERS_ZH``). The post is
+    labelled by whichever marker class has the strictly higher count; ties
+    and zero-match posts return None so they are excluded from the plot.
+    The generic pronoun 他 is intentionally NOT in either list because in
+    Chinese it can refer to any sex (unlike 她 which is female-only).
+    """
+    if not isinstance(text_value, str) or not text_value:
+        return None
+    female_marker_count = sum(text_value.count(marker) for marker in FEMALE_MARKERS_ZH)
+    male_marker_count = sum(text_value.count(marker) for marker in MALE_MARKERS_ZH)
+    if female_marker_count == 0 and male_marker_count == 0:
+        return None
+    if female_marker_count == male_marker_count:
+        return None
+    return "female" if female_marker_count > male_marker_count else "male"
 
 
 def plot_placeholder_a(
-    stratified_frame: pd.DataFrame,
+    gender_mean_frame: pd.DataFrame,
     output_pdf_path: Path,
 ) -> None:
-    """Save a 4x2 grid (language x metric rows) x (setting columns)."""
+    """Save a 1x2 grid (setting columns) of EN-only mean-score bars.
+
+    x-axis: model. hue: gender target (female vs male). y-axis: mean 0-5
+    LLM attack score. The ZH heuristic is not shown because the ZH dataset
+    lacks a male/female target field and the lexical-marker heuristic
+    produced neither a consistent nor interpretable signal. For EN the
+    HateXplain target annotation is used directly; the expected role of
+    this panel is to show that natural-data female- vs male-targeted
+    samples are confounded (sample composition differs) so the natural
+    comparison cannot by itself reveal the gender-of-target bias — which
+    is what motivates the paired-sentence design in Study 1b.
+    """
+    english_frame = gender_mean_frame[gender_mean_frame["language"] == "en"].copy()
     setting_order = ["zeroshot", "cot"]
-    subgroup_order_zh = ["all", "gender+lgbt", "race+region"]
-    # For English the non-gender subset is race + religion rather than
-    # race + region (China-origin labelling convention) because HateXplain
-    # target labels include religion.
-    subgroup_order_en = ["all", "gender+lgbt", "race+religion"]
-    palette = sns.color_palette("colorblind", n_colors=3)
+    gender_target_order = ["female", "male"]
+    gender_target_display = {"female": "针对女性", "male": "针对男性"}
+    palette = {
+        "female": sns.color_palette("colorblind")[3],  # reddish
+        "male": sns.color_palette("colorblind")[0],  # bluish
+    }
 
-    row_specs = [
-        ("zh", "f1"),
-        ("zh", "brier"),
-        ("en", "f1"),
-        ("en", "brier"),
-    ]
-
+    available_model_labels = english_frame["model_label"].unique().tolist()
     model_order_in_plot = [
         MODEL_LABEL_MAP[model_prefix]
         for model_prefix in MODEL_ORDER
-        if MODEL_LABEL_MAP[model_prefix]
-        in stratified_frame["model_label"].unique().tolist()
+        if MODEL_LABEL_MAP[model_prefix] in available_model_labels
     ]
 
-    fig, axes = plt.subplots(4, 2, figsize=(14.0, 15.5), sharex=True)
-    for row_index, (language, metric_name) in enumerate(row_specs):
-        subgroup_order = (
-            subgroup_order_zh if language == "zh" else subgroup_order_en
+    fig, axes = plt.subplots(1, 2, figsize=(14.0, 5.0), sharex=True, sharey=True)
+    for col_index, setting_name in enumerate(setting_order):
+        axis = axes[col_index]
+        plot_frame = english_frame[english_frame["setting"] == setting_name].copy()
+        sns.barplot(
+            data=plot_frame,
+            x="model_label",
+            y="mean_score",
+            hue="gender_target",
+            order=model_order_in_plot,
+            hue_order=gender_target_order,
+            palette=palette,
+            ax=axis,
+            errorbar=None,
         )
-        for col_index, setting_name in enumerate(setting_order):
-            axis = axes[row_index, col_index]
-            plot_frame = stratified_frame[
-                (stratified_frame["language"] == language)
-                & (stratified_frame["setting"] == setting_name)
-            ].copy()
-            sns.barplot(
-                data=plot_frame,
-                x="model_label",
-                y=metric_name,
-                hue="subgroup",
-                order=model_order_in_plot,
-                hue_order=subgroup_order,
-                palette=palette,
-                ax=axis,
-            )
-            axis.set_xlabel("")
-            metric_display_label = "F1" if metric_name == "f1" else "Brier"
-            if metric_name == "f1":
-                axis.set_ylabel("F1")
-                axis.set_ylim(0.0, 1.0)
+        axis.set_xlabel("")
+        axis.set_ylabel("平均 LLM 攻击打分 (0-5)")
+        axis.set_ylim(0.0, 5.0)
+        setting_display_label = (
+            "Zero-shot" if setting_name == "zeroshot" else "CoT"
+        )
+        sample_sizes_frame = (
+            plot_frame.groupby("gender_target")["n"].first().to_dict()
+        )
+        female_n_text = sample_sizes_frame.get("female", 0)
+        male_n_text = sample_sizes_frame.get("male", 0)
+        axis.set_title(
+            f"英文 HateXplain · {setting_display_label}"
+            f"（女={female_n_text}，男={male_n_text}）"
+        )
+        for tick_label in axis.get_xticklabels():
+            tick_label.set_rotation(35)
+            tick_label.set_ha("right")
+        legend_handle = axis.get_legend()
+        if legend_handle is not None:
+            if col_index == 1:
+                handles_list, _ = axis.get_legend_handles_labels()
+                axis.legend(
+                    handles_list,
+                    [gender_target_display[g] for g in gender_target_order],
+                    title="目标群体",
+                    loc="upper right",
+                    fontsize=9,
+                )
             else:
-                axis.set_ylabel("Brier")
-                axis.set_ylim(0.0, 0.5)
-            setting_display_label = (
-                "Zero-shot" if setting_name == "zeroshot" else "CoT"
-            )
-            language_display_label = "中文" if language == "zh" else "英文"
-            axis.set_title(
-                f"{language_display_label} · {metric_display_label} · "
-                f"{setting_display_label}"
-            )
-            for tick_label in axis.get_xticklabels():
-                tick_label.set_rotation(35)
-                tick_label.set_ha("right")
-            # Keep one legend per language so users can see the subset
-            # renaming ("race+region" for ZH vs "race+religion" for EN).
-            keep_legend = (row_index, col_index) in {(0, 1), (2, 1)}
-            if not keep_legend:
-                legend_handle = axis.get_legend()
-                if legend_handle is not None:
-                    legend_handle.remove()
-            else:
-                axis.legend(title="子集", loc="upper right", fontsize=9)
+                legend_handle.remove()
     fig.suptitle(
-        "研究一(a) 按目标群体主题分层的 F1 与 Brier（上：中文；下：英文 HateXplain 子集）",
+        "研究一(a) 自然数据（HateXplain）下 LLM 对针对女性 vs 男性帖子的平均攻击打分"
+        "——样本构成未受控，偏差方向被混淆",
         fontsize=13,
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.98))
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
     output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_pdf_path, bbox_inches="tight")
     fig.savefig(output_pdf_path.with_suffix(".png"), dpi=200, bbox_inches="tight")
     plt.close(fig)
 
 
-def _build_zh_subset_definitions(
+def _build_zh_gender_target_series(
     validated_zh_frame: pd.DataFrame,
-) -> dict[str, pd.Series]:
-    topic_series = validated_zh_frame["topic"].fillna("")
-    return {
-        "all": pd.Series(True, index=validated_zh_frame.index),
-        "gender+lgbt": topic_series.isin(["gender", "lgbt"]),
-        "race+region": topic_series.isin(["race", "region"]),
-    }
+) -> pd.Series:
+    """Assign 'female' / 'male' / NaN to each zh row via lexical markers.
 
-
-def _build_en_subset_definitions(
-    validated_en_frame: pd.DataFrame,
-    post_id_to_category: dict[str, str],
-) -> dict[str, pd.Series]:
-    """HASOC-sourced rows (no target label) only contribute to the baseline.
-
-    A row goes into the 'gender+lgbt' or 'race+religion' subset only when
-    its post_id can be located in HateXplain's target annotations.
+    The classifier is only applied to rows whose ``topic`` is in
+    {gender, lgbt} — the subsets most likely to contain gender-specific
+    targets. Rows outside those topics are returned as NaN so they are
+    excluded from the plot.
     """
-    post_id_series = validated_en_frame["post_id"].astype(str)
-    resolved_category_series = post_id_series.map(post_id_to_category)
-    return {
-        "all": pd.Series(True, index=validated_en_frame.index),
-        "gender+lgbt": resolved_category_series == "gender+lgbt",
-        "race+religion": resolved_category_series == "race+religion",
+    topic_series = validated_zh_frame["topic"].fillna("")
+    eligible_mask = topic_series.isin(["gender", "lgbt"])
+    text_column = _pick_zh_text_column(validated_zh_frame)
+    gender_target_values = [None] * len(validated_zh_frame)
+    for row_index, is_eligible in enumerate(eligible_mask.tolist()):
+        if not is_eligible:
+            continue
+        text_value = validated_zh_frame.iloc[row_index][text_column]
+        gender_target_values[row_index] = classify_zh_text_by_gender_markers(
+            text_value
+        )
+    return pd.Series(
+        gender_target_values, index=validated_zh_frame.index, dtype=object
+    )
+
+
+def _pick_zh_text_column(validated_zh_frame: pd.DataFrame) -> str:
+    """Return the most plausible Chinese post-text column in the zh frame."""
+    preferred_candidates = [
+        "text", "post", "content", "sentence", "句子", "文本", "内容",
+    ]
+    for candidate in preferred_candidates:
+        if candidate in validated_zh_frame.columns:
+            return candidate
+    # Fallback: pick the first object-dtype column that is not a known
+    # metadata column so we never silently misclassify.
+    metadata_columns = {
+        "sample_index", "post_id", "label", "label/2classes", "topic",
+        "仇恨类型（PRFN/HATE/OFFN）", "有无明确对象（TIN/UNT）",
     }
+    for column_name in validated_zh_frame.columns:
+        if column_name in metadata_columns:
+            continue
+        if validated_zh_frame[column_name].dtype == object:
+            return column_name
+    raise KeyError(
+        "Could not locate a Chinese post-text column in merged_zh_models_validated.xlsx"
+    )
+
+
+def _build_en_gender_target_series(
+    validated_en_frame: pd.DataFrame,
+    post_id_to_gender_target: dict[str, str],
+) -> pd.Series:
+    """Assign 'female' / 'male' / NaN to each en row from HateXplain targets."""
+    post_id_series = validated_en_frame["post_id"].astype(str)
+    return post_id_series.map(post_id_to_gender_target)
 
 
 def generate_placeholder_a() -> Path:
-    """Compute F1/Brier stratified by target topic for both zh and en."""
+    """Compute mean LLM scores on female- vs male-targeted posts per model."""
     validated_zh_frame = pd.read_excel(
         ARTIFACTS_DIR / "merged_zh_models_validated.xlsx"
     )
@@ -392,37 +442,48 @@ def generate_placeholder_a() -> Path:
         ARTIFACTS_DIR / "merged_en_models_validated.xlsx"
     )
 
-    zh_subset_definitions = _build_zh_subset_definitions(validated_zh_frame)
-    post_id_to_category = load_hatexplain_post_id_to_target_category()
-    en_subset_definitions = _build_en_subset_definitions(
-        validated_en_frame, post_id_to_category
+    zh_gender_target_series = _build_zh_gender_target_series(validated_zh_frame)
+    post_id_to_gender_target = load_hatexplain_post_id_to_gender_target()
+    en_gender_target_series = _build_en_gender_target_series(
+        validated_en_frame, post_id_to_gender_target
     )
 
-    en_gender_count = int(en_subset_definitions["gender+lgbt"].sum())
-    en_non_gender_count = int(en_subset_definitions["race+religion"].sum())
-    en_total = len(validated_en_frame)
+    zh_female_count = int((zh_gender_target_series == "female").sum())
+    zh_male_count = int((zh_gender_target_series == "male").sum())
+    en_female_count = int((en_gender_target_series == "female").sum())
+    en_male_count = int((en_gender_target_series == "male").sum())
     print(
-        f"[A] EN subset sizes: gender+lgbt={en_gender_count}, "
-        f"race+religion={en_non_gender_count}, "
-        f"unresolved (HASOC or non-targeted)={en_total - en_gender_count - en_non_gender_count}, "
-        f"total={en_total}"
+        f"[A] ZH gender-target coverage: female={zh_female_count}, "
+        f"male={zh_male_count}, unassigned="
+        f"{len(validated_zh_frame) - zh_female_count - zh_male_count}, "
+        f"total={len(validated_zh_frame)}"
+    )
+    print(
+        f"[A] EN gender-target coverage: female={en_female_count}, "
+        f"male={en_male_count}, unassigned="
+        f"{len(validated_en_frame) - en_female_count - en_male_count}, "
+        f"total={len(validated_en_frame)}"
     )
 
-    zh_metrics_frame = compute_stratified_one_a_metrics(
-        validated_zh_frame, zh_subset_definitions, language="zh"
+    zh_metrics_frame = compute_one_a_mean_scores_by_gender_target(
+        validated_zh_frame, zh_gender_target_series, language="zh"
     )
-    en_metrics_frame = compute_stratified_one_a_metrics(
-        validated_en_frame, en_subset_definitions, language="en"
+    en_metrics_frame = compute_one_a_mean_scores_by_gender_target(
+        validated_en_frame, en_gender_target_series, language="en"
     )
-    stratified_frame = pd.concat([zh_metrics_frame, en_metrics_frame], ignore_index=True)
+    gender_mean_frame = pd.concat(
+        [zh_metrics_frame, en_metrics_frame], ignore_index=True
+    )
 
-    long_csv_path = ARTIFACTS_DIR / "placeholder_a_1a_topic_stratified_metrics.csv"
-    stratified_frame.sort_values(
-        by=["language", "setting", "model_prefix", "subgroup"]
+    long_csv_path = (
+        ARTIFACTS_DIR / "placeholder_a_1a_gender_target_mean_score.csv"
+    )
+    gender_mean_frame.sort_values(
+        by=["language", "setting", "model_prefix", "gender_target"]
     ).to_csv(long_csv_path, index=False)
 
-    pdf_path = ARTIFACTS_DIR / "placeholder_a_1a_topic_stratified_f1_brier.pdf"
-    plot_placeholder_a(stratified_frame, pdf_path)
+    pdf_path = ARTIFACTS_DIR / "placeholder_a_1a_gender_target_mean_score.pdf"
+    plot_placeholder_a(gender_mean_frame, pdf_path)
     return pdf_path
 
 

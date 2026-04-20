@@ -123,22 +123,19 @@ F1 与 Brier 度量的是两种不同的能力——"能否将句子判为正类
 
 此外，CoT 对 Brier 的影响呈现\emph{非单调}形态：对 Llama 在中文上显著降低 Brier（从 zero-shot 的 0.300 降至 CoT 的 0.243），却对 Qwen 在英文上反而恶化（从 0.254 升至 0.289）。这一交互进一步削弱"CoT 通用增益"叙事。
 
-\subsubsection{按目标群体性别分层的表现（占位分析）}
-\label{subsubsec:1a-gender-stratified}
+\subsubsection{自然数据下对"针对女性"与"针对男性"的评分：样本构成的混淆}
+\label{subsubsec:1a-gender-natural}
 
-上述分析基于整体语料平均；然而总体 F1 掩盖了一种可能的评估不对称——\emph{模型对以女性为目标的仇恨言论可能识别率系统性不同于以男性为目标的仇恨言论}。该不对称即是研究一(b)所关注现象的"自然数据"版本。若 1a 已暴露此类分层差异，则与 1b 的偏差结果互相支持；若不存在分层差异，则 1b 的偏差现象应解读为仅在\emph{判分幅度}上显现，而不出现在\emph{二分分类}层面。
+总体 F1／Brier 掩盖了一个与研究一(b) 直接相关的问题——\emph{LLM 对针对女性的仇恨帖与针对男性的仇恨帖的攻击性打分是否系统性不同}？一个先验合理的预期是：若模型携带"女性方向"的评估偏差，则针对女性的帖子应获得更高的平均攻击分。本小节以自然数据（HateXplain 的 \texttt{target} 字段）直接检验这一预期，不对样本的语义内容做任何配平。这与研究一(b) 的设计形成对照：前者语义内容在女性／男性子集间自由变化，后者通过配对句将非性别语义内容严格固定。
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.92\linewidth]{../artifacts/placeholder_a_1a_topic_stratified_f1_brier.pdf}
-    \caption{九个 LLM 按目标群体主题分层的 F1 与 Brier（上两行：中文验证集；下两行：英文验证集的 HateXplain 子集）。中文原始数据 \texttt{topic} 字段将每条样本标注为 race、region、gender 或 lgbt 之一；此处将 gender 与 lgbt 合并为"性别相关"（$n=755$），race 与 region 合并为"族群／地域相关"（$n=1645$）。英文侧以 \texttt{post\_id} 为键将合并验证集与 HateXplain 原始 \texttt{dataset.json} 做连接：若任一标注者在 \texttt{target} 字段标记了 Women／Men／Homosexual／Heterosexual／Bisexual／Asexual 之一，则归入"性别相关"（$n=423$）；若标记任一族群或宗教目标，则归入"族群／宗教"（$n=545$）。英文 "all" 基线包含 HASOC 无目标标签子集（$n\approx 1432$）；因此 "all" 不应与两个子集做直接比较，真正可比的是同语言下两个目标分层子集之间的差异。}
-    \label{fig:1a-gender-stratified}
+    \includegraphics[width=\linewidth]{../artifacts/placeholder_a_1a_gender_target_mean_score.pdf}
+    \caption{九个 LLM 在英文 HateXplain 自然数据上对"针对女性"与"针对男性"帖子的平均攻击打分（0–5 分）。以 \texttt{post\_id} 为键将合并验证集与 HateXplain 原始 \texttt{dataset.json} 做连接，并按各标注者在 \texttt{target} 字段中标注的 Women／Men 决定样本归属：若至少一位标注者标记 \texttt{Women} 且无人标记 \texttt{Men}，该帖归为"针对女性"（$n=175$）；反之归为"针对男性"（$n=36$）；两者兼有或均无者被剔除。中文侧未纳入本图——原始中文语料并无男／女目标字段，基于词汇标记的启发式分类在九个模型上方向分裂、量级接近零，缺乏解释价值，细节见附录。}
+    \label{fig:1a-gender-natural}
 \end{figure}
 
-\textbf{观察要点：}两种语言呈现出两种略微不同的分层模式。
-\emph{中文侧}：多数模型在两个子集上的 F1 与 Brier 差异不大（$<0.05$ 个单位），但 Gemma-4-31B 与 Claude Opus 4.5 在性别相关子集上的 F1 低于族群／地域子集（分别低约 0.06 与 0.04 个 F1 点），同时 Brier 略高。
-\emph{英文侧}：受限于 HateXplain 的标签分布，两子集 F1 普遍高于 "all" 基线（因为有 target 标注的帖子往往也是更明确的仇恨样本）；在同等较高的 F1 水平下，多数模型在"性别相关"子集上的 Brier 略低于"族群／宗教"子集（差值约 0.01–0.03）——意味着即便分类一样准，模型给出的概率在族群／宗教目标上比在性别相关目标上更"失准"。
-综合两种语言，仅有部分模型显现出"性别相关样本在自然数据上识别倾向性偏离其它主题"的模式；该倾向的方向与研究一(b)所揭示的评估偏差一致，但量级远小于 1b 中的配对效应——这也符合两种设置的方法论差异：1a 中自然数据的语义内容本就在主题间不同，任何差异都混合了内容差异与评估偏差。
+\textbf{观察要点：}九个模型在两种 prompt 设置（zero-shot、CoT）下\emph{均}将"针对男性"帖子的平均分打得高于"针对女性"帖子（total: zero-shot $3.19$ vs $2.64$；CoT $3.35$ vs $2.72$），方向与"女性方向偏差"的预期相反。这一反向结果不应被解读为模型保护男性：HateXplain 中 \texttt{Men} 目标样本量仅 36 条，且高度集中在与族群（尤其是针对黑人男性）交叉的极端仇恨语境中；\texttt{Women} 样本则涵盖更广的仇恨强度谱。换言之，\emph{自然数据的女／男子集在语义内容上并非可比}——任何子集间差异都混合了样本构成效应与潜在评估偏差，且前者在此数据上远大于后者。这正是研究一(b) 采用配对设计的直接动因：只有在词汇与语义框架被强制匹配、仅改变性别指涉的前提下，"女性 vs 男性"的差异才能被归因于评估偏差本身。如下一节将展示，在该配对控制下，九个模型\emph{一致}出现女性指涉版评分高于男性指涉版的结果——方向与本节自然数据相反，支持"样本构成混淆了 1a 自然数据中的真实评估偏差"这一解读。
 
 \subsection{研究一(b)：性别群体对换下的攻击性评分}
 \label{subsec:results-1b}
