@@ -320,6 +320,8 @@ F1 与 Brier 度量的是两种不同的能力——"能否将句子判为正类
     \end{tabular}
 \end{table}
 
+\textbf{一句话读懂此表：}不论用 3 点、7 点还是 0--100 滑块，9 个 LLM 都一致把"女人版"打得更高，没有例外；"谁的偏差最强／最弱"的大致排序在三尺度间稳定，偏差的\emph{存在}与\emph{总体强度}不受尺度影响。
+
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/placeholder_b_three_scale_dz_scatter.pdf}
@@ -371,6 +373,8 @@ F1 与 Brier 度量的是两种不同的能力——"能否将句子判为正类
         \bottomrule
     \end{tabular}
 \end{table}
+
+\textbf{一句话读懂此表与图~\ref{fig:1b-within-model-cross-scale}：}让同一个 LLM 用三种尺度打同一批 371 对句子，它对"哪一句最偏差"三次给出的答案几乎没有重合——中位 Spearman $\rho$ 只有 $0.006$--$0.15$，远远低于"若尺度只改变分辨率、不改变内容"应有的接近 1 的水平。也就是说：LLM 在"整体偏差量级"上三尺度一致，但在"具体挑哪一句"上三尺度彼此独立。
 
 \textbf{核心发现：题项级偏差模式的跨尺度对齐度显著低于聚合量级的对齐度。}九个模型 $\times$ 三对尺度组合共 27 个单元中，Spearman $\rho$ 的中位数仅为 $0.006$（3pt vs 7pt）、$0.152$（7pt vs slider）与 $0.116$（3pt vs slider）——三者均显著偏离"若尺度只是同一潜在偏差的单调映射则应出现的 $\rho$ 接近 1"这一理论预期。换言之，虽然\emph{平均偏差量级}跨尺度稳定，\emph{哪一句被判为最偏差}却在尺度间发生了系统性重新分配。
 
@@ -457,6 +461,8 @@ F1 与 Brier 度量的是两种不同的能力——"能否将句子判为正类
     \end{tabular}
 \end{table}
 
+\textbf{一句话读懂此表：}712 位人类被试在 3 种打分尺度下都把"女人版"打得更高——约 7 成句子在女人版得分更高、不到 3 成在男人版更高；方向跨尺度完全一致，与研究一(b) 的 9 个 LLM 一致。
+
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}[b]{0.32\linewidth}
@@ -510,6 +516,8 @@ F1 与 Brier 度量的是两种不同的能力——"能否将句子判为正类
         \bottomrule
     \end{tabular}
 \end{table}
+
+\textbf{一句话读懂此表：}女性被试对"女 $>$ 男"这一方向的敏感度大约是男性被试的 \emph{3 倍}，并且这个 3 倍关系在 3 点、7 点、滑块三种尺度下都保持稳定（3.0$\times$ / 3.6$\times$ / 3.5$\times$）——"评分尺度的选择"对效应量只做小幅微调，真正放大／缩小效应的是"谁在打分"。
 
 \begin{figure}[htbp]
     \centering
@@ -622,6 +630,8 @@ F1 与 Brier 度量的是两种不同的能力——"能否将句子判为正类
     \end{tabular}
 \end{table}
 
+\textbf{一句话读懂此表：}没有哪一个 LLM 能在所有 9 个"被试组 $\times$ 尺度"单元下都最像人类——9 个单元里"最像人"的冠军换了 \emph{5 个不同的模型}。全体被试样本下 Claude 4.5 领先，但拆开男／女被试后，冠军会跳到 GLM 4.6、DeepSeek R1、Qwen 2.5 72B 等不同选手。"哪个模型最像人"没有一个跨尺度、跨被试性别的稳定答案。
+
 \subsubsection{三条可报告的观察}
 
 \textbf{观察一：最相似模型随被试子群漂移——"谁最像人"依赖于"人是谁"。}9 个单元下，"最像人类"的 LLM 分布在 5 个不同模型之间：Claude Opus 4.5（3 次）、Llama 4 Maverick（2 次）、DeepSeek R1（2 次）、GLM 4.6（1 次）、Qwen 2.5 72B（1 次）。全体被试样本下 Claude 4.5 在 7 点与滑块两列同时胜出；但拆分到被试性别后——7 点：男性被试对应 GLM 4.6、女性被试对应 Claude 4.5；滑块：男性被试对应 DeepSeek R1、女性被试对应 Qwen 2.5 72B；仅 3 点的最相似模型在全体与男性被试下重合（均为 Llama 4 Maverick）。这一漂移模式的含义是：\emph{全体样本的"最像人类"结论是对"被试性别"这一维度的隐式平均}；任何关于"某个 LLM 的偏差最接近人类直觉"的声明，都必须显式交代其所基于的被试子群与评分尺度。
@@ -631,6 +641,73 @@ F1 与 Brier 度量的是两种不同的能力——"能否将句子判为正类
 \textbf{观察三：男性被试组的 ICC 信号系统性强于女性被试组——与 $d_z$ 方向相反的"量级 $\text{-}$ 模式"张力。}男性被试在 7 点（$0.155$，CI $[0.056, 0.256]$）与滑块（$0.174$，CI $[0.081, 0.256]$）下 CI 均明确不含 0；女性被试在滑块下 CI 跨越 0（$[-0.008, 0.223]$）、7 点下勉强不含 0（$[0.010, 0.219]$）。此方向与节~\ref{subsubsec:2a-participant-gender}的"女性被试 $d_z$ 是男性被试 3 倍"形成了明显张力——\emph{效应量更大的被试组反而与 LLM 的题项级偏差模式对齐更弱}。该张力表明两套指标刻画的并非同一维度的"偏差"：$d_z$ 捕获的是\emph{偏差的总体量级}，ICC 捕获的是\emph{偏差在题项上的分配}。换言之，女性被试在整体上"更倾向判女人版为攻击"，但\emph{她们所偏向的具体题项}与 9 个 LLM 所偏向的\emph{具体题项}重合度较低；男性被试总体量级较弱，但其偏向的少量题项与 LLM（尤其 DeepSeek R1、GLM 4.6）更一致。
 
 该张力可以被表述为一个具体的、可后续检验的机制性假设：\emph{当前 9 个 LLM 的对齐过程更多捕获了"被男性评分者识别为攻击性"的题项特征，而尚未充分对齐女性评分者独有的题项级敏感性}——该差异的本质即是"对齐偏斜"（alignment skew）而非"对齐不足"（alignment shortfall）。该假设可通过"以女性评分者为主体的偏好数据做 RLHF 再校准"的后续实验加以直接检验。
+
+\subsection{研究二(a)：打分尺度对题项级偏差模式的影响——人类 vs.\ LLM 的稳健性对比}
+\label{subsec:results-2a-cross-scale}
+
+\subsubsection{研究问题}
+
+节~\ref{subsubsec:1b-within-model-cross-scale}已对九个 LLM 作过"同一模型在三个尺度下题项级 $\Delta_i$ 是否相互对齐"的分析。一个自然的对照问题是：\emph{人类被试在三个打分尺度下的题项级偏差模式是否也存在这种尺度依赖性？若然，与 LLM 相比，谁更受打分尺度的影响？}若假设人类评分较易受题面呈现方式、记忆负担与锚点认知等格式性因素影响，则人类的跨尺度 $\rho$ 应偏低；若假设 LLM 作为"纯语言生成器"能在不同打分尺度下对同一内容给出成比例的评分（例如对同一条句子，3 点给 2、7 点给 $4$--$5$、滑块给 $66$ 附近），则 LLM 的跨尺度 $\rho$ 应显著高于人类。两种假设在本节得到直接对照。
+
+\subsubsection{方法}
+
+对每一被试子群（全体被试／男性被试／女性被试），计算该子群在三尺度下的 $\Delta_i^{\text{人}}$ 向量（长度 371），然后对三对尺度组合（3pt vs 7pt、7pt vs slider、3pt vs slider）分别计算 $\Delta_i^{\text{人}}$ 的 Spearman $\rho$，并以 bootstrap（$B=2000$，按题项重抽样）给出 95\% CI。LLM 端复用节~\ref{subsubsec:1b-within-model-cross-scale}的 $\Delta_i^{\text{模}}$ 跨尺度 $\rho$。所有人机比较严格限定在\emph{同一对尺度组合内}进行——即人类的"3pt 与 7pt 对齐度"仅与 LLM 的"3pt 与 7pt 对齐度"比较，其它尺度对同理。
+
+\subsubsection{结果}
+\label{subsubsec:2a-cross-scale-results}
+
+图~\ref{fig:2a-within-human}给出三个被试子群在三对尺度组合下的 Spearman $\rho$ 与 95\% CI；图~\ref{fig:2a-human-vs-llm}在同一张图内把三个被试子群与九个 LLM 并列呈现；表~\ref{tab:2a-cross-scale-summary}给出人类与 LLM 两端各自的中位 $\rho$ 与离差汇总。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{../artifacts/within_human_cross_scale_similarity.pdf}
+    \caption{三个被试子群（全体／男性／女性）在三对尺度组合下的题项级 $\Delta_i$ 跨尺度 Spearman $\rho$，水平线为 bootstrap 95\% CI，虚线为 $\rho=0$。所有 9 个人类单元的 $\rho$ 均显著小于 1，并且大多数单元 CI 跨越 0 或接近 0，表明人类的题项级偏差模式随打分尺度切换发生显著重组。}
+    \label{fig:2a-within-human}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../artifacts/within_rater_cross_scale_similarity_human_vs_llm.pdf}
+    \caption{三个人类被试子群（方形，上块）与九个 LLM（圆形，下块）在三对尺度组合下的题项级 $\Delta_i$ 跨尺度 Spearman $\rho$ 并列对比。同一张图便于直接阅读"人机在同一对尺度组合下谁更跨尺度稳健"。}
+    \label{fig:2a-human-vs-llm}
+\end{figure}
+
+\begin{table}[htbp]
+    \centering
+    \caption{人类被试（3 个子群）与 LLM（9 个模型）在三对尺度组合下的跨尺度 Spearman $\rho$ 汇总。"中位"为该组内取中位数，"范围"为最小值到最大值。人类子群 ρ 显著低于理论预期（$\rho \approx 1$）；LLM 中位数与人类中位数处于同一量级，但 LLM 的跨个体离差远大于人类。}
+    \label{tab:2a-cross-scale-summary}
+    \footnotesize
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        尺度对 & 人类中位 $\rho$ & 人类范围 & LLM 中位 $\rho$ & LLM 范围 \\
+        \midrule
+        3pt vs 7pt       & 0.105 & $[0.011, 0.118]$ & 0.006 & $[-0.233, +0.293]$ \\
+        7pt vs slider    & 0.077 & $[0.008, 0.091]$ & 0.152 & $[-0.017, +0.355]$ \\
+        3pt vs slider    & 0.108 & $[0.066, 0.124]$ & 0.116 & $[-0.043, +0.229]$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{三条诚实的发现}
+\label{subsubsec:2a-cross-scale-honest-findings}
+
+本节将"我们原本怎么猜"和"数据实际怎么说"逐条对照，把对先验假设的验证结果写成易读结论。
+
+\textbf{发现一：人类在三种打分尺度下"偏差模式都不一样"——假设得到支持。}我们事先预期：即使是同一批人类被试、打同一批 371 对句子，只要换一种评分尺度（3 点 / 7 点 / 滑块），"哪一句最偏"的答案就会改变。数据直接证实了这一预期——\emph{3 个被试子群} $\times$ \emph{3 对尺度组合} 共 9 个单元里，跨尺度 Spearman $\rho$ 的中位数仅为 $0.105$（3pt vs 7pt）、$0.077$（7pt vs slider）、$0.108$（3pt vs slider），远低于"若尺度只是改变分辨率"应有的接近 1 的水平；绝对值 9 个单元都 $<0.13$，多数单元的 bootstrap 95\% CI 跨越 0。人类的题项级偏差模式在三种尺度下几乎是三套独立的答案。
+
+\textbf{发现二："3 点与 7 点更相似、二者都跟滑块差最远"的推测——没有数据支持。}按先验推测，3 点与 7 点都是离散 Likert，"同家族"应当相似；连续滑块是另一族，应当差最远。若该推测成立，我们应当在三对组合上看到 $\rho_{\text{3pt-7pt}} \gg \rho_{\text{7pt-slider}} \approx \rho_{\text{3pt-slider}}$ 的有序模式。实际数据却是三对组合的中位 $\rho$ 相互接近（$0.105 / 0.077 / 0.108$），三个被试子群内部的大小排序也不一致（全体被试：$0.118 > 0.124 > 0.091$；男性：$0.105 > 0.066 > 0.008$；女性：$0.108 > 0.077 > 0.011$）。换言之，\emph{只要换尺度就是全方位的重组}——不是"连续 vs 离散"这一二分决定差异，3 档与 7 档的分辨率差已足以把题项级排序打乱。
+
+\textbf{发现三："LLM 比人更理性客观、跨尺度应更稳定"——也没有数据支持。}若 LLM 在不同尺度下共享同一把"偏差尺子"，那它对同一条句子的 $\Delta_i$ 在三种尺度上应当成比例（如 3 点给 2、7 点给 $4$--$5$、滑块给 $66$ 附近）。但数据显示：LLM 的跨尺度 $\rho$ 中位数（$0.006 / 0.152 / 0.116$）与人类中位数（$0.105 / 0.077 / 0.108$）处于同一水平；在 3pt vs 7pt 这一对上，LLM 中位数 $0.006$ 甚至\emph{低于}人类 $0.105$——即 LLM 并没有在这对尺度间给出比人类更对齐的题项级偏差。
+
+真正的人机差异不在"平均谁更稳健"，而在\emph{离差}。3 个人类子群的跨尺度 $\rho$ 相互接近（全部落在 $[0.008, 0.124]$ 区间，跨度仅 $0.11$）；9 个 LLM 的跨尺度 $\rho$ 则从负到正横跨约 $0.5$ 个单位（例如 3pt vs 7pt 上 Claude Opus 4.5 为 $-0.233$、GPT-5.1 为 $+0.293$，跨度 $0.526$，约为人类跨度的 5 倍；7pt vs slider、3pt vs slider 上的跨度比也分别为 4.5 倍与 4.7 倍）。换言之，\emph{LLM 不是整体上更稳健或更不稳健，而是更两极分化}——GPT-5.1 与 Gemma-4-31B 三对 $\rho$ 一致为正、$0.23$--$0.36$，确实比人类更跨尺度稳健；而 Claude Opus 4.5 在 3pt vs 7pt 上出现显著负 $\rho$（CI 不含 0），表明该模型在两个尺度下使用了\emph{实质不同}的评分策略。每个 LLM 都有自己一套跨尺度行为。
+
+\subsubsection{可报告的综合结论}
+\label{subsubsec:2a-cross-scale-conclusion}
+
+用一句话概括：\emph{"题项级偏差在不同打分尺度下是同一套偏差被格式化地不同采样"这一朴素图景，在人类与 LLM 两端均不成立}。人类的违反是 9 个单元下中位水平的低 $\rho$，模式一致但全面偏低；LLM 的违反则是高异质的——某些模型（GPT-5.1、Gemma-4-31B）确实比人类更跨尺度稳健，某些模型（Claude Opus 4.5、Llama 4 Maverick）显著不稳健。
+
+这一发现对本章的 ICC 题项级对齐分析（节~\ref{subsec:results-2a-icc}）有一个可立即使用的方法论推论：即便未来人类评分样本量显著增加、$\Delta_i^{\text{人}}$ 的噪声显著下降，\emph{3 点尺度下的人机 ICC 仍将受限}——因为不仅是人类侧的噪声，LLM 侧本身也没有给出一个与 7 点／滑块共享的、稳健的 3 点 $\Delta_i^{\text{模}}$ 结构（节~\ref{subsubsec:1b-within-model-cross-scale}）。因此"在 3 点尺度上做题项级人机偏差对齐研究"这一范式无法被单靠样本量扩张拯救；若研究目的是量化题项级对齐，应当把主分析锚定在 7 点或滑块尺度上，3 点仅作稳健性对照。
 
 \subsection{研究范围与分析边界}
 \label{subsec:scope-notes}
