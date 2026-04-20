@@ -16,13 +16,18 @@ ARTIFACTS_DIR = PROJECT_ROOT / "artifacts"
 MODEL_NAME_MAP = {
     "anthropic/claude-opus-4.5": "claude4.5",
     "openai/chatgpt-5.1": "chatgpt5.1",
-    "baidu/ernie-4.5-21b-a3b": "baidu_ernie-4.5-21b-a3b",
     "deepseek/deepseek-r1-0528": "deepseek_deepseek-r1-0528",
     "deepseek/deepseek-v3.2-exp": "deepseek_deepseek-v3.2-exp",
+    "google/gemma-4-31b-it": "google_gemma-4-31b-it",
     "meta-llama/llama-4-maverick": "meta-llama_llama-4-maverick",
     "moonshotai/kimi-k2-thinking": "moonshotai_kimi-k2-thinking",
     "qwen/qwen-2.5-72b-instruct": "qwen_qwen-2.5-72b-instruct",
     "z-ai/glm-4.6": "z-ai_glm-4.6",
+}
+
+EXCLUDED_MODEL_NAMES = {
+    "baidu/ernie-4.5-21b-a3b",
+    "baidu_ernie-4.5-21b-a3b",
 }
 
 PROMPT_NAME_MAP = {
@@ -92,7 +97,13 @@ def load_raw_outputs(dataset_config: DatasetConfig) -> pd.DataFrame:
         raise ValueError(f"No raw output files found under {dataset_config.output_root}")
 
     outputs_dataframe = pd.concat(output_rows, ignore_index=True)
+    outputs_dataframe = outputs_dataframe.loc[
+        ~outputs_dataframe["model"].astype(str).isin(EXCLUDED_MODEL_NAMES)
+    ].copy()
     outputs_dataframe["model_key"] = outputs_dataframe["model"].map(normalize_model_name)
+    outputs_dataframe = outputs_dataframe.loc[
+        ~outputs_dataframe["model_key"].astype(str).isin(EXCLUDED_MODEL_NAMES)
+    ].copy()
     outputs_dataframe["prompt_name"] = outputs_dataframe["prompt_name"].astype(str)
     outputs_dataframe["sample_index"] = outputs_dataframe["sample_index"].astype("Int64")
     return outputs_dataframe

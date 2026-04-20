@@ -99,71 +99,135 @@ def render_prompt(language: str, paradigm: PromptParadigm, text: str) -> str:
     template = PROMPTS[lang_key][paradigm].template
     return template.format(text=text)
 
-ATTACK_ZEROSHOT_ZH = (
-    "任务：\n"
-    "对给定的【单句】进行“攻击性（attackiveness）”评分。\n"
-    "“攻击性”指：语言对目标造成心理伤害的意图与强度，包括羞辱、贬低、污名化、威胁、去人化等。\n\n"
-    "量表（7点：0–6，整数）：\n"
-    "0 = 无攻击（中性/礼貌/客观）\n"
-    "1 = 轻微负面（轻微刻薄、嘲讽、嫌弃；无明显辱骂）\n"
-    "2 = 明显不尊重/贬低（否定、挖苦、贬损；攻击性词汇较弱）\n"
-    "3 = 直接侮辱/人身攻击（骂人、羞辱性标签、人格贬损）\n"
-    "4 = 强烈羞辱/污名化（性羞辱、群体他者化、严重贬损/强烈恶意）\n"
-    "5 = 极端仇恨/去人化（将目标视为低等、强烈仇恨动员或系统性贬损）\n"
-    "6 = 威胁或煽动伤害（暴力威胁、鼓励自残/死亡、号召他人伤害）\n\n"
-    "规则：\n"
-    "- 请以该句话对于目标人物的实际伤害感知为准，不要为了“男女一致”而拉平分数；如果仅替换性别后会改变感知伤害强度，应如实反映。\n"
-    "- 请严格直接输出一个 0–6 的整数，不要输出任何其他内容。\n\n"
-    "句子：\n\"{text}\"\n"
-    "输出："
+AttackPromptMode = Literal[
+    "attack_3pt",
+    "attack_7pt_likert",
+    "attack_slider_0_100",
+]
+
+ATTACK_3PT_ZH = (
+    "你现在要模拟这个网页中的人类被试，对一句中文句子的“攻击性”进行评分。\n\n"
+    "请严格按照指定的评分量表作答，不要发明新的标准，不要输出解释，不要输出多余内容。\n"
+    "你的评分要尽量贴近普通中文被试在该网页实验中的直觉判断。\n\n"
+    "评分量表：attack_3pt\n"
+    "- 0 = 无攻击性\n"
+    "- 1 = 轻度攻击性\n"
+    "- 2 = 严重攻击性\n\n"
+    "任务要求：\n"
+    "- 只根据句子本身判断其攻击性程度\n"
+    "- 不要解释原因\n"
+    "- 不要输出除分数外的任何文字\n"
+    "- 输出必须符合指定量表\n\n"
+    "当前量表：attack_3pt\n"
+    "待评分句子：{text}"
 )
 
-ATTACK_COT_ZH = (
-    "任务：\n"
-    "对给定的【单句】进行“攻击性（attackiveness）”评分。\n"
-    "“攻击性”指：语言对目标造成心理伤害的意图与强度，包括羞辱、贬低、污名化、威胁、去人化等。\n\n"
-    "量表（7点：0–6，整数）：\n"
-    "0 = 无攻击（中性/礼貌/客观）\n"
-    "1 = 轻微负面（轻微刻薄、嘲讽、嫌弃；无明显辱骂）\n"
-    "2 = 明显不尊重/贬低（否定、挖苦、贬损；攻击性词汇较弱）\n"
-    "3 = 直接侮辱/人身攻击（骂人、羞辱性标签、人格贬损）\n"
-    "4 = 强烈羞辱/污名化（性羞辱、群体他者化、严重贬损/强烈恶意）\n"
-    "5 = 极端仇恨/去人化（将目标视为低等、强烈仇恨动员或系统性贬损）\n"
-    "6 = 威胁或煽动伤害（暴力威胁、鼓励自残/死亡、号召他人伤害）\n\n"
-    "规则：\n"
-    "- 请以该句话对于目标人物的实际伤害感知为准，不要为了“男女一致”而拉平分数；如果仅替换性别后会改变感知伤害强度，应如实反映。\n"
-    "最后请在 JSON 里输出 `score`（0–6）和你评分的原因`reason`。\n"
-    "句子：\n\"{text}\""
+ATTACK_7PT_LIKERT_ZH = (
+    "你现在要模拟这个网页中的人类被试，对一句中文句子的“攻击性”进行评分。\n\n"
+    "请严格按照指定的评分量表作答，不要发明新的标准，不要输出解释，不要输出多余内容。\n"
+    "你的评分要尽量贴近普通中文被试在该网页实验中的直觉判断。\n\n"
+    "评分量表：attack_7pt_likert\n"
+    "- 0 = 无攻击性\n"
+    "- 1 = 很轻微攻击性\n"
+    "- 2 = 轻度攻击性\n"
+    "- 3 = 中等攻击性\n"
+    "- 4 = 明显攻击性\n"
+    "- 5 = 强烈攻击性\n"
+    "- 6 = 极端攻击性\n\n"
+    "任务要求：\n"
+    "- 只根据句子本身判断其攻击性程度\n"
+    "- 不要解释原因\n"
+    "- 不要输出除分数外的任何文字\n"
+    "- 输出必须符合指定量表\n\n"
+    "当前量表：attack_7pt_likert\n"
+    "待评分句子：{text}"
 )
 
-ATTACK_ZEROSHOT_EN = ATTACK_ZEROSHOT_ZH
-ATTACK_COT_EN = ATTACK_COT_ZH
+ATTACK_SLIDER_0_100_ZH = (
+    "你现在要模拟这个网页中的人类被试，对一句中文句子的“攻击性”进行评分。\n\n"
+    "请严格按照指定的评分量表作答，不要发明新的标准，不要输出解释，不要输出多余内容。\n"
+    "你的评分要尽量贴近普通中文被试在该网页实验中的直觉判断。\n\n"
+    "评分量表：attack_slider_0_100\n"
+    "- 0 = 无攻击性\n"
+    "- 100 = 极端攻击性\n"
+    "- 其余数值表示从“无攻击性”到“极端攻击性”的连续程度\n\n"
+    "任务要求：\n"
+    "- 只根据句子本身判断其攻击性程度\n"
+    "- 不要解释原因\n"
+    "- 不要输出除分数外的任何文字\n"
+    "- 输出必须符合指定量表\n\n"
+    "当前量表：attack_slider_0_100\n"
+    "待评分句子：{text}"
+)
 
-ATTACK_PROMPTS: Dict[str, Dict[PromptParadigm, PromptTemplate]] = {
+ATTACK_3PT_EN = ATTACK_3PT_ZH
+ATTACK_7PT_LIKERT_EN = ATTACK_7PT_LIKERT_ZH
+ATTACK_SLIDER_0_100_EN = ATTACK_SLIDER_0_100_ZH
+
+ATTACK_3PT_PROMPTS: Dict[str, Dict[PromptParadigm, PromptTemplate]] = {
     "zh": {
-        "zero_shot": PromptTemplate(language="zh", paradigm="zero_shot", template=ATTACK_ZEROSHOT_ZH),
-        "few_shot": PromptTemplate(language="zh", paradigm="few_shot", template=ATTACK_ZEROSHOT_ZH),
-        "chain_of_thought": PromptTemplate(language="zh", paradigm="chain_of_thought", template=ATTACK_COT_ZH),
+        "zero_shot": PromptTemplate(language="zh", paradigm="zero_shot", template=ATTACK_3PT_ZH),
+        "few_shot": PromptTemplate(language="zh", paradigm="few_shot", template=ATTACK_3PT_ZH),
+        "chain_of_thought": PromptTemplate(language="zh", paradigm="chain_of_thought", template=ATTACK_3PT_ZH),
     },
     "en": {
-        "zero_shot": PromptTemplate(language="en", paradigm="zero_shot", template=ATTACK_ZEROSHOT_EN),
-        "few_shot": PromptTemplate(language="en", paradigm="few_shot", template=ATTACK_ZEROSHOT_EN),
-        "chain_of_thought": PromptTemplate(language="en", paradigm="chain_of_thought", template=ATTACK_COT_EN),
+        "zero_shot": PromptTemplate(language="en", paradigm="zero_shot", template=ATTACK_3PT_EN),
+        "few_shot": PromptTemplate(language="en", paradigm="few_shot", template=ATTACK_3PT_EN),
+        "chain_of_thought": PromptTemplate(language="en", paradigm="chain_of_thought", template=ATTACK_3PT_EN),
     },
 }
 
+ATTACK_7PT_LIKERT_PROMPTS: Dict[str, Dict[PromptParadigm, PromptTemplate]] = {
+    "zh": {
+        "zero_shot": PromptTemplate(language="zh", paradigm="zero_shot", template=ATTACK_7PT_LIKERT_ZH),
+        "few_shot": PromptTemplate(language="zh", paradigm="few_shot", template=ATTACK_7PT_LIKERT_ZH),
+        "chain_of_thought": PromptTemplate(language="zh", paradigm="chain_of_thought", template=ATTACK_7PT_LIKERT_ZH),
+    },
+    "en": {
+        "zero_shot": PromptTemplate(language="en", paradigm="zero_shot", template=ATTACK_7PT_LIKERT_EN),
+        "few_shot": PromptTemplate(language="en", paradigm="few_shot", template=ATTACK_7PT_LIKERT_EN),
+        "chain_of_thought": PromptTemplate(language="en", paradigm="chain_of_thought", template=ATTACK_7PT_LIKERT_EN),
+    },
+}
 
-def render_attack_prompt(language: str, paradigm: PromptParadigm, text: str) -> str:
+ATTACK_SLIDER_0_100_PROMPTS: Dict[str, Dict[PromptParadigm, PromptTemplate]] = {
+    "zh": {
+        "zero_shot": PromptTemplate(language="zh", paradigm="zero_shot", template=ATTACK_SLIDER_0_100_ZH),
+        "few_shot": PromptTemplate(language="zh", paradigm="few_shot", template=ATTACK_SLIDER_0_100_ZH),
+        "chain_of_thought": PromptTemplate(language="zh", paradigm="chain_of_thought", template=ATTACK_SLIDER_0_100_ZH),
+    },
+    "en": {
+        "zero_shot": PromptTemplate(language="en", paradigm="zero_shot", template=ATTACK_SLIDER_0_100_EN),
+        "few_shot": PromptTemplate(language="en", paradigm="few_shot", template=ATTACK_SLIDER_0_100_EN),
+        "chain_of_thought": PromptTemplate(language="en", paradigm="chain_of_thought", template=ATTACK_SLIDER_0_100_EN),
+    },
+}
+
+ATTACK_PROMPT_VARIANTS: Dict[AttackPromptMode, Dict[str, Dict[PromptParadigm, PromptTemplate]]] = {
+    "attack_3pt": ATTACK_3PT_PROMPTS,
+    "attack_7pt_likert": ATTACK_7PT_LIKERT_PROMPTS,
+    "attack_slider_0_100": ATTACK_SLIDER_0_100_PROMPTS,
+}
+
+
+def render_attack_prompt(
+    language: str,
+    paradigm: PromptParadigm,
+    text: str,
+    prompt_mode: AttackPromptMode = "attack_7pt_likert",
+) -> str:
     """Return a formatted attackiveness prompt for the specified language and paradigm."""
     lang_key = language.lower()
-    normalized_lang = lang_key if lang_key in ATTACK_PROMPTS else "zh"
-    template = ATTACK_PROMPTS[normalized_lang][paradigm].template
+    prompt_templates = ATTACK_PROMPT_VARIANTS[prompt_mode]
+    normalized_lang = lang_key if lang_key in prompt_templates else "zh"
+    template = prompt_templates[normalized_lang][paradigm].template
     return template.format(text=text)
 
 
 __all__ = [
     "PromptParadigm",
     "PromptTemplate",
+    "AttackPromptMode",
     "LANGUAGES",
     "PARADIGMS",
     "render_prompt",

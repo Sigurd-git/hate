@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 import pipeline
@@ -207,13 +209,79 @@ def test_request_score_zero_shot_uses_parsed_score_when_available(monkeypatch):
     assert "response_format" not in dummy_client.captured_kwargs
 
 
+def test_request_score_supports_slider_condition_prompt(monkeypatch):
+    sample = pipeline.Sample(text="测试句子", language="zh")
+
+    class DummyResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def model_dump(self):
+            return self._payload
+
+    class DummyClient:
+        def __init__(self):
+            self.captured_kwargs = None
+            self.chat = SimpleNamespace(
+                completions=SimpleNamespace(create=self._create)
+            )
+
+        def _create(self, **kwargs):
+            self.captured_kwargs = kwargs
+            return DummyResponse(
+                {
+                    "choices": [
+                        {
+                            "message": {"content": "87"},
+                            "finish_reason": "stop",
+                        }
+                    ]
+                }
+            )
+
+    dummy_client = DummyClient()
+    monkeypatch.setattr(pipeline, "_get_openrouter_client", lambda: dummy_client)
+
+    result = pipeline.request_score(
+        sample,
+        model="openrouter/test-model",
+        prompt_paradigm="zero_shot",
+        prompt_mode="attack_slider_0_100",
+        score_max=100,
+    )
+    assert result.payload == {"score": 87, "reason": ""}
+    assert dummy_client.captured_kwargs is not None
+    assert "当前量表：attack_slider_0_100" in dummy_client.captured_kwargs["messages"][0]["content"]
+
+
+def test_request_score_rejects_removed_legacy_attack_mode(monkeypatch):
+    sample = pipeline.Sample(text="测试句子", language="zh")
+
+    class DummyClient:
+        def __init__(self):
+            self.chat = SimpleNamespace(
+                completions=SimpleNamespace(create=lambda **kwargs: None)
+            )
+
+    monkeypatch.setattr(pipeline, "_get_openrouter_client", lambda: DummyClient())
+
+    with pytest.raises(ValueError, match="Unsupported prompt_mode=attack"):
+        pipeline.request_score(
+            sample,
+            model="openrouter/test-model",
+            prompt_paradigm="zero_shot",
+            prompt_mode="attack",
+            score_max=6,
+        )
+
+
 def test_run_batch_filters_language(monkeypatch, tmp_path):
     source = tmp_path / "data.csv"
     source.write_text("text,language\nA,en\nB,zh\n", encoding="utf-8")
 
     captured = []
 
-    def fake_request(sample, model, prompt_paradigm):
+    def fake_request(sample, model, prompt_paradigm, prompt_mode="hate", score_max=5):
         captured.append((sample.text, sample.language, prompt_paradigm, model))
         return pipeline.ScoreResponse(payload={"score": 1}, finish_reason="stop")
 

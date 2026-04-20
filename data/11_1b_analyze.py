@@ -29,21 +29,19 @@ BASE_SENTENCE_COLUMN = "具体内容"
 MALE_SENTENCE_COLUMN = "具体内容-男人版"
 FEMALE_SENTENCE_COLUMN = "具体内容-女人版"
 
-MALE_ZEROSHOT_COLUMN = "男人版-zeroshot攻击性评分"
-MALE_COT_COLUMN = "男人版-cot攻击性评分"
-MALE_COT_REASON_COLUMN = "男人版-cot攻击性reason"
-FEMALE_ZEROSHOT_COLUMN = "女人版-zeroshot攻击性评分"
-FEMALE_COT_COLUMN = "女人版-cot攻击性评分"
-FEMALE_COT_REASON_COLUMN = "女人版-cot攻击性reason"
-
-ZERO_SHOT_SETTING = "zeroshot"
-COT_SETTING = "cot"
-SCORE_COLUMN_MAP = {
-    ZERO_SHOT_SETTING: (MALE_ZEROSHOT_COLUMN, FEMALE_ZEROSHOT_COLUMN),
-    COT_SETTING: (MALE_COT_COLUMN, FEMALE_COT_COLUMN),
-}
-SCORE_REASON_COLUMN_MAP = {
-    COT_SETTING: (MALE_COT_REASON_COLUMN, FEMALE_COT_REASON_COLUMN),
+CONDITION_COLUMN_MAP: Dict[str, tuple[str, str]] = {
+    "attack_3pt": (
+        "男人版-attack_3pt攻击性评分",
+        "女人版-attack_3pt攻击性评分",
+    ),
+    "attack_7pt_likert": (
+        "男人版-attack_7pt_likert攻击性评分",
+        "女人版-attack_7pt_likert攻击性评分",
+    ),
+    "attack_slider_0_100": (
+        "男人版-attack_slider_0_100攻击性评分",
+        "女人版-attack_slider_0_100攻击性评分",
+    ),
 }
 
 CSV_RESULT_PATTERN = re.compile(r"^(?P<model_prefix>.+)_results\.csv$")
@@ -55,6 +53,9 @@ ROW_SOURCE_NAME = "row_files"
 CSV_SOURCE_NAME = "csv_results"
 XLSX_SOURCE_NAME = "xlsx_results"
 ANALYSIS_WORKBOOK_NAME = "1b_groupswap_analysis.xlsx"
+EXCLUDED_MODEL_PREFIXES = {
+    "baidu_ernie-4.5-21b-a3b",
+}
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -198,6 +199,9 @@ def discover_score_sources(score_directory: Path) -> Dict[str, Dict[str, List[Pa
             logger.warning("Skipping unrecognized CSV result file: %s", csv_result_path)
             continue
         model_prefix = matched_result.group("model_prefix")
+        if model_prefix in EXCLUDED_MODEL_PREFIXES:
+            logger.info("Skipping excluded model prefix: %s", model_prefix)
+            continue
         discovered_sources[model_prefix][CSV_SOURCE_NAME].append(csv_result_path)
 
     for xlsx_result_path in xlsx_result_paths:
@@ -206,6 +210,9 @@ def discover_score_sources(score_directory: Path) -> Dict[str, Dict[str, List[Pa
             logger.warning("Skipping unrecognized XLSX result file: %s", xlsx_result_path)
             continue
         model_prefix = matched_result.group("model_prefix")
+        if model_prefix in EXCLUDED_MODEL_PREFIXES:
+            logger.info("Skipping excluded model prefix: %s", model_prefix)
+            continue
         discovered_sources[model_prefix][XLSX_SOURCE_NAME].append(xlsx_result_path)
 
     for row_file_path in row_file_paths:
@@ -214,6 +221,9 @@ def discover_score_sources(score_directory: Path) -> Dict[str, Dict[str, List[Pa
             logger.warning("Skipping unrecognized row score file: %s", row_file_path)
             continue
         model_prefix = matched_result.group("model_prefix")
+        if model_prefix in EXCLUDED_MODEL_PREFIXES:
+            logger.info("Skipping excluded model prefix: %s", model_prefix)
+            continue
         discovered_sources[model_prefix][ROW_SOURCE_NAME].append(row_file_path)
 
     if not discovered_sources:
@@ -231,40 +241,27 @@ def discover_score_sources(score_directory: Path) -> Dict[str, Dict[str, List[Pa
 
 def prepare_score_pandas_frame(score_pandas_frame: pd.DataFrame) -> pd.DataFrame:
     """Normalize score columns and drop fully empty sentence pairs."""
+    score_columns = [
+        column_name
+        for condition_columns in CONDITION_COLUMN_MAP.values()
+        for column_name in condition_columns
+    ]
     required_columns = [
         MALE_SENTENCE_COLUMN,
         FEMALE_SENTENCE_COLUMN,
-        MALE_ZEROSHOT_COLUMN,
-        MALE_COT_COLUMN,
-        FEMALE_ZEROSHOT_COLUMN,
-        FEMALE_COT_COLUMN,
+        *score_columns,
     ]
     ensure_required_columns(score_pandas_frame, required_columns, "score file")
 
-    optional_reason_columns = [MALE_COT_REASON_COLUMN, FEMALE_COT_REASON_COLUMN]
-    retained_columns = required_columns + [
-        column_name for column_name in optional_reason_columns if column_name in score_pandas_frame.columns
-    ]
-    score_pandas_frame = score_pandas_frame.loc[:, retained_columns].copy()
+    score_pandas_frame = score_pandas_frame.loc[:, required_columns].copy()
 
     for sentence_column in (MALE_SENTENCE_COLUMN, FEMALE_SENTENCE_COLUMN):
         score_pandas_frame[sentence_column] = score_pandas_frame[sentence_column].map(normalize_text_value)
 
-    for numeric_column in (
-        MALE_ZEROSHOT_COLUMN,
-        MALE_COT_COLUMN,
-        FEMALE_ZEROSHOT_COLUMN,
-        FEMALE_COT_COLUMN,
-    ):
+    for numeric_column in score_columns:
         score_pandas_frame[numeric_column] = pd.to_numeric(
             score_pandas_frame[numeric_column], errors="coerce"
         )
-
-    for reason_column in optional_reason_columns:
-        if reason_column in score_pandas_frame.columns:
-            score_pandas_frame[reason_column] = score_pandas_frame[reason_column].map(
-                normalize_text_value
-            )
 
     score_pandas_frame = score_pandas_frame.dropna(
         subset=[MALE_SENTENCE_COLUMN, FEMALE_SENTENCE_COLUMN], how="all"
@@ -358,25 +355,28 @@ def merge_framework_and_scores(
             on=["model_prefix", "score_source", MALE_SENTENCE_COLUMN, FEMALE_SENTENCE_COLUMN],
             how="left",
         )
-        .with_columns(
-        pl.when(
-            pl.col(MALE_ZEROSHOT_COLUMN).is_not_null()
-            & pl.col(FEMALE_ZEROSHOT_COLUMN).is_not_null()
+    )
+
+    coverage_expressions = []
+    for condition_name, (male_score_column, female_score_column) in CONDITION_COLUMN_MAP.items():
+        coverage_expressions.append(
+            pl.when(
+                pl.col(male_score_column).is_not_null()
+                & pl.col(female_score_column).is_not_null()
+            )
+            .then(pl.lit(True))
+            .otherwise(pl.lit(False))
+            .alias(f"{condition_name}_已评分")
         )
-        .then(pl.lit(True))
-        .otherwise(pl.lit(False))
-        .alias("zeroshot_已评分"),
-        pl.when(pl.col(MALE_COT_COLUMN).is_not_null() & pl.col(FEMALE_COT_COLUMN).is_not_null())
-        .then(pl.lit(True))
-        .otherwise(pl.lit(False))
-        .alias("cot_已评分"),
-    ))
+    merged_frame = merged_frame.with_columns(coverage_expressions)
 
     logger.info(
-        "Merged framework rows=%s matched_zeroshot=%s matched_cot=%s",
+        "Merged framework rows=%s coverage=%s",
         merged_frame.height,
-        merged_frame.select(pl.col("zeroshot_已评分").sum()).item(),
-        merged_frame.select(pl.col("cot_已评分").sum()).item(),
+        {
+            condition_name: merged_frame.select(pl.col(f"{condition_name}_已评分").sum()).item()
+            for condition_name in CONDITION_COLUMN_MAP
+        },
     )
     return merged_frame
 
@@ -395,7 +395,7 @@ def build_same_sentence_difference_frame(merged_frame: pl.DataFrame) -> pl.DataF
         "score_source",
     ]
 
-    for setting_name, (male_score_column, female_score_column) in SCORE_COLUMN_MAP.items():
+    for setting_name, (male_score_column, female_score_column) in CONDITION_COLUMN_MAP.items():
         current_frame = (
             merged_frame.filter(
                 pl.col("model_prefix").is_not_null()
@@ -426,30 +426,6 @@ def build_same_sentence_difference_frame(merged_frame: pl.DataFrame) -> pl.DataF
             pl.lit(None).cast(pl.String).alias("女人版reason"),
         )
 
-        if setting_name in SCORE_REASON_COLUMN_MAP:
-            male_reason_column, female_reason_column = SCORE_REASON_COLUMN_MAP[setting_name]
-            if male_reason_column in merged_frame.columns and female_reason_column in merged_frame.columns:
-                reason_frame = merged_frame.select(
-                    [
-                        "句对ID",
-                        "model_prefix",
-                        pl.col(male_reason_column).alias("男人版reason_new"),
-                        pl.col(female_reason_column).alias("女人版reason_new"),
-                    ]
-                )
-                current_frame = (
-                    current_frame.join(
-                        reason_frame,
-                        on=["句对ID", "model_prefix"],
-                        how="left",
-                    )
-                    .with_columns(
-                        pl.coalesce(pl.col("男人版reason_new"), pl.col("男人版reason")).alias("男人版reason"),
-                        pl.coalesce(pl.col("女人版reason_new"), pl.col("女人版reason")).alias("女人版reason"),
-                    )
-                    .drop(["男人版reason_new", "女人版reason_new"])
-                )
-
         difference_frames.append(current_frame)
 
     difference_frame = pl.concat(difference_frames, how="vertical_relaxed").sort(
@@ -472,7 +448,7 @@ def build_gender_score_long_frame(merged_frame: pl.DataFrame) -> pl.DataFrame:
         "score_source",
     ]
 
-    for setting_name, (male_score_column, female_score_column) in SCORE_COLUMN_MAP.items():
+    for setting_name, (male_score_column, female_score_column) in CONDITION_COLUMN_MAP.items():
         male_frame = (
             merged_frame.filter(pl.col("model_prefix").is_not_null() & pl.col(male_score_column).is_not_null())
             .select(
@@ -561,7 +537,7 @@ def build_alignment_frame(
     """Find the nearest female-sentence matches for each male sentence by score."""
     alignment_frames: List[pl.DataFrame] = []
 
-    for setting_name, (male_score_column, female_score_column) in SCORE_COLUMN_MAP.items():
+    for setting_name, (male_score_column, female_score_column) in CONDITION_COLUMN_MAP.items():
         available_frame = merged_frame.filter(
             pl.col("model_prefix").is_not_null()
             & pl.col(male_score_column).is_not_null()
@@ -761,8 +737,10 @@ def print_summary(
         merged_frame.group_by(["model_prefix", "score_source"], maintain_order=False)
         .agg(
             pl.len().alias("framework_rows"),
-            pl.col("zeroshot_已评分").sum().alias("zeroshot_rows"),
-            pl.col("cot_已评分").sum().alias("cot_rows"),
+            *[
+                pl.col(f"{condition_name}_已评分").sum().alias(f"{condition_name}_rows")
+                for condition_name in CONDITION_COLUMN_MAP
+            ],
         )
         .sort(by=["model_prefix", "score_source"])
     )
@@ -770,9 +748,13 @@ def print_summary(
     print("Analysis finished.")
     print("Model coverage:")
     for summary_row in model_summary_frame.to_dicts():
+        coverage_summary = " ".join(
+            f"{condition_name}_rows={summary_row[f'{condition_name}_rows']}"
+            for condition_name in CONDITION_COLUMN_MAP
+        )
         print(
-            "  - model_prefix={model_prefix} source={score_source} framework_rows={framework_rows} "
-            "zeroshot_rows={zeroshot_rows} cot_rows={cot_rows}".format(**summary_row)
+            f"  - model_prefix={summary_row['model_prefix']} source={summary_row['score_source']} "
+            f"framework_rows={summary_row['framework_rows']} {coverage_summary}"
         )
     print(f"Same-sentence difference rows: {difference_frame.height}")
     print(f"Topic ranking rows: {topic_ranking_frame.height}")

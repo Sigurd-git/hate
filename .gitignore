@@ -220,3 +220,6 @@ artifacts
 **/*.snm
 **/*.nav
 **/*.xdv
+**/*.pdf
+**/*.pptx
+data/external

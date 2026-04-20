@@ -1,0 +1,366 @@
+% !TEX program = xelatex
+% Results section for graduation thesis: Study 1a + Study 1b.
+% Style reference: Sam Norman-Haignere — competing hypotheses framing,
+% discriminative claims, restrained language. Chinese manuscript.
+% Primary scale for Study 1b is attack_7pt_likert; attack_3pt and
+% attack_slider_0_100 are treated as scale-invariance robustness checks.
+%
+% Standalone-compile wrapper: when this file is later \input{} into the
+% main thesis document, delete or comment out the block between
+% STANDALONE-PREAMBLE-BEGIN and STANDALONE-DOC-BEGIN, as well as the
+% \end{document} at the end.
+
+% === STANDALONE-PREAMBLE-BEGIN ===
+\documentclass[UTF8,12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{a4paper,margin=2.5cm}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{textcomp}
+% Images live outside slides/; search both artifact and output roots
+\graphicspath{%
+    {../artifacts/}%
+    {../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/}%
+}
+% === STANDALONE-PREAMBLE-END ===
+
+% === STANDALONE-DOC-BEGIN ===
+\begin{document}
+% === STANDALONE-DOC-END ===
+
+\section{研究结果}
+\label{sec:results}
+
+本章分别报告研究一(a)与研究一(b)的主要发现。前者刻画九个当代大语言模型（LLM）在中英文仇恨言论识别任务上的总体表现；后者在严格配对设计下检验这些模型对"被指涉对象为女性"的语句是否系统性地给出更高的攻击性评分。两个子研究共用相同的模型组合与提示策略集合（zero-shot 与 chain-of-thought，以下简称 CoT），但评估目标互不重叠：1a 关注分类准确度与概率校准，1b 关注同一语义框架下的性别不对称。
+
+\subsection{研究一(a)：九个 LLM 的中英文仇恨识别表现}
+\label{subsec:results-1a}
+
+\subsubsection{两个竞争假设}
+
+在正式呈现结果之前，需先区分两类可被现有数据证伪的假设。
+\textbf{H1——任务定义分歧假设：}若模型表现的跨语言差距主要来自中英标注规范与文化边界的分歧，那么\emph{同一模型}在中英两个面板中的排名应当保持稳定，差距仅体现为整体分数的平移。
+\textbf{H2——语言覆盖不均假设：}若差距主要来自模型训练语料的语言结构不均衡，那么模型排名会\emph{跨语言翻转}——在中文语料占优的模型在中文面板领先、以英文为主要训练语料的模型在英文面板领先。
+两种假设给出的可区分预测分别是"排名稳定"与"排名翻转"，下文以此为判据。
+
+\subsubsection{总体表现与任务\texttimes{}语言交互}
+
+图~\ref{fig:1a-scatter-2x2}将四个面板（zh/en \texttimes{} zero-shot/CoT）下九个模型的 F1 与 Brier 评分联合展示为二维散点。表~\ref{tab:1a-best-models}进一步给出每个面板的最佳模型。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../artifacts/validated_csv_hate_f1_brier_2x2_scatter.pdf}
+    \caption{九个 LLM 在四个面板（zh/en \texttimes{} zero-shot/CoT）下的 F1 与 Brier 评分联合分布。每个面板内每个点代表一个模型；水平轴越右代表 F1 越高，垂直轴越低代表 Brier 校准误差越小。理想模型位于右下象限。}
+    \label{fig:1a-scatter-2x2}
+\end{figure}
+
+\begin{table}[htbp]
+    \centering
+    \caption{每个面板的最佳 F1 模型与最佳 Brier 模型。}
+    \label{tab:1a-best-models}
+    \small
+    \begin{tabular}{llccc}
+        \toprule
+        语言 & 提示策略 & 最佳 F1 模型（F1） & 最佳 Brier 模型（Brier） & 同一模型 \\
+        \midrule
+        中文 & zero-shot & Qwen-2.5-72B（0.751）  & Qwen-2.5-72B（0.240）    & 是 \\
+        中文 & CoT       & Llama-4-Maverick（0.736） & Llama-4-Maverick（0.243) & 是 \\
+        英文 & zero-shot & Llama-4-Maverick（0.698) & Qwen-2.5-72B（0.254）    & 否 \\
+        英文 & CoT       & Llama-4-Maverick（0.699) & Llama-4-Maverick（0.256) & 是 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{关键观察：}最佳模型并非跨语言稳定。Qwen-2.5-72B 在中文 zero-shot 下同时取得最高 F1 与最低 Brier，但在英文 zero-shot 面板中，F1 榜首让位于 Llama-4-Maverick，后者在剩余三个面板的 F1 指标上均夺冠。这一排名翻转与 H1 的"平移"预测不符，却与 H2 一致——Qwen 的中文语料暴露量显著高于其英文语料，而 Llama 的训练语料更多偏向英文主导的网络资源。
+
+\subsubsection{F1 排名的跨语言翻转}
+
+图~\ref{fig:1a-f1-bars}与图~\ref{fig:1a-f1-dumbbell}进一步展示 F1 维度上的排名翻转模式。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../artifacts/validated_csv_hate_f1_2x2_bars.pdf}
+    \caption{四个面板下九个 LLM 的 F1 值。面板内模型按 F1 降序排列。}
+    \label{fig:1a-f1-bars}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{../artifacts/validated_csv_hate_f1_2x2_dumbbell.pdf}
+    \caption{每个模型从 zero-shot 到 CoT 的 F1 变化（哑铃图），按语言分面板。}
+    \label{fig:1a-f1-dumbbell}
+\end{figure}
+
+三条经验性规律需要指出。第一，\textbf{中文 zero-shot 面板呈现显著的模型分层}：最高 F1（Qwen，0.751）与最低 F1（Gemma-4-31B，0.463）之间相差近 0.29 个 F1 单位；而英文 zero-shot 面板下，最高值（Llama，0.698）与最低值（GLM-4.6，0.623）相差仅约 0.07。这一"在中文上拉得开、在英文上拉不开"的模式无法由单纯的任务难度差异解释。
+第二，\textbf{Gemma-4-31B 的跨语言塌陷}尤为诊断性：在英文 zero-shot/CoT 下维持在 0.63 附近，而在中文两个面板中骤降至 0.47 附近。一个"任务定义分歧"假设无法预测该模型的中文表现崩塌幅度远超其他模型。
+第三，\textbf{CoT 并非普适提升}：Qwen 在中文 zero-shot 下 F1 为 0.751，切换到 CoT 反而降至 0.639；Gemma 在中文 CoT 下相比 zero-shot 略有提升，但仍维持在 0.47 水平。若 H1 成立，CoT 作为一种通用的推理放大手段应当带来稳定增益，但观察到的异质性提示增益与否取决于模型是否已掌握该语言下的任务格式。
+
+综合三条规律，我们将主要证据解读为支持 H2（语言覆盖不均）而非 H1（任务定义分歧）。\emph{完全驳回 H1 尚需跨标注体系的证据}，但至少，H1 无法解释当前观察到的排名翻转与模型×语言交互。
+
+\subsubsection{校准（Brier）与准确率（F1）的解耦}
+
+F1 与 Brier 度量的是两种不同的能力——"能否将句子判为正类"与"能否给出与真实频率一致的概率"。若两者高度耦合，则仅报告 F1 即可；反之则需分别考察。图~\ref{fig:1a-brier-bars}与图~\ref{fig:1a-brier-dumbbell}呈现 Brier 结果。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../artifacts/validated_csv_hate_brier_2x2_bars.pdf}
+    \caption{四个面板下九个 LLM 的 Brier 评分（越低越好）。}
+    \label{fig:1a-brier-bars}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{../artifacts/validated_csv_hate_brier_2x2_dumbbell.pdf}
+    \caption{每个模型从 zero-shot 到 CoT 的 Brier 变化（哑铃图）。}
+    \label{fig:1a-brier-dumbbell}
+\end{figure}
+
+\textbf{解耦的关键证据}出现在英文 zero-shot 面板：F1 最高者为 Llama-4-Maverick（0.698），但 Brier 最低者为 Qwen-2.5-72B（0.254），且 Llama 的 Brier 反而较高（0.297）。换言之，Llama 更常给出\emph{方向正确但过度自信}的预测，而 Qwen 的预测虽分类略逊，却在概率尺度上更贴近真实频率。这说明若下游任务需要可靠的风险阈值（例如人机协作审核中的"模糊样本留待人工判定"），F1 榜单的第一名并非最佳选择。
+
+此外，CoT 对 Brier 的影响呈现\emph{非单调}形态：对 Llama 在中文上显著降低 Brier（从 zero-shot 的 0.300 降至 CoT 的 0.243），却对 Qwen 在英文上反而恶化（从 0.254 升至 0.289）。这一交互进一步削弱"CoT 通用增益"叙事。
+
+\subsubsection{按目标群体性别分层的表现（占位分析）}
+\label{subsubsec:1a-gender-stratified}
+
+上述分析基于整体语料平均；然而总体 F1 掩盖了一种可能的评估不对称——\emph{模型对以女性为目标的仇恨言论可能识别率系统性不同于以男性为目标的仇恨言论}。该不对称即是研究一(b)所关注现象的"自然数据"版本。若 1a 已暴露此类分层差异，则与 1b 的偏差结果互相支持；若不存在分层差异，则 1b 的偏差现象应解读为仅在\emph{判分幅度}上显现，而不出现在\emph{二分分类}层面。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\linewidth]{../artifacts/placeholder_a_1a_topic_stratified_f1_brier.pdf}
+    \caption{九个 LLM 按目标群体主题分层的 F1 与 Brier（上两行：中文验证集；下两行：英文验证集的 HateXplain 子集）。中文原始数据 \texttt{topic} 字段将每条样本标注为 race、region、gender 或 lgbt 之一；此处将 gender 与 lgbt 合并为"性别相关"（$n=755$），race 与 region 合并为"族群／地域相关"（$n=1645$）。英文侧以 \texttt{post\_id} 为键将合并验证集与 HateXplain 原始 \texttt{dataset.json} 做连接：若任一标注者在 \texttt{target} 字段标记了 Women／Men／Homosexual／Heterosexual／Bisexual／Asexual 之一，则归入"性别相关"（$n=423$）；若标记任一族群或宗教目标，则归入"族群／宗教"（$n=545$）。英文 "all" 基线包含 HASOC 无目标标签子集（$n\approx 1432$）；因此 "all" 不应与两个子集做直接比较，真正可比的是同语言下两个目标分层子集之间的差异。}
+    \label{fig:1a-gender-stratified}
+\end{figure}
+
+\textbf{观察要点：}两种语言呈现出两种略微不同的分层模式。
+\emph{中文侧}：多数模型在两个子集上的 F1 与 Brier 差异不大（$<0.05$ 个单位），但 Gemma-4-31B 与 Claude Opus 4.5 在性别相关子集上的 F1 低于族群／地域子集（分别低约 0.06 与 0.04 个 F1 点），同时 Brier 略高。
+\emph{英文侧}：受限于 HateXplain 的标签分布，两子集 F1 普遍高于 "all" 基线（因为有 target 标注的帖子往往也是更明确的仇恨样本）；在同等较高的 F1 水平下，多数模型在"性别相关"子集上的 Brier 略低于"族群／宗教"子集（差值约 0.01–0.03）——意味着即便分类一样准，模型给出的概率在族群／宗教目标上比在性别相关目标上更"失准"。
+综合两种语言，仅有部分模型显现出"性别相关样本在自然数据上识别倾向性偏离其它主题"的模式；该倾向的方向与研究一(b)所揭示的评估偏差一致，但量级远小于 1b 中的配对效应——这也符合两种设置的方法论差异：1a 中自然数据的语义内容本就在主题间不同，任何差异都混合了内容差异与评估偏差。
+
+\subsection{研究一(b)：性别群体对换下的攻击性评分}
+\label{subsec:results-1b}
+
+\subsubsection{判决性实验：两个竞争假设}
+
+研究一(b)的核心设计是\emph{最小对比对}（minimal pairs）——对同一语义框架下的一个句子仅替换指涉对象的性别代称（例如"女人"$\leftrightarrow$"男人"，"她"$\leftrightarrow$"他"），其余词汇完全一致。这一设计用于区分下述两类假设。
+\textbf{H1'——语义内容假设：}模型对攻击性的判定应由句子所指涉的语义内容决定；若配对句的语义框架相同，则两个版本的评分差应以 0 为中心、对称分布。
+\textbf{H2'——评估偏差假设：}模型携带一个独立于语义内容的、指向女性方向的攻击性评估偏差；若该偏差存在，则（女性指涉版 − 男性指涉版）的评分差应系统性大于 0。
+
+需强调，H1' 并不要求模型"对所有内容给零分"，仅要求\emph{配对差值的期望为零}。该设计意味着任何来自词频、讨论度或语料中背景分布的混淆因素在配对内部被抵消。H2' 的一个具体预测是，若偏差普遍存在于当代 LLM，则不同模型在方向性与效应量上应呈\emph{一致而非散漫的}结果。
+
+配对语料共 371 对中文句子，涉及 10 个一级攻击领域（level-1 attack domain）、71 个二级子类与 183 个三级标签。主分析以 7 点 Likert 尺度为主（\texttt{attack\_7pt\_likert}），3 点尺度与 0–100 连续滑块尺度将在节~\ref{subsubsec:1b-scale-invariance}中用作稳健性检验。
+
+\subsubsection{整体方向性：九个模型均显示 F \textgreater\ M}
+\label{subsubsec:1b-overall}
+
+图~\ref{fig:1b-diff-distribution}展示九个模型的配对评分差（女性指涉版减男性指涉版）分布；图~\ref{fig:1b-directionality}展示方向性分解（"更高"、"一致"、"更低"的比例）。统计摘要见表~\ref{tab:1b-overall}。
+
+\begin{figure}[htbp]
+    \centering
+    % Selected models spanning the effect-size range:
+    % GPT-5.1 (largest dz=0.84), Gemma (2nd-largest dz=0.77),
+    % Qwen (median dz=0.58), DeepSeek V3.2 (smallest dz=0.37).
+    % Full 9-panel version lives in Appendix.
+    \begin{subfigure}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig2_difference_distribution_panel_1.pdf}
+        \caption{GPT-5.1（$d_z=0.84$）}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig2_difference_distribution_panel_9.pdf}
+        \caption{Gemma 4 31B（$d_z=0.77$）}
+    \end{subfigure}
+
+    \vspace{0.5em}
+    \begin{subfigure}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig2_difference_distribution_panel_8.pdf}
+        \caption{Qwen 2.5 72B（$d_z=0.58$）}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig2_difference_distribution_panel_6.pdf}
+        \caption{DeepSeek V3.2（$d_z=0.37$）}
+    \end{subfigure}
+    \caption{代表性 LLM 在 371 对配对语句上的评分差（女性 − 男性）分布。所选四个模型覆盖整体效应量范围的极端与中位。虚线为 0；分布的系统性右偏即为 H2' 所预测的特征。全部九个模型的分布见附录图~\ref{fig:appendix-diff-distribution-full}。评分尺度为 7 点 Likert。}
+    \label{fig:1b-diff-distribution}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/fig3_directionality.pdf}
+    \caption{九个模型在每对句子上的方向分解：女性版本评分更高、持平、男性版本评分更高的比例。}
+    \label{fig:1b-directionality}
+\end{figure}
+
+\begin{table}[htbp]
+    \centering
+    \caption{九个 LLM 在 7 点 Likert 尺度下的整体配对差统计。\(\Delta_{F-M}\) 为女性减男性的均值差，95\% CI 由配对 Bootstrap 得到，\(d_z\) 为配对样本 Cohen's $d_z$，\(q\) 为 Wilcoxon 符号秩检验经 BH-FDR 校正后的 $p$ 值。}
+    \label{tab:1b-overall}
+    \small
+    \begin{tabular}{lccccc}
+        \toprule
+        模型 & $n$ & $\Delta_{F-M}$ & 95\% CI & $d_z$ & $q$ (FDR) \\
+        \midrule
+        Claude Opus 4.5   & 371 & 0.345 & [0.294, 0.396] & 0.693 & $1.5\times 10^{-27}$ \\
+        DeepSeek R1       & 371 & 0.243 & [0.186, 0.302] & 0.422 & $8.3\times 10^{-14}$ \\
+        DeepSeek V3.2     & 371 & 0.237 & [0.173, 0.305] & 0.371 & $2.2\times 10^{-11}$ \\
+        Gemma 4 31B       & 371 & 0.385 & [0.334, 0.437] & 0.773 & $1.9\times 10^{-31}$ \\
+        GLM 4.6           & 371 & 0.272 & [0.191, 0.350] & 0.353 & $1.1\times 10^{-10}$ \\
+        GPT-5.1           & 371 & 0.458 & [0.404, 0.512] & 0.840 & $2.7\times 10^{-34}$ \\
+        Kimi K2           & 371 & 0.404 & [0.321, 0.488] & 0.505 & $1.1\times 10^{-17}$ \\
+        Llama 4 Maverick  & 371 & 0.240 & [0.189, 0.294] & 0.477 & $1.6\times 10^{-16}$ \\
+        Qwen 2.5 72B      & 371 & 0.256 & [0.210, 0.302] & 0.578 & $1.2\times 10^{-21}$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{判决性证据：}九个模型的 \(\Delta_{F-M}\) 均显著大于 0，效应量 \(d_z\) 跨度为 0.35（GLM-4.6）至 0.84（GPT-5.1），FDR 校正后 \(q\) 值均小于 \(10^{-10}\)。方向分解显示，在 371 对中，女性版本评分更高的比例（25.9\%–45.0\%）系统性高于男性版本更高的比例（0.0\%–9.97\%），其余为持平。这一"9/9 方向一致 + 全部通过严格多重比较校正"的模式\textbf{可直接证伪 H1'}——若句子语义已同，随机噪声不应产生如此一致的系统偏移——并\textbf{支持 H2'}。
+
+需要注意，这里 \emph{"支持 H2'"不等同于"全部模型携带相同偏差"}。效应量跨越 2.4 倍区间（0.35–0.84），说明偏差在各模型间虽方向一致，但强度显著不同——不同预训练与对齐流程塑造的"女性目标更易被标为攻击性"这一启发式，强度差异巨大。Gemma-4-31B 与 GPT-5.1 的效应量最大，DeepSeek V3.2 与 GLM-4.6 最小。
+
+\subsubsection{维度定位：哪些攻击领域驱动不对称}
+\label{subsubsec:1b-level1}
+
+如果 H2' 反映的是一个\emph{笼统}的偏差——"女性目标 → 更高分"，那么我们应期待不对称在所有攻击领域（level-1 attack domain）上同步出现。如果反之，偏差具体集中于若干与传统性别刻板印象绑定的领域（例如涉及身体、性、外貌的攻击），那么等额度的偏差应集中分布，而其他领域不显著。图~\ref{fig:1b-level1-forest}给出按 10 个一级领域分层的森林图。
+
+\begin{figure}[htbp]
+    \centering
+    % Three diagnostic cases discussed in text:
+    % GPT-5.1 (broadest coverage, 7 domains with dz>=0.77),
+    % Gemma (only model significant on gender-role n=14 subset),
+    % DeepSeek V3.2 (narrowest: 4 sig domains, 2 large-effect).
+    % Full 9-panel version lives in Appendix.
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig4_level1_forest_panel_1.pdf}
+        \caption{GPT-5.1}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig4_level1_forest_panel_9.pdf}
+        \caption{Gemma 4 31B}
+    \end{subfigure}\hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig4_level1_forest_panel_6.pdf}
+        \caption{DeepSeek V3.2}
+    \end{subfigure}
+    \caption{三个诊断性模型在十个一级攻击领域上的配对差森林图。水平轴为 \(\Delta_{F-M}\)（7 点 Likert 尺度），误差条为 95\% Bootstrap CI。GPT-5.1 展示偏差覆盖面最广的形态；Gemma 在性别角色／性别表达子集（$n=14$）唯一显著；DeepSeek V3.2 则代表偏差最集中的形态（仅 4 个领域显著）。全部九个模型的森林图见附录图~\ref{fig:appendix-level1-forest-full}。}
+    \label{fig:1b-level1-forest}
+\end{figure}
+
+\textbf{按领域看的分布高度集中。}跨九个模型合并观察：\textbf{"性化攻击（性羞辱）"}与\textbf{"外貌形象攻击"}在全部 9 个模型上均显著（FDR \(q<0.05\)），分别在 \(n=33\) 与 \(n=37\) 配对下 \(d_z\) 跨度为 0.57–1.06 与 0.51–1.19。其余领域（人际关系、道德品行、经济资源、社会地位、情绪稳定、能力才干、智力理性）在大多数模型上显著，效应量中等（\(d_z\approx 0.2\text{--}0.7\)）。而\textbf{"性别角色／性别表达攻击"}维度虽在理论上最应出现性别偏差，实际却仅在极少模型（如 Gemma-4-31B，\(d_z=0.83\)）上显著（\(n=14\)）——这一反直觉结果更可能归因于样本量过小导致的统计功效不足，而非偏差真正缺席。
+
+\textbf{对 H2' 的进一步刻画：}上述模式意味着偏差并非"所有维度一致上浮"的均匀加码，而是集中在\emph{身体与性相关}的攻击领域——这些恰是社会性别刻板印象中"女性更易受此类攻击"或"女性对此类攻击更敏感"的观念所直接对应的领域。GPT-5.1 是一个诊断性个案：它在 7 个领域上 \(d_z \geq 0.77\)（性化 1.06、智力理性 1.10、能力才干 1.10、情绪稳定 1.10、外貌形象 0.87、社会地位 0.88、道德品行 0.77），其中前四个领域 \(d_z\) 均逾 1.0，显示其偏差覆盖面远超其他模型；而 DeepSeek V3.2 则代表另一极——它在四个领域上通过 FDR 校正（性化、外貌、社会地位、道德品行），但仅在性化与外貌两个领域效应量较大（\(d_z>0.69\)），其余显著领域 \(d_z<0.46\)，其余六个领域不显著。
+
+\subsubsection{尺度稳健性（占位分析）}
+\label{subsubsec:1b-scale-invariance}
+
+主分析使用 7 点 Likert 尺度。一个合理的怀疑是：整体偏差是否为此尺度特有的离散化artifact——例如，在 0–100 的连续尺度上，女性与男性版本的分布是否实际上相当接近，只是被 7 点尺度"粗粒度化"后放大为整数差？为回应此可能性，我们对 3 点尺度（\texttt{attack\_3pt}）与 0–100 滑块尺度（\texttt{attack\_slider\_0\_100}）执行平行分析，并将跨三个尺度的 \(d_z\) 跨模型对齐。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/placeholder_b_three_scale_dz_scatter.pdf}
+    \caption{三评分尺度下 Cohen's $d_z$ 的跨模型两两散点。虚线为 $y=x$。每个点代表一个模型。}
+    \label{fig:1b-scale-invariance}
+\end{figure}
+
+\textbf{观察要点：}九个模型的三个 $d_z$ 值在两两散点中普遍贴近 $y=x$ 对角线——说明"女性版本评分更高"的主效应\emph{不是}仅出现在 7 点 Likert 尺度下的离散化 artifact。单调性在三尺度间保持：在任一尺度上 $d_z$ 最大的模型（GPT-5.1）在另外两个尺度上也位于右上角，$d_z$ 最小的模型（GLM、DeepSeek V3.2）在其它尺度上同样位于左下角。0–100 滑块尺度下部分模型的 $d_z$ 略高于 Likert 尺度（点略微偏向对角线上方），这与滑块提供更细粒度的分辨率、允许小幅度偏差被更充分记录这一直觉相符。
+
+\subsubsection{模型 \texttimes{} 维度的一致性模式（占位分析）}
+\label{subsubsec:1b-model-by-dim}
+
+节~\ref{subsubsec:1b-level1}按领域汇总了九个模型的显著性，但尚未回答一个更精细的问题：\emph{九个模型是否在"哪些领域偏差最强"上达成一致}？若模型间高度相关——例如所有模型都将最大 \(d_z\) 集中在"性化攻击"和"外貌形象"——则这提示当前 LLM 的性别评估偏差有共同的来源（很可能是中文互联网语料中长期存在的性别刻板印象分布）。反之，若模型间几乎无关，则每个模型的偏差应视为独立的对齐副产品。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/placeholder_c_model_by_level1_dz_heatmap.pdf}
+    \caption{九个模型 \texttimes{} 十个一级攻击领域的 Cohen's $d_z$ 热图（7 点 Likert）。颜色越红表示 "女性指涉版 \textgreater{} 男性指涉版" 的效应越强。单元格中的星号表示 BH-FDR 校正后的 Wilcoxon 符号秩检验显著性（$*$ $q<0.05$，$**$ $q<0.01$，$***$ $q<0.001$）。}
+    \label{fig:1b-model-by-dim-heatmap}
+\end{figure}
+
+\textbf{观察要点：}热图揭示出两条一致性结构。第一，\textbf{列方向的高度集中}——"性化攻击（性羞辱）"与"外貌形象攻击"两列在九个模型上均呈深红色（$d_z$ 普遍 $>0.5$，多数 $>0.8$），而"性别角色／性别表达攻击"列因 $n=14$ 的统计功效限制，仅 Gemma 一行显著。第二，\textbf{行方向的覆盖面差异}——GPT-5.1 与 Gemma-4-31B 的深色单元格几乎覆盖全行（7 个领域 $d_z \geq 0.77$），而 DeepSeek V3.2 与 GLM-4.6 仅在少数几列上显著。换言之，\emph{偏差方向在九个模型间高度一致，但偏差的广度在模型间差异明显}。这一模式与"所有模型吸收了中文语料中相近的性别刻板印象分布、但对齐流程对偏差的压制程度不同"这一更具体的假设相容。
+
+\subsubsection{配对散点与个案观察}
+
+图~\ref{fig:1b-paired-scatter}给出每个模型在全部 371 对上的配对散点（横轴男性版本评分，纵轴女性版本评分）。对角线上方的点数即为女性版本评分更高的对数。
+
+\begin{figure}[htbp]
+    \centering
+    % Four cases discussed in text:
+    % Claude / Llama / Qwen have high tie-rates but 2:1+ imbalance when
+    % they do disagree; GPT-5.1 is the contrast case with the lowest
+    % tie-rate and strongest imbalance. Full 9-panel version in Appendix.
+    \begin{subfigure}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig1_paired_scores_panel_2.pdf}
+        \caption{Claude Opus 4.5（持平 65.0\%，不持平时 64:1）}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig1_paired_scores_panel_4.pdf}
+        \caption{Llama Maverick（持平 71.4\%，不持平时 9.6:1）}
+    \end{subfigure}
+
+    \vspace{0.5em}
+    \begin{subfigure}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig1_paired_scores_panel_8.pdf}
+        \caption{Qwen 2.5 72B（持平 73.9\%，不持平时 96:1）}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/panels/fig1_paired_scores_panel_1.pdf}
+        \caption{GPT-5.1（持平 54.2\%，不持平时 55.7:1）}
+    \end{subfigure}
+    \caption{四个代表性模型的配对散点图。横轴为男性指涉版本评分，纵轴为女性指涉版本评分。45\textdegree{} 对角线上方的密度即为"女性版本评分更高"的配对比例；对角线附近的条带密度即为评分一致的比例。前三例展示"高持平比例 + 不持平时强烈不对称"的模式；GPT-5.1 作为对照，持平比例最低但不对称最强。全部九个模型的配对散点见附录图~\ref{fig:appendix-paired-scatter-full}。}
+    \label{fig:1b-paired-scatter}
+\end{figure}
+
+散点密度在所有模型中均偏向对角线上方，这与节~\ref{subsubsec:1b-overall}的整体方向性一致。值得注意的是 Claude Opus 4.5、Llama-4-Maverick 与 Qwen-2.5-72B 在配对上呈现较高的"持平"比例（分别为 65.0\%、71.4\%、73.9\%），即大部分配对被赋予\emph{完全相同}的 Likert 分，但在剩余不持平的配对中，不对称比例达到 2:1 以上（Claude 64:1，Qwen 96:1）。这意味着即便模型在大多数情况下"看起来中立"，一旦出现分歧，方向几乎总偏向女性版本得分更高。
+
+\subsection{研究范围与分析边界}
+\label{subsec:scope-notes}
+
+上文所报告的研究一(b)配对分析当前仅在\emph{中文}语境下展开：371 对配对句与对应的三级分类体系均为中文自建语料。跨语言泛化所需的英文配对语料目前尚未完成，本文不对 H2' 在英文条件下的表现做出声明；该方向的延伸研究将在讨论部分作为未来工作列出。
+
+% === 数据与占位图清单（读者可忽略；供作者自行补全） ===
+% 占位符 A: §1.4 按目标群体性别分层的 1a F1/Brier 子群分析图
+% 占位符 B: §2.3 三尺度 d_z 跨模型一致性散点
+% 占位符 C: §2.4 模型 × 一级领域 d_z 热图
+
+\appendix
+\section{附录：研究一(b) 全部九模型完整图}
+\label{appendix:full-panel-figures}
+
+正文节~\ref{subsec:results-1b}中的三张子图仅展示了用于支持论点的代表性模型。为便于读者检查不在正文中被讨论的模型是否表现出与代表性模型一致的模式，本附录列出 7 点 Likert 尺度下全部九个 LLM 的完整图。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/fig2_difference_distribution.pdf}
+    \caption{全部九个 LLM 在 371 对配对语句上的评分差（女性 − 男性）分布。虚线为 0；分布的系统性右偏即为 H2' 所预测的特征。对应正文图~\ref{fig:1b-diff-distribution}。}
+    \label{fig:appendix-diff-distribution-full}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/fig4_level1_forest.pdf}
+    \caption{全部九个模型 × 十个一级攻击领域的配对差森林图。对应正文图~\ref{fig:1b-level1-forest}。}
+    \label{fig:appendix-level1-forest-full}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures/attack_7pt_likert/fig1_paired_scores.pdf}
+    \caption{全部九个模型的配对散点图。对应正文图~\ref{fig:1b-paired-scatter}。}
+    \label{fig:appendix-paired-scatter-full}
+\end{figure}
+
+% === STANDALONE-DOC-END ===
+\end{document}
+% === STANDALONE-END ===

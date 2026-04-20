@@ -30,6 +30,7 @@
 \usepackage{multirow}
 \usepackage{ragged2e}
 \usepackage{xcolor}
+\usepackage{pdfpc}
 
 \title[1b 性别替换偏差]{大语言模型攻击性评分中的性别替换偏差\\——研究 1b 实验报告}
 \author{鲍璇}
@@ -42,6 +43,7 @@
 
 \begin{frame}
   \titlepage
+  \pdfpcnote{各位老师、同学好，我是鲍璇。今天汇报的是研究 1b 的实验结果——大语言模型在攻击性评分任务中的性别替换偏差。这项研究的核心关切在于：当我们仅改变攻击性文本中的性别指向词汇时，模型的评分行为是否会发生系统性变化。接下来我将从研究设计、统计方案、实证结果及局限性几个方面依次展开。}
 \end{frame}
 
 \begin{frame}{报告结构}
@@ -53,6 +55,7 @@
     \item 维度层面的效应解析
     \item 研究局限与后续工作
   \end{enumerate}
+  \pdfpcnote{本次汇报的整体结构如幻灯片所示。我会先介绍研究问题与实验设计的基本逻辑，随后说明数据结构和统计分析方案，重点展示核心实证结果——包括总体检验和维度层面的效应解析，最后讨论研究局限与后续方向。}
 \end{frame}
 
 \begin{frame}{研究问题}
@@ -69,9 +72,10 @@
     \item \textbf{提示条件}：\textbf{Zero-shot} 与 \textbf{Chain-of-Thought（CoT）}。
     \item \textbf{差值定义}：本报告统一采用 \textbf{女性版评分 $-$ 男性版评分}。
   \end{itemize}
+  \pdfpcnote{研究 1b 的核心问题非常明确：在语义内容完全相同的前提下，仅将攻击性文本中的男性目标词替换为女性目标词，大语言模型是否会给出不同的攻击性评分。这里需要强调的是，我们采用的是严格的配对设计——每一组句子之间唯一的差异就是性别指称词汇，其余的语义内容、句法结构和攻击维度均保持一致。因变量为 0 到 6 分的离散等级评分。我们选取了两个模型——Llama Maverick 和 Qwen 2.5 72B，并在 Zero-shot 和 Chain-of-Thought 两种提示条件下分别进行评估。为了保持报告的一致性，所有差值均定义为女性版减去男性版。}
 \end{frame}
 
-\begin{frame}{实验设计}
+\begin{frame}{实验设计（1/2）}
   \begin{columns}[T,onlytextwidth]
     \column{0.52\textwidth}
       \textbf{实验材料}
@@ -86,7 +90,7 @@
           \end{itemize}
       \end{itemize}
 
-      \vspace{0.4em}
+    \column{0.48\textwidth}
       \textbf{评分范式}
       \begin{itemize}
         \item 任务类型：攻击性等级评定
@@ -99,8 +103,13 @@
             \item 女性版 CoT
           \end{itemize}
       \end{itemize}
+  \end{columns}
+  \pdfpcnote{这一页先介绍实验材料与评分范式。我们使用的数据文件是 1b\_groupswap\_demensionsentence.xlsx，最终纳入分析的是 371 组有效配对样本。每组样本都包含同一语义模板下的男性版句子和女性版句子。评分任务采用 0 到 6 分的整数等级量表，用于评定句子的攻击性强弱。每组配对会在两个模型、两种提示条件下分别接受独立评估，因此每组样本共有四次评分，分别是男性版 Zero-shot、女性版 Zero-shot、男性版 CoT 和女性版 CoT。}
+\end{frame}
 
-    \column{0.48\textwidth}
+\begin{frame}{实验设计（2/2）}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.52\textwidth}
       \textbf{设计的内部效度}
       \begin{itemize}
         \item 配对比较有效控制了内容层面的混杂变量。
@@ -108,13 +117,27 @@
         \item 唯一系统性操纵变量为目标性别指称。
       \end{itemize}
 
-      \vspace{0.5em}
+    \column{0.48\textwidth}
       \textbf{结果解读约定}
       \begin{itemize}
         \item 若 $F-M>0$：表明模型对女性版赋予了更高的攻击性评分。
         \item 若 $F-M<0$：表明模型对男性版赋予了更高的攻击性评分。
       \end{itemize}
   \end{columns}
+  \pdfpcnote{这一页补充说明实验设计的解释逻辑。由于我们采用的是严格的配对比较，每一组男女版本句子在语义内容、攻击维度和句法结构上都尽量保持一致，因此可以有效控制内容层面的混杂变量。也就是说，模型评分的差异主要只能归因于目标性别指称的替换。后续所有结果统一采用女性版评分减去男性版评分，也就是 F 减 M 来表示差值：如果这个值大于 0，说明模型对女性版给出了更高的攻击性评分；如果小于 0，则说明模型对男性版给出了更高评分。}
+\end{frame}
+
+\begin{frame}{语料生成与配对构建说明}
+  \small
+  \begin{itemize}
+    \item \textbf{编码框架先行}：语料并非随意拼接，而是先基于相关文献进行整合式归纳，建立攻击性表达的三级编码框架，最终形成 \textbf{10 个一级维度、71 个二级维度、183 个三级维度}。
+    \item \textbf{语句生成原则}：以各维度的语义特征、攻击对象与表达方式为约束，围绕中文社交媒体中的常见辱骂/贬损表达风格，构造覆盖不同维度的攻击性句子初稿。
+    \item \textbf{生成与人工修订结合}：在框架约束下，借助生成模型完成句子初版，再由研究者进行逐条筛查与人工改写；对超过一半的样本进行了显著修订，以提升语感自然度、场景合理性与中文网络表达的真实性。
+    \item \textbf{真实性校准}：人工修订过程中参考了微博等中文社交平台中可观察到的辱骂表达方式，但未直接复制现成帖子，而是进行改写、去标识化与语义归并，以避免具体个体信息与平台噪声进入数据集。
+    \item \textbf{配对构建方式}：在同一语义模板下，仅替换目标性别指称词，生成男性版与女性版句子，确保两版本在攻击内容、句法结构和强度线索上尽可能保持一致。
+    \item \textbf{最终用途}：因此，这 371 组样本可视为一套 \textbf{由理论编码框架约束、生成模型辅助起草、研究者深度人工修订并经性别配对构建的攻击性语料集}。
+  \end{itemize}
+  \pdfpcnote{这一页用于说明 371 条配对语料的生成逻辑。需要强调的是，这批语料不是直接从平台上机械抓取来的，也不是完全由模型自由生成，而是先以文献为基础建立三级编码框架，再在这一框架约束下完成语句起草与人工修订。具体来说，我们先围绕十个一级攻击维度及其下属的二级、三级类别，确定每类攻击表达的核心语义特征；随后结合中文社交媒体中常见的辱骂风格形成句子初稿。在初稿阶段借助了生成模型提高覆盖效率，但研究者对语料进行了逐条筛查，并对超过一半的句子做了明显修改，使表达更贴近真实中文网络语境。人工修订时参考了微博等平台中可观察到的辱骂话语方式，但没有直接复制具体帖子，而是进行了改写、去标识化和归并处理。最后，在同一语义模板下仅替换性别指称词，构造男性版与女性版句子，从而保证配对比较的内部效度。}
 \end{frame}
 
 \begin{frame}{数据结构与维度覆盖}
@@ -144,6 +167,7 @@
     \item 人际关系、经济资源、社会地位
     \item 性客体化（性羞辱）、性别角色与性别表达
   \end{itemize}
+  \pdfpcnote{这张幻灯片汇总了数据的基本结构。371 组有效配对分布在 10 个一级维度、71 个二级维度和 183 个三级维度之上，维度体系涵盖了从外貌形象、能力才干到性客体化等多个攻击性内容领域。两个模型乘以两种提示条件构成四个分析面板。分析单元始终是同一语义模板下的男女版本配对，这一点是理解后续所有统计分析的基础。}
 \end{frame}
 
 \begin{frame}{统计分析方案}
@@ -166,6 +190,7 @@
         \item 在每个模型 $\times$ 提示条件组合内实施 Benjamini-Hochberg FDR 校正
       \end{itemize}
   \end{itemize}
+  \pdfpcnote{统计分析方案的设计遵循了从总体到局部、从描述到推断的递进逻辑。核心比较指标是每组配对的女性版减去男性版的评分差值。在总体层面，我们采用均值差及 Bootstrap 95\% 置信区间来量化效应大小，用 Wilcoxon 符号秩检验进行推断——之所以选择非参数检验，是考虑到因变量为离散等级评分，不宜假定正态分布。同时报告配对效应量 Cohen's $d_z$。方向性分析则关注差异的不对称性：我们统计三类配对的比例，并对非零差值样本实施符号检验。最后，在维度层面，我们在各一级维度内分别进行配对比较，并采用 Benjamini-Hochberg 方法进行多重比较校正，以控制假阳性率。}
 \end{frame}
 
 \begin{frame}{总体检验结果}
@@ -189,26 +214,31 @@
     四个分析面板均呈现显著且一致的正向差值：\textbf{女性版攻击性评分系统性高于男性版}。
     此外，\textbf{Qwen 的偏差效应强于 Llama}，且 \textbf{CoT 提示条件进一步放大了该偏差}。
   \end{block}
+  \pdfpcnote{这张表格呈现了四个分析面板的总体检验结果，这是本研究最核心的发现。请各位关注几个关键数据：首先，所有四个面板的均值差均为正值，范围从 0.151 到 0.302，且 Bootstrap 置信区间均不包含零值——这意味着女性版评分系统性地高于男性版。其次，Wilcoxon 检验的 $q$ 值均远小于 0.001，最小可达 $10^{-25}$ 数量级，统计显著性非常充分。第三，效应量 Cohen's $d_z$ 从 0.339 到 0.648，按照 Cohen 的标准属于中等偏小到中等偏大的效应。值得注意的两个规律是：Qwen 的偏差效应始终强于 Llama，CoT 提示条件下的偏差始终大于 Zero-shot 条件。这提示偏差的强度同时受模型架构和推理策略的调节。}
 \end{frame}
 
 \begin{frame}{图 1A：配对攻击性评分（Llama Maverick · Zero-shot）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig1_paired_scores_panel_1.png}
+  \pdfpcnote{这是图 1 的第一个面板，展示的是 Llama Maverick 在 Zero-shot 条件下的配对评分。图中每条灰色连线代表一组配对样本，线段两端分别对应男性版和女性版的评分。黑色标记为总体均值及其置信区间。可以直观地看到，连线整体呈现从左侧（男性版）向右侧（女性版）的上升趋势，表明女性版评分普遍高于男性版。}
 \end{frame}
 
 \begin{frame}{图 1B：配对攻击性评分（Llama Maverick · CoT）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig1_paired_scores_panel_2.png}
+  \pdfpcnote{这是 Llama Maverick 在 CoT 条件下的配对评分图。与 Zero-shot 面板相比，可以观察到上升趋势更为明显，这与前面表格中报告的 CoT 条件下更大的均值差（0.210 vs. 0.151）相一致。CoT 提示要求模型在给出评分前先进行逐步推理，但这种额外的推理过程似乎并未纠正偏差，反而放大了偏差效应。}
 \end{frame}
 
 \begin{frame}{图 1C：配对攻击性评分（Qwen 2.5 72B · Zero-shot）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig1_paired_scores_panel_3.png}
+  \pdfpcnote{这是 Qwen 2.5 72B 在 Zero-shot 条件下的面板。即使在不使用 CoT 的情况下，Qwen 的偏差效应（均值差 0.224，$d_z$ = 0.520）已经超过了 Llama 在 CoT 条件下的表现，说明模型间的偏差差异是实质性的，不能仅通过提示策略来解释。}
 \end{frame}
 
 \begin{frame}{图 1D：配对攻击性评分（Qwen 2.5 72B · CoT）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig1_paired_scores_panel_4.png}
+  \pdfpcnote{Qwen 在 CoT 条件下的面板呈现了四个面板中最强的偏差效应，均值差达到 0.302，$d_z$ 为 0.648。从图形上看，连线的上升趋势最为清晰。这一结果进一步支持了模型与提示策略对偏差存在交互效应的推断：Qwen 本身的偏差基线较高，而 CoT 推理又在此基础上叠加了额外的偏差放大。}
 \end{frame}
 
 \begin{frame}{图 1 解读}
@@ -224,26 +254,31 @@
     由于采用被试内配对设计，上述结果并非源于样本间的异质性，
     而是反映了仅替换性别目标词后模型评分所产生的系统性偏移。
   \end{alertblock}
+  \pdfpcnote{这张幻灯片是对图 1 四个面板的统一解读。我想特别强调一点：由于采用的是被试内配对设计，每条连线的两端来自同一语义模板，因此我们观察到的评分差异不可能归因于不同句子之间的内容差异。这种设计逻辑为因果推断提供了较强的支持——偏差的唯一可能来源就是性别目标词的替换。这是本研究在方法论上的核心优势之一。}
 \end{frame}
 
 \begin{frame}{图 2A：配对分差分布（Llama Maverick · Zero-shot）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig2_difference_distribution_panel_1.png}
+  \pdfpcnote{图 2 系列展示的是配对分差的频率分布。这张是 Llama Zero-shot 条件下的结果。横轴为女性版减去男性版的评分差值，零值线代表无偏差的理论基准。可以看到，虽然大量配对集中在零值处——即评分一致——但分布整体向正值方向偏移，红色均值线位于零值右侧。}
 \end{frame}
 
 \begin{frame}{图 2B：配对分差分布（Llama Maverick · CoT）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig2_difference_distribution_panel_2.png}
+  \pdfpcnote{Llama CoT 条件下的分差分布。与 Zero-shot 面板相比，正值区域的频率有所增加，分布的右偏特征更加明显。这再次印证了 CoT 提示对偏差的放大效应。}
 \end{frame}
 
 \begin{frame}{图 2C：配对分差分布（Qwen 2.5 72B · Zero-shot）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig2_difference_distribution_panel_3.png}
+  \pdfpcnote{Qwen Zero-shot 条件下的分差分布。对比 Llama 的两个面板，Qwen 的正值区域面积明显更大，反映了 Qwen 在偏差幅度上的优势。同时请注意负值区域的样本极少，说明偏差的方向性非常集中。}
 \end{frame}
 
 \begin{frame}{图 2D：配对分差分布（Qwen 2.5 72B · CoT）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig2_difference_distribution_panel_4.png}
+  \pdfpcnote{Qwen CoT 条件下的分差分布，这是偏差效应最强的面板。分布的正偏特征最为显著，且几乎没有负值样本出现。从分布形态上看，这已经不再是一个围绕零点的对称分布加上随机扰动，而是一个实质性的单向偏移。}
 \end{frame}
 
 \begin{frame}{图 2 解读}
@@ -261,11 +296,13 @@
     \item 配对差值的整体分布呈现系统性右移，表明偏差具有普遍性。
     \item Qwen 的偏移幅度显著大于 Llama。
   \end{itemize}
+  \pdfpcnote{对图 2 的统一解读需要关注以下几点。第一，偏差效应并非由少数极端样本驱动，而是体现为整个分差分布的系统性右移，这一点对于排除异常值干扰非常重要。第二，Qwen 的偏移幅度在两种提示条件下均明显大于 Llama，说明模型间差异具有跨条件的稳健性。第三，从分布形态来看，零值处仍然聚集了大量样本，意味着多数配对的评分是一致的，但在产生差异的样本中，方向性高度集中——这个特征我们将在下一张方向性分析中进一步展示。}
 \end{frame}
 
 \begin{frame}{图 3：分差方向比例}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.78\textheight,keepaspectratio]{\figdir/fig3_directionality.png}
+  \pdfpcnote{图 3 以堆叠条形图的形式展示了四个面板中配对差值的方向性分布。三种颜色分别对应女性版评分更高、评分相同、男性版评分更高三类配对。可以非常直观地看到，在所有面板中，女性版评分更高的配对数量远远超过男性版评分更高的配对。尤其是 Qwen CoT 面板，几乎没有出现男性版评分更高的情况。}
 \end{frame}
 
 \begin{frame}{方向性检验结果}
@@ -289,26 +326,31 @@
     尽管评分一致的配对占较大比例，但在产生差异的样本中，方向性高度集中于女性版评分更高。
     尤其在 Qwen + CoT 条件下，该单向偏差近乎绝对。
   \end{block}
+  \pdfpcnote{方向性检验的数据非常有说服力。以 Llama Zero-shot 为例，在产生评分差异的 70 组配对中，62 组是女性版更高，仅 8 组是男性版更高，比例接近 8:1。而在 Qwen CoT 条件下，111 组女性版更高，0 组男性版更高——这是一个完全单向的结果。符号检验的 $q$ 值从 $10^{-11}$ 到 $10^{-33}$，统计证据极其充分。这一分析的意义在于，即使均值差的绝对值看似不大，但差异的方向性如此高度一致，这本身就构成了系统性偏差的强有力证据。如果偏差是随机的，我们应当期望正负差值的比例接近 1:1，但实际观察到的分布远远偏离了这个预期。}
 \end{frame}
 
 \begin{frame}{图 4A：一级维度森林图（Llama Maverick · Zero-shot）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig4_level1_forest_panel_1.png}
+  \pdfpcnote{图 4 系列是一级维度层面的森林图。这张是 Llama Zero-shot 面板。森林图中每一行对应一个一级维度，点估计为该维度内配对差值的均值，横线为置信区间。零值线代表无偏差基准。可以观察到各维度的效应方向和大小存在异质性，部分维度的置信区间包含零值，表明在该面板中偏差未达显著。}
 \end{frame}
 
 \begin{frame}{图 4B：一级维度森林图（Llama Maverick · CoT）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig4_level1_forest_panel_2.png}
+  \pdfpcnote{Llama CoT 条件下的森林图。与 Zero-shot 面板相比，可以看到更多维度的点估计偏离零值线更远，且性客体化和社会地位两个维度的效应尤为突出。CoT 推理在 Llama 上不仅放大了总体偏差，也使得维度间的差异化特征更加清晰。}
 \end{frame}
 
 \begin{frame}{图 4C：一级维度森林图（Qwen 2.5 72B · Zero-shot）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig4_level1_forest_panel_3.png}
+  \pdfpcnote{Qwen Zero-shot 条件下的维度森林图。Qwen 在多个维度上均展现出显著的正向偏差，其中性客体化和情绪稳定性维度的效应最为突出。与 Llama 相比，Qwen 的偏差不仅整体更强，而且在维度层面上也更加广泛和稳健。}
 \end{frame}
 
 \begin{frame}{图 4D：一级维度森林图（Qwen 2.5 72B · CoT）}
   \centering
   \includegraphics[width=0.90\textwidth,height=0.82\textheight,keepaspectratio]{\paneldir/fig4_level1_forest_panel_4.png}
+  \pdfpcnote{Qwen CoT 条件下的森林图，呈现了四个面板中最为广泛和显著的维度层面偏差。几乎所有维度的点估计都位于零值线右侧，其中性客体化维度的效应量最大。这一面板的结果提示我们，在 Qwen 模型结合 CoT 推理的条件下，性别目标偏差已经渗透到了几乎所有的攻击性语义维度当中。}
 \end{frame}
 
 \begin{frame}{维度层面效应解析}
@@ -334,6 +376,7 @@
     \item 性客体化（性羞辱）维度在两个模型中均表现为偏差最为显著的维度。
     \item 相较于 Llama，Qwen 在更多维度上呈现出更强且更为稳健的正向偏差。
   \end{itemize}
+  \pdfpcnote{这张表格汇总了经 FDR 校正后仍然显著的维度层面结果。几个关键发现值得强调：首先，性客体化（即性羞辱）维度在两个模型的多个面板中均达到了显著水平，是偏差效应最为稳健的维度。这一发现在理论上具有重要意义——它表明模型可能内化了一种将针对女性的性客体化内容视为更具攻击性的评价倾向。其次，Qwen 在情绪稳定性维度上也呈现出显著偏差，而 Llama 则在社会地位维度上表现突出，两个模型的偏差特征存在维度层面的差异化。第三，从方法论角度看，我们在每个面板内进行了 Benjamini-Hochberg FDR 校正，以控制因多重比较而导致的假阳性膨胀，因此这些结果的可信度较高。总体而言，偏差并非在所有维度上均匀分布，而是呈现出明显的维度特异性。}
 \end{frame}
 
 \begin{frame}{综合结论}
@@ -344,6 +387,7 @@
     \item 偏差效应量同时受 \textbf{提示策略} 调节：CoT $>$ Zero-shot。
     \item 该偏差在特定语义维度（尤其是性客体化维度）中表现尤为集中。
   \end{enumerate}
+  \pdfpcnote{综合以上全部分析，我们可以得出五条核心结论。第一，研究 1b 为性别目标偏差的存在提供了充分的实证证据，这一偏差在严格的配对设计下被清晰地检测到。第二，偏差方向高度一致——女性版句子被系统性地赋予了更高的攻击性评分，这种一致性在方向性检验中尤其突出。第三，偏差效应量存在显著的模型间差异，Qwen 的效应量始终大于 Llama。第四，提示策略对偏差具有调节作用，CoT 条件下的偏差大于 Zero-shot，这提示链式思维推理可能在某种程度上强化了模型已有的评价偏向。第五，偏差在语义维度层面并非均匀分布，性客体化维度是偏差的主要聚集区域。}
 \end{frame}
 
 \begin{frame}{方法论优势}
@@ -358,6 +402,7 @@
       \end{itemize}
     \item 综上，本研究结果兼具可解释性与统计稳健性。
   \end{itemize}
+  \pdfpcnote{在方法论层面，本研究有几个值得肯定的设计特点。最核心的是被试内配对设计，它通过将同一语义模板作为自身的控制组，有效消除了内容差异所引入的混杂变量。在统计分析上，我们采用了多层次、多方法的收敛性策略：描述性层面有均值差和置信区间，推断性层面有 Wilcoxon 检验和符号检验，效应量层面有 Cohen's $d_z$，维度层面有 FDR 校正后的配对比较。这些不同层次的分析方法所得到的结论高度一致，形成了相互印证的证据链。这种多方法收敛的分析策略增强了研究结论的可信度和稳健性。}
 \end{frame}
 
 \begin{frame}{研究局限}
@@ -367,6 +412,7 @@
     \item 本报告聚焦一级维度层面的分析；若需深入探讨偏差的认知机制，尚需补充二级与三级维度的精细化分析。
     \item 当前结论基于两个特定模型，向更广泛的大语言模型生态推广尚需进一步实证验证。
   \end{itemize}
+  \pdfpcnote{当然，本研究也存在若干需要审慎对待的局限性。第一，因变量为 0 到 6 的离散等级评分，量表粒度有限，因此效应量的实际意义需要结合这一特征来解读——0.15 到 0.30 的均值差在 7 个等级的量表上意味着什么，需要与具体的应用场景相联系。第二，评分一致的配对在各面板中占比较高（约 70\% 至 80\%），表明偏差虽然具有系统性，但并非在每一组样本中都会被触发，这可能与特定的语义内容或攻击维度有关。第三，本报告的维度分析仅涉及一级维度，若要深入理解偏差的认知机制，还需要在二级和三级维度上进行更精细的分析。第四，我们的结论基于 Llama Maverick 和 Qwen 2.5 72B 两个特定模型，要将结论推广到更广泛的大语言模型生态中，还需要更多模型的验证。}
 \end{frame}
 
 \begin{frame}{后续研究方向}
@@ -376,6 +422,7 @@
     \item 将本研究的分析范式迁移至其他毒性检测与仇恨言论评分任务，以检验结论的可重复性。
     \item 进一步检验不同措辞模板及维度子集下结果的稳健性。
   \end{itemize}
+  \pdfpcnote{基于上述局限性，后续研究可以从以下几个方向推进。首先，补充二级维度的精细化分析以及极端样本的个案考察，以揭示偏差在更细粒度语义类别上的分布特征。其次，可以构建混合效应模型或有序回归模型，将性别版本、模型类型、提示策略等因素作为固定效应，将语义模板作为随机效应，同时纳入分析框架，从而更全面地刻画各因素及其交互作用对偏差的贡献。第三，将本研究的分析范式迁移至其他毒性检测和仇恨言论评分任务中，以检验结论的可重复性和外部效度。最后，还可以通过变换措辞模板和维度子集来进一步验证结果的稳健性。}
 \end{frame}
 
 \begin{frame}{总结}
@@ -390,6 +437,7 @@
     \item CoT 提示策略对偏差具有显著的放大效应。
     \item 偏差在特定语义维度上呈现明显的聚集特征。
   \end{itemize}
+  \pdfpcnote{最后做一个简要的总结。研究 1b 的核心发现是：仅替换攻击性文本中的性别目标词，就足以导致大语言模型对女性版本产生系统性更高的攻击性评分。这一结论得到了四个分析面板的一致支持，统计显著性均远超常规阈值。从实践角度来看，这一发现对于依赖大语言模型进行内容审核的应用场景具有直接的警示意义——如果模型在评估攻击性时存在系统性的性别偏差，那么基于模型评分的自动化内容审核决策可能会对不同性别群体产生不公平的影响。感谢各位老师和同学的聆听，欢迎提问和讨论。}
 \end{frame}
 
 \end{document}

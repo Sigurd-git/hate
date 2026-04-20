@@ -47,7 +47,6 @@ MODELS: Sequence[str] = (
     "deepseek/deepseek-r1-0528",
     "deepseek/deepseek-v3.2-exp",
     "moonshotai/kimi-k2-thinking",
-    "baidu/ernie-4.5-21b-a3b",
     "qwen/qwen-2.5-72b-instruct",
 )
 
@@ -335,7 +334,7 @@ def score_group_swap_dataset(
             model=model,
             prompt_paradigm="zero_shot",
             timeout=request_timeout,
-            prompt_mode="attack",
+            prompt_mode="attack_7pt_likert",
             score_max=6,
         )
         male_cot_response = pipeline.request_score(
@@ -343,7 +342,7 @@ def score_group_swap_dataset(
             model=model,
             prompt_paradigm="chain_of_thought",
             timeout=request_timeout,
-            prompt_mode="attack",
+            prompt_mode="attack_7pt_likert",
             score_max=6,
         )
         female_zeroshot_response = pipeline.request_score(
@@ -351,7 +350,7 @@ def score_group_swap_dataset(
             model=model,
             prompt_paradigm="zero_shot",
             timeout=request_timeout,
-            prompt_mode="attack",
+            prompt_mode="attack_7pt_likert",
             score_max=6,
         )
         female_cot_response = pipeline.request_score(
@@ -359,7 +358,7 @@ def score_group_swap_dataset(
             model=model,
             prompt_paradigm="chain_of_thought",
             timeout=request_timeout,
-            prompt_mode="attack",
+            prompt_mode="attack_7pt_likert",
             score_max=6,
         )
 

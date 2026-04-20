@@ -17,20 +17,43 @@ from scipy import stats
 DEFAULT_ANALYSIS_DIR = Path("outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b")
 DEFAULT_OUTPUT_DIR = DEFAULT_ANALYSIS_DIR / "figures"
 RNG = np.random.default_rng(20260318)
-PANEL_ORDER = [
-    ("meta-llama_llama-4-maverick", "zeroshot"),
-    ("meta-llama_llama-4-maverick", "cot"),
-    ("qwen_qwen-2.5-72b-instruct", "zeroshot"),
-    ("qwen_qwen-2.5-72b-instruct", "cot"),
+CONDITION_ORDER = [
+    "attack_3pt",
+    "attack_7pt_likert",
+    "attack_slider_0_100",
 ]
-PANEL_LETTERS = ["A", "B", "C", "D"]
+MODEL_ORDER = [
+    "openai_gpt-5.1",
+    "anthropic_claude-opus-4.5",
+    "z-ai_glm-4.6",
+    "meta-llama_llama-4-maverick",
+    "deepseek_deepseek-r1-0528",
+    "deepseek_deepseek-v3.2-exp",
+    "moonshotai_kimi-k2-thinking",
+    "qwen_qwen-2.5-72b-instruct",
+    "google_gemma-4-31b-it",
+]
+PANEL_LETTERS = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 MODEL_LABEL_MAP = {
+    "openai_gpt-5.1": "GPT-5.1",
+    "anthropic_claude-opus-4.5": "Claude Opus 4.5",
+    "z-ai_glm-4.6": "GLM 4.6",
     "meta-llama_llama-4-maverick": "Llama Maverick",
+    "deepseek_deepseek-r1-0528": "DeepSeek R1",
+    "deepseek_deepseek-v3.2-exp": "DeepSeek V3.2",
+    "moonshotai_kimi-k2-thinking": "Kimi K2",
     "qwen_qwen-2.5-72b-instruct": "Qwen 2.5 72B",
+    "google_gemma-4-31b-it": "Gemma 4 31B",
 }
 SETTING_LABEL_MAP = {
-    "zeroshot": "Zero-shot",
-    "cot": "CoT",
+    "attack_3pt": "3点评分",
+    "attack_7pt_likert": "7点评分",
+    "attack_slider_0_100": "滑动条评分",
+}
+SETTING_SCORE_LIMIT_MAP = {
+    "attack_3pt": (-0.1, 2.1),
+    "attack_7pt_likert": (-0.2, 6.2),
+    "attack_slider_0_100": (-5.0, 105.0),
 }
 VERSION_ORDER = ["男人版", "女人版"]
 VERSION_LABEL_MAP = {
@@ -132,6 +155,15 @@ def cohens_dz(values: np.ndarray) -> float:
     if np.isclose(standard_deviation, 0.0):
         return 0.0
     return float(np.mean(values) / standard_deviation)
+
+
+def safe_wilcoxon_test(values: np.ndarray) -> tuple[float, float]:
+    if values.size == 0:
+        return (math.nan, math.nan)
+    if np.allclose(values, 0.0):
+        return (0.0, 1.0)
+    result = stats.wilcoxon(values, zero_method="wilcox", alternative="two-sided")
+    return (float(result.statistic), float(result.pvalue))
 
 
 def model_label(model_prefix: str) -> str:
@@ -258,6 +290,42 @@ def save_axis_as_figure(axis: plt.Axes, output_path: Path) -> None:
     figure.savefig(output_path.with_suffix(".pdf"), bbox_inches=tight_bbox_inches)
 
 
+def ordered_conditions(values: Iterable[str]) -> list[str]:
+    known_conditions = [condition for condition in CONDITION_ORDER if condition in values]
+    extra_conditions = sorted(set(values) - set(known_conditions))
+    return known_conditions + extra_conditions
+
+
+def ordered_models(values: Iterable[str]) -> list[str]:
+    known_models = [model_name for model_name in MODEL_ORDER if model_name in values]
+    extra_models = sorted(set(values) - set(known_models))
+    return known_models + extra_models
+
+
+def panel_order_for_condition(
+    difference_df: pd.DataFrame, condition_name: str
+) -> list[tuple[str, str]]:
+    condition_models = ordered_models(
+        difference_df.loc[difference_df["setting"] == condition_name, "model_prefix"].unique().tolist()
+    )
+    return [(model_prefix, condition_name) for model_prefix in condition_models]
+
+
+def create_panel_figure(panel_count: int) -> tuple[plt.Figure, list[plt.Axes]]:
+    column_count = 2 if panel_count > 1 else 1
+    row_count = math.ceil(panel_count / column_count)
+    fig, axes = plt.subplots(
+        row_count,
+        column_count,
+        figsize=(7.8 * column_count, 5.9 * row_count),
+        squeeze=False,
+    )
+    flat_axes = list(axes.flat)
+    for axis in flat_axes[panel_count:]:
+        axis.remove()
+    return fig, flat_axes[:panel_count]
+
+
 def prepare_frames(analysis_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     merged_df = pd.read_csv(analysis_dir / "merged_scores_with_dimensions.csv")
     difference_df = pd.read_csv(analysis_dir / "same_sentence_gender_differences.csv")
@@ -278,7 +346,7 @@ def compute_overall_statistics(difference_df: pd.DataFrame, bootstrap_iterations
     for (model_prefix, setting), group in difference_df.groupby(["model_prefix", "setting"], sort=True):
         diff_values = group["女减男分差"].to_numpy(dtype=float)
         t_result = stats.ttest_1samp(diff_values, popmean=0.0)
-        wilcoxon_result = stats.wilcoxon(diff_values, zero_method="wilcox", alternative="two-sided")
+        wilcoxon_statistic, wilcoxon_p_value = safe_wilcoxon_test(diff_values)
         nonzero_values = diff_values[diff_values != 0]
         sign_p = stats.binomtest(int(np.sum(nonzero_values > 0)), n=len(nonzero_values), p=0.5).pvalue if len(nonzero_values) else math.nan
         ci_low, ci_high = bootstrap_mean_ci(diff_values, bootstrap_iterations)
@@ -298,8 +366,8 @@ def compute_overall_statistics(difference_df: pd.DataFrame, bootstrap_iterations
                 "ci_high": ci_high,
                 "t_stat": float(t_result.statistic),
                 "t_p": float(t_result.pvalue),
-                "wilcoxon_stat": float(wilcoxon_result.statistic),
-                "wilcoxon_p": float(wilcoxon_result.pvalue),
+                "wilcoxon_stat": wilcoxon_statistic,
+                "wilcoxon_p": wilcoxon_p_value,
                 "cohens_dz": cohens_dz(diff_values),
                 "female_higher": int(np.sum(diff_values > 0)),
                 "male_higher": int(np.sum(diff_values < 0)),
@@ -352,7 +420,7 @@ def compute_level1_statistics(difference_df: pd.DataFrame, bootstrap_iterations:
             continue
         try:
             t_result = stats.ttest_1samp(diff_values, popmean=0.0)
-            wilcoxon_result = stats.wilcoxon(diff_values, zero_method="wilcox", alternative="two-sided")
+            wilcoxon_statistic, wilcoxon_p_value = safe_wilcoxon_test(diff_values)
         except ValueError:
             continue
         ci_low, ci_high = bootstrap_mean_ci(diff_values, bootstrap_iterations)
@@ -369,7 +437,7 @@ def compute_level1_statistics(difference_df: pd.DataFrame, bootstrap_iterations:
                 "ci_low": ci_low,
                 "ci_high": ci_high,
                 "t_p": float(t_result.pvalue),
-                "wilcoxon_p": float(wilcoxon_result.pvalue),
+                "wilcoxon_p": wilcoxon_p_value,
                 "cohens_dz": cohens_dz(diff_values),
                 "female_higher": int(np.sum(diff_values > 0)),
                 "male_higher": int(np.sum(diff_values < 0)),
@@ -390,14 +458,16 @@ def compute_level1_statistics(difference_df: pd.DataFrame, bootstrap_iterations:
 def plot_figure1_paired_scores(
     difference_df: pd.DataFrame,
     overall_df: pd.DataFrame,
+    condition_name: str,
     output_path: Path,
     panel_output_dir: Path | None = None,
 ) -> None:
     apply_journal_style()
     configure_matplotlib_fonts()
-    fig, axes = plt.subplots(2, 2, figsize=(15.4, 12.2), sharey=True)
+    panel_order = panel_order_for_condition(difference_df, condition_name)
+    fig, axes = create_panel_figure(len(panel_order))
 
-    for panel_index, (axis, (model_prefix, setting)) in enumerate(zip(axes.flat, PANEL_ORDER)):
+    for panel_index, (axis, (model_prefix, setting)) in enumerate(zip(axes, panel_order)):
         style_axis(axis)
         panel_df = difference_df[
             (difference_df["model_prefix"] == model_prefix) & (difference_df["setting"] == setting)
@@ -475,13 +545,18 @@ def plot_figure1_paired_scores(
             bbox=dict(boxstyle="round,pad=0.32,rounding_size=0.14", facecolor=JOURNAL_COLORS["soft_white"], alpha=0.96, edgecolor="#E7E1D8", linewidth=0.7),
         )
         axis.set_xticks([0, 1], [version_label(name) for name in VERSION_ORDER])
-        axis.set_ylim(-0.2, 6.2)
+        axis.set_ylim(*SETTING_SCORE_LIMIT_MAP.get(condition_name, (-0.2, 6.2)))
         axis.set_title(f"{model_label(model_prefix)} · {setting_label(setting)}", loc="left", pad=10)
         axis.set_xlabel("")
         axis.set_ylabel("攻击性评分")
         add_panel_letter(axis, PANEL_LETTERS[panel_index])
 
-    fig.suptitle("图1|性别替换句子版本的配对攻击性评分", y=0.992, fontsize=17, fontweight="semibold")
+    fig.suptitle(
+        f"图1|性别替换句子版本的配对攻击性评分（{setting_label(condition_name)}）",
+        y=0.992,
+        fontsize=17,
+        fontweight="semibold",
+    )
     fig.text(
         0.5,
         0.012,
@@ -494,7 +569,7 @@ def plot_figure1_paired_scores(
     fig.tight_layout(rect=(0, 0.035, 1, 0.968), w_pad=2.3, h_pad=2.5)
     save_figure(fig, output_path)
     if panel_output_dir is not None:
-        for panel_index, axis in enumerate(axes.flat, start=1):
+        for panel_index, axis in enumerate(axes, start=1):
             save_axis_as_figure(axis, panel_output_dir / f"fig1_paired_scores_panel_{panel_index}.png")
     plt.close(fig)
 
@@ -502,13 +577,15 @@ def plot_figure1_paired_scores(
 def plot_figure2_difference_distribution(
     difference_df: pd.DataFrame,
     overall_df: pd.DataFrame,
+    condition_name: str,
     output_path: Path,
     panel_output_dir: Path | None = None,
 ) -> None:
     apply_journal_style()
     configure_matplotlib_fonts()
-    fig, axes = plt.subplots(2, 2, figsize=(15.2, 11.8), sharex=True, sharey=True)
-    for panel_index, (axis, (model_prefix, setting)) in enumerate(zip(axes.flat, PANEL_ORDER)):
+    panel_order = panel_order_for_condition(difference_df, condition_name)
+    fig, axes = create_panel_figure(len(panel_order))
+    for panel_index, (axis, (model_prefix, setting)) in enumerate(zip(axes, panel_order)):
         style_axis(axis)
         panel_df = difference_df[
             (difference_df["model_prefix"] == model_prefix) & (difference_df["setting"] == setting)
@@ -544,7 +621,12 @@ def plot_figure2_difference_distribution(
             bbox=dict(boxstyle="round,pad=0.32,rounding_size=0.14", facecolor=JOURNAL_COLORS["soft_white"], alpha=0.96, edgecolor="#E7E1D8", linewidth=0.7),
         )
         add_panel_letter(axis, PANEL_LETTERS[panel_index])
-    fig.suptitle("图2|配对分差分布（女版 - 男版）", y=0.992, fontsize=17, fontweight="semibold")
+    fig.suptitle(
+        f"图2|配对分差分布（女版 - 男版，{setting_label(condition_name)}）",
+        y=0.992,
+        fontsize=17,
+        fontweight="semibold",
+    )
     fig.text(
         0.5,
         0.012,
@@ -557,12 +639,16 @@ def plot_figure2_difference_distribution(
     fig.tight_layout(rect=(0, 0.035, 1, 0.968), w_pad=2.3, h_pad=2.5)
     save_figure(fig, output_path)
     if panel_output_dir is not None:
-        for panel_index, axis in enumerate(axes.flat, start=1):
+        for panel_index, axis in enumerate(axes, start=1):
             save_axis_as_figure(axis, panel_output_dir / f"fig2_difference_distribution_panel_{panel_index}.png")
     plt.close(fig)
 
 
-def plot_figure3_directionality(direction_df: pd.DataFrame, output_path: Path) -> None:
+def plot_figure3_directionality(
+    direction_df: pd.DataFrame,
+    condition_name: str,
+    output_path: Path,
+) -> None:
     apply_journal_style()
     configure_matplotlib_fonts()
     ordered_df = direction_df.copy()
@@ -598,8 +684,24 @@ def plot_figure3_directionality(direction_df: pd.DataFrame, output_path: Path) -
     ax.set_xticks(x_positions, ordered_df["panel_label"].tolist())
     ax.set_ylabel("句子对占比")
     ax.set_ylim(0, 1.2)
-    ax.set_title("图3|不同模型与提示设置下的分差方向", loc="left", pad=12, fontsize=16, fontweight="semibold")
-    legend = ax.legend(title="分差方向", frameon=True, loc="upper right", ncol=1, borderpad=0.8, labelspacing=0.6)
+    ax.set_title(
+        f"图3|不同模型下的分差方向（{setting_label(condition_name)}）",
+        loc="left",
+        pad=12,
+        fontsize=16,
+        fontweight="semibold",
+    )
+    legend = ax.legend(
+        title="分差方向",
+        frameon=True,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.18),
+        ncol=3,
+        borderpad=0.8,
+        labelspacing=0.6,
+        columnspacing=1.2,
+        handletextpad=0.6,
+    )
     legend.get_frame().set_facecolor("white")
     legend.get_frame().set_edgecolor("#E3DDD4")
     legend.get_frame().set_alpha(0.96)
@@ -612,22 +714,24 @@ def plot_figure3_directionality(direction_df: pd.DataFrame, output_path: Path) -
         fontsize=10,
         color=JOURNAL_COLORS["muted_text"],
     )
-    fig.tight_layout(rect=(0, 0.04, 1, 0.98))
+    fig.tight_layout(rect=(0, 0.04, 1, 0.92))
     save_figure(fig, output_path)
     plt.close(fig)
 
 
 def plot_figure4_level1_forest(
     level1_df: pd.DataFrame,
+    condition_name: str,
     output_path: Path,
     top_level1: int,
     panel_output_dir: Path | None = None,
 ) -> None:
     apply_journal_style()
     configure_matplotlib_fonts()
-    fig, axes = plt.subplots(2, 2, figsize=(18.4, 14.2), sharex=True)
+    panel_order = [(model_prefix, condition_name) for model_prefix in ordered_models(level1_df["model_prefix"].unique().tolist())]
+    fig, axes = create_panel_figure(len(panel_order))
 
-    for panel_index, (axis, (model_prefix, setting)) in enumerate(zip(axes.flat, PANEL_ORDER)):
+    for panel_index, (axis, (model_prefix, setting)) in enumerate(zip(axes, panel_order)):
         style_axis(axis)
         panel_df = level1_df[
             (level1_df["model_prefix"] == model_prefix) & (level1_df["setting"] == setting)
@@ -665,12 +769,17 @@ def plot_figure4_level1_forest(
         Line2D([0, 1], [0, 0], color=JOURNAL_COLORS["neutral"], linewidth=2.0, label="横线：95% 置信区间"),
     ]
 
-    fig.suptitle("图4|一级维度效应及其 95% 置信区间（按绝对效应排序）", y=0.992, fontsize=17, fontweight="semibold")
+    fig.suptitle(
+        f"图4|一级维度效应及其 95% 置信区间（{setting_label(condition_name)}，按绝对效应排序）",
+        y=0.992,
+        fontsize=17,
+        fontweight="semibold",
+    )
     fig.legend(handles=legend_handles, loc="lower center", ncol=3, frameon=True, bbox_to_anchor=(0.5, 0.012), fontsize=10.3)
     fig.tight_layout(rect=(0, 0.075, 1, 0.968), w_pad=2.4, h_pad=2.4)
     save_figure(fig, output_path)
     if panel_output_dir is not None:
-        for panel_index, axis in enumerate(axes.flat, start=1):
+        for panel_index, axis in enumerate(axes, start=1):
             save_axis_as_figure(axis, panel_output_dir / f"fig4_level1_forest_panel_{panel_index}.png")
     plt.close(fig)
 
@@ -686,38 +795,60 @@ def main() -> None:
     configure_matplotlib_fonts()
     arguments = parse_arguments()
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
-    panel_output_dir = arguments.output_dir / "panels"
-
     _, difference_df, _ = prepare_frames(arguments.analysis_dir)
-    overall_df = compute_overall_statistics(difference_df, arguments.bootstrap_iterations)
-    direction_df = compute_direction_statistics(difference_df)
-    level1_df = compute_level1_statistics(difference_df, arguments.bootstrap_iterations)
-    save_statistics_tables(arguments.output_dir, overall_df, direction_df, level1_df)
+    condition_names = ordered_conditions(difference_df["setting"].unique().tolist())
 
-    plot_figure1_paired_scores(
-        difference_df,
-        overall_df,
-        arguments.output_dir / "fig1_paired_scores.png",
-        panel_output_dir=panel_output_dir,
-    )
-    plot_figure2_difference_distribution(
-        difference_df,
-        overall_df,
-        arguments.output_dir / "fig2_difference_distribution.png",
-        panel_output_dir=panel_output_dir,
-    )
-    plot_figure3_directionality(direction_df, arguments.output_dir / "fig3_directionality.png")
-    plot_figure4_level1_forest(
-        level1_df,
-        arguments.output_dir / "fig4_level1_forest.png",
-        arguments.top_level1,
-        panel_output_dir=panel_output_dir,
-    )
+    generated_paths: list[Path] = []
+    for condition_name in condition_names:
+        condition_output_dir = arguments.output_dir / condition_name
+        panel_output_dir = condition_output_dir / "panels"
+        condition_difference_df = difference_df.loc[
+            difference_df["setting"] == condition_name
+        ].copy()
+        if condition_difference_df.empty:
+            continue
+
+        overall_df = compute_overall_statistics(
+            condition_difference_df, arguments.bootstrap_iterations
+        )
+        direction_df = compute_direction_statistics(condition_difference_df)
+        level1_df = compute_level1_statistics(
+            condition_difference_df, arguments.bootstrap_iterations
+        )
+        save_statistics_tables(condition_output_dir, overall_df, direction_df, level1_df)
+
+        plot_figure1_paired_scores(
+            condition_difference_df,
+            overall_df,
+            condition_name,
+            condition_output_dir / "fig1_paired_scores.png",
+            panel_output_dir=panel_output_dir,
+        )
+        plot_figure2_difference_distribution(
+            condition_difference_df,
+            overall_df,
+            condition_name,
+            condition_output_dir / "fig2_difference_distribution.png",
+            panel_output_dir=panel_output_dir,
+        )
+        plot_figure3_directionality(
+            direction_df,
+            condition_name,
+            condition_output_dir / "fig3_directionality.png",
+        )
+        plot_figure4_level1_forest(
+            level1_df,
+            condition_name,
+            condition_output_dir / "fig4_level1_forest.png",
+            arguments.top_level1,
+            panel_output_dir=panel_output_dir,
+        )
+        generated_paths.append(condition_output_dir)
 
     print("Plotting finished.")
     print(f"Output directory: {arguments.output_dir}")
     print("Generated files:")
-    for output_path in sorted(arguments.output_dir.iterdir()):
+    for output_path in sorted(generated_paths):
         print(f"  - {output_path.name}")
 
 

@@ -34,11 +34,11 @@ PANEL_ORDER = [
 ]
 
 MODEL_LABELS = {
-    "baidu_ernie-4.5-21b-a3b": "ERNIE-4.5-21B",
     "chatgpt5.1": "ChatGPT-5.1",
     "claude4.5": "Claude-4.5",
     "deepseek_deepseek-r1-0528": "DeepSeek-R1",
     "deepseek_deepseek-v3.2-exp": "DeepSeek-V3.2",
+    "google_gemma-4-31b-it": "Gemma-4-31B",
     "meta-llama_llama-4-maverick": "Llama-4-Maverick",
     "moonshotai_kimi-k2-thinking": "Kimi-K2",
     "qwen_qwen-2.5-72b-instruct": "Qwen-2.5-72B",
@@ -50,11 +50,15 @@ MUTED_MODEL_COLORS = {
     "Claude-4.5": "#C9736B",
     "DeepSeek-R1": "#74AFA7",
     "DeepSeek-V3.2": "#739A63",
-    "ERNIE-4.5-21B": "#A787A8",
+    "Gemma-4-31B": "#8F6FB5",
     "GLM-4.6": "#9C7C67",
     "Kimi-K2": "#C9AD58",
     "Llama-4-Maverick": "#D28B47",
     "Qwen-2.5-72B": "#7B8794",
+}
+
+EXCLUDED_MODEL_NAMES = {
+    "baidu_ernie-4.5-21b-a3b",
 }
 
 BASE_FONT_FAMILY = "DejaVu Sans"
@@ -163,6 +167,9 @@ def load_metrics_table(csv_path: Path) -> pd.DataFrame:
         raise ValueError(f"Missing required columns: {sorted(missing_columns)}")
 
     dataframe = dataframe.copy()
+    dataframe = dataframe.loc[
+        ~dataframe["model"].astype(str).isin(EXCLUDED_MODEL_NAMES)
+    ].copy()
     dataframe["model_label"] = dataframe["model"].map(MODEL_LABELS).fillna(dataframe["model"])
     dataframe["language"] = dataframe["language"].str.lower()
     dataframe["setting"] = dataframe["setting"].str.lower()

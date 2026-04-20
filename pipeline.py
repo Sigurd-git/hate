@@ -75,6 +75,12 @@ DATASET_LANGUAGE_CONFIG: Dict[str, DatasetLanguageRule] = {
     ),
 }
 
+SUPPORTED_ATTACK_PROMPT_MODES = {
+    "attack_3pt",
+    "attack_7pt_likert",
+    "attack_slider_0_100",
+}
+
 
 # def load_samples(
 #     path: str, limit: Optional[int] = None, language: Optional[str] = None
@@ -294,10 +300,10 @@ def _build_default_request_kwargs(
     prompt_mode: str = "hate",
     score_max: int = 5,
 ) -> Dict[str, object]:
-    prompt_text = (
-        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
-        if prompt_mode == "attack"
-        else None
+    prompt_text = _render_attack_prompt_if_needed(
+        sample=sample,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
     )
     if prompt_paradigm == "zero_shot":
         return _compose_request_kwargs(
@@ -331,10 +337,10 @@ def _build_anthropic_request_kwargs(
     prompt_mode: str = "hate",
     score_max: int = 5,
 ) -> Dict[str, object]:
-    prompt_text = (
-        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
-        if prompt_mode == "attack"
-        else None
+    prompt_text = _render_attack_prompt_if_needed(
+        sample=sample,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
     )
     if prompt_paradigm == "zero_shot":
         return _compose_request_kwargs(
@@ -371,10 +377,10 @@ def _build_text_json_request_kwargs(
     prompt_mode: str = "hate",
     score_max: int = 5,
 ) -> Dict[str, object]:
-    prompt_text = (
-        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
-        if prompt_mode == "attack"
-        else None
+    prompt_text = _render_attack_prompt_if_needed(
+        sample=sample,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
     )
     if prompt_paradigm == "zero_shot":
         return _compose_request_kwargs(
@@ -409,10 +415,10 @@ def _build_glm_request_kwargs(
     prompt_mode: str = "hate",
     score_max: int = 5,
 ) -> Dict[str, object]:
-    prompt_text = (
-        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
-        if prompt_mode == "attack"
-        else None
+    prompt_text = _render_attack_prompt_if_needed(
+        sample=sample,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
     )
     request_kwargs = _compose_request_kwargs(
         sample,
@@ -435,10 +441,10 @@ def _build_meta_llama_request_kwargs(
     prompt_mode: str = "hate",
     score_max: int = 5,
 ) -> Dict[str, object]:
-    prompt_text = (
-        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
-        if prompt_mode == "attack"
-        else None
+    prompt_text = _render_attack_prompt_if_needed(
+        sample=sample,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
     )
     request_kwargs = _compose_request_kwargs(
         sample,
@@ -461,10 +467,10 @@ def _build_deepseek_r1_request_kwargs(
     prompt_mode: str = "hate",
     score_max: int = 5,
 ) -> Dict[str, object]:
-    prompt_text = (
-        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
-        if prompt_mode == "attack"
-        else None
+    prompt_text = _render_attack_prompt_if_needed(
+        sample=sample,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
     )
     return _compose_request_kwargs(
         sample,
@@ -487,10 +493,10 @@ def _build_deepseek_v3_request_kwargs(
     prompt_mode: str = "hate",
     score_max: int = 5,
 ) -> Dict[str, object]:
-    prompt_text = (
-        render_attack_prompt(sample.language, prompt_paradigm, sample.text)
-        if prompt_mode == "attack"
-        else None
+    prompt_text = _render_attack_prompt_if_needed(
+        sample=sample,
+        prompt_paradigm=prompt_paradigm,
+        prompt_mode=prompt_mode,
     )
     request_kwargs = _compose_request_kwargs(
         sample,
@@ -510,11 +516,31 @@ RequestBuilder = Callable[
     Dict[str, object],
 ]
 
+
+def _render_attack_prompt_if_needed(
+    sample: Sample,
+    prompt_paradigm: PromptParadigm,
+    prompt_mode: str,
+) -> Optional[str]:
+    """Return an attack-rating prompt only for supported human-rating conditions."""
+    if prompt_mode == "hate":
+        return None
+    if prompt_mode not in SUPPORTED_ATTACK_PROMPT_MODES:
+        raise ValueError(
+            f"Unsupported prompt_mode={prompt_mode}. "
+            f"Supported attack prompt modes: {sorted(SUPPORTED_ATTACK_PROMPT_MODES)}."
+        )
+    return render_attack_prompt(
+        sample.language,
+        prompt_paradigm,
+        sample.text,
+        prompt_mode=prompt_mode,
+    )
+
 MODEL_REQUEST_BUILDERS: Dict[str, RequestBuilder] = {
     "openai/gpt-5.1": _build_default_request_kwargs,
     "anthropic/claude-sonnet-4.5": _build_anthropic_request_kwargs,
     "anthropic/claude-opus-4.5": _build_anthropic_request_kwargs,
-    "baidu/ernie-4.5-21b-a3b": _build_text_json_request_kwargs,
     "qwen/qwen-2.5-72b-instruct": _build_text_json_request_kwargs,
     "z-ai/glm-4.6": _build_glm_request_kwargs,
     "meta-llama/llama-4-maverick:free": _build_meta_llama_request_kwargs,

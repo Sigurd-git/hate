@@ -1,8 +1,8 @@
-"""Run research 1b group-swap attackiveness experiments for two target models.
+"""Run research 1b group-swap attackiveness experiments for configured target models.
 
 This script reads the 1b Excel dataset, extracts the male/female swapped sentence
-columns, injects each sentence into the existing attackiveness prompt templates via
-pipeline.request_score, and writes one consolidated results file per model.
+columns, scores each sentence under three human-style attackiveness conditions,
+and writes one consolidated results file per model.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ import argparse
 import logging
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
+from dataclasses import dataclass
 from typing import Dict, List
 
 import pandas as pd
@@ -27,12 +28,43 @@ REQUEST_TIMEOUT_SECONDS = 60
 MAX_WORKERS = 4
 SAVE_EVERY_COMPLETED_ROWS = 10
 DEFAULT_MODELS = (
-    "qwen/qwen-2.5-72b-instruct",
+    "openai/gpt-5.1",
+    "anthropic/claude-opus-4.5",
+    "z-ai/glm-4.6",
     "meta-llama/llama-4-maverick",
+    "deepseek/deepseek-r1-0528",
+    "deepseek/deepseek-v3.2-exp",
+    "moonshotai/kimi-k2-thinking",
+    "qwen/qwen-2.5-72b-instruct",
+    "google/gemma-4-31b-it",
 )
 
 MALE_COLUMN = "具体内容-男人版"
 FEMALE_COLUMN = "具体内容-女人版"
+
+
+@dataclass(frozen=True)
+class ConditionSpec:
+    """Describe one 1b scoring condition and its score bounds."""
+
+    prompt_mode: str
+    score_max: int
+    output_suffix: str
+
+
+CONDITION_SPECS = (
+    ConditionSpec(prompt_mode="attack_3pt", score_max=2, output_suffix="attack_3pt"),
+    ConditionSpec(
+        prompt_mode="attack_7pt_likert",
+        score_max=6,
+        output_suffix="attack_7pt_likert",
+    ),
+    ConditionSpec(
+        prompt_mode="attack_slider_0_100",
+        score_max=100,
+        output_suffix="attack_slider_0_100",
+    ),
+)
 
 REQUIRED_COLUMNS = (
     "一级-攻击领域",
@@ -54,12 +86,12 @@ OUTPUT_COLUMNS = [
     "model",
     "language",
     "dataset_label",
-    "男人版-zeroshot攻击性评分",
-    "男人版-cot攻击性评分",
-    "男人版-cot攻击性reason",
-    "女人版-zeroshot攻击性评分",
-    "女人版-cot攻击性评分",
-    "女人版-cot攻击性reason",
+    "男人版-attack_3pt攻击性评分",
+    "男人版-attack_7pt_likert攻击性评分",
+    "男人版-attack_slider_0_100攻击性评分",
+    "女人版-attack_3pt攻击性评分",
+    "女人版-attack_7pt_likert攻击性评分",
+    "女人版-attack_slider_0_100攻击性评分",
     "request_status",
     "error_message",
 ]
@@ -173,12 +205,14 @@ def load_existing_results(output_path: Path) -> pd.DataFrame:
 
 
 def is_row_complete(existing_row: pd.Series) -> bool:
-    """Decide whether a saved row has all four requested attackiveness scores."""
+    """Decide whether a saved row has all requested condition-specific scores."""
     score_columns = [
-        "男人版-zeroshot攻击性评分",
-        "男人版-cot攻击性评分",
-        "女人版-zeroshot攻击性评分",
-        "女人版-cot攻击性评分",
+        "男人版-attack_3pt攻击性评分",
+        "男人版-attack_7pt_likert攻击性评分",
+        "男人版-attack_slider_0_100攻击性评分",
+        "女人版-attack_3pt攻击性评分",
+        "女人版-attack_7pt_likert攻击性评分",
+        "女人版-attack_slider_0_100攻击性评分",
     ]
     for column_name in score_columns:
         value = existing_row.get(column_name, "")
@@ -187,24 +221,28 @@ def is_row_complete(existing_row: pd.Series) -> bool:
     return True
 
 
-def score_sentence(text: str, model_name: str, prompt_paradigm: str, dry_run: bool) -> Dict[str, object]:
-    """Score one sentence by routing it through the existing prompt templates."""
+def score_sentence(
+    text: str,
+    model_name: str,
+    condition_spec: ConditionSpec,
+    dry_run: bool,
+) -> Dict[str, object]:
+    """Score one sentence with the prompt dedicated to a single rating condition."""
     if not text:
-        return {"score": "", "reason": ""}
+        return {"score": ""}
     if dry_run:
-        return {"score": -1, "reason": "DRY_RUN"}
+        return {"score": -1}
 
     response = pipeline.request_score(
         pipeline.Sample(text=text, language=LANGUAGE),
         model=model_name,
-        prompt_paradigm=prompt_paradigm,
+        prompt_paradigm="zero_shot",
         timeout=REQUEST_TIMEOUT_SECONDS,
-        prompt_mode="attack",
-        score_max=6,
+        prompt_mode=condition_spec.prompt_mode,
+        score_max=condition_spec.score_max,
     )
     return {
         "score": response.payload.get("score", ""),
-        "reason": response.payload.get("reason", ""),
     }
 
 
@@ -221,34 +259,42 @@ def score_dataset_row(row: pd.Series, model_name: str, dataset_label: str, dry_r
         "model": model_name,
         "language": LANGUAGE,
         "dataset_label": dataset_label,
-        "男人版-zeroshot攻击性评分": "",
-        "男人版-cot攻击性评分": "",
-        "男人版-cot攻击性reason": "",
-        "女人版-zeroshot攻击性评分": "",
-        "女人版-cot攻击性评分": "",
-        "女人版-cot攻击性reason": "",
+        "男人版-attack_3pt攻击性评分": "",
+        "男人版-attack_7pt_likert攻击性评分": "",
+        "男人版-attack_slider_0_100攻击性评分": "",
+        "女人版-attack_3pt攻击性评分": "",
+        "女人版-attack_7pt_likert攻击性评分": "",
+        "女人版-attack_slider_0_100攻击性评分": "",
         "request_status": "success",
         "error_message": "",
     }
 
-    request_plan = {
-        "男人版-zeroshot攻击性评分": (row[MALE_COLUMN], "zero_shot", "score"),
-        "男人版-cot攻击性评分": (row[MALE_COLUMN], "chain_of_thought", "score"),
-        "男人版-cot攻击性reason": (row[MALE_COLUMN], "chain_of_thought", "reason"),
-        "女人版-zeroshot攻击性评分": (row[FEMALE_COLUMN], "zero_shot", "score"),
-        "女人版-cot攻击性评分": (row[FEMALE_COLUMN], "chain_of_thought", "score"),
-        "女人版-cot攻击性reason": (row[FEMALE_COLUMN], "chain_of_thought", "reason"),
-    }
+    request_plan = {}
+    for condition_spec in CONDITION_SPECS:
+        request_plan[f"男人版-{condition_spec.output_suffix}攻击性评分"] = (
+            row[MALE_COLUMN],
+            condition_spec,
+        )
+        request_plan[f"女人版-{condition_spec.output_suffix}攻击性评分"] = (
+            row[FEMALE_COLUMN],
+            condition_spec,
+        )
 
     response_cache: Dict[tuple[str, str], Dict[str, object]] = {}
     try:
         with ThreadPoolExecutor(max_workers=4) as row_executor:
             future_map = {}
-            for text_value, prompt_paradigm, _ in request_plan.values():
-                cache_key = (text_value, prompt_paradigm)
+            for text_value, condition_spec in request_plan.values():
+                cache_key = (text_value, condition_spec.prompt_mode)
                 if cache_key in response_cache or not text_value:
                     continue
-                future = row_executor.submit(score_sentence, text_value, model_name, prompt_paradigm, dry_run)
+                future = row_executor.submit(
+                    score_sentence,
+                    text_value,
+                    model_name,
+                    condition_spec,
+                    dry_run,
+                )
                 future_map[future] = cache_key
 
             for future, cache_key in future_map.items():
@@ -258,12 +304,12 @@ def score_dataset_row(row: pd.Series, model_name: str, dataset_label: str, dry_r
         result_row["error_message"] = f"{type(error).__name__}: {error}"
         return result_row
 
-    for output_column, (text_value, prompt_paradigm, payload_key) in request_plan.items():
+    for output_column, (text_value, condition_spec) in request_plan.items():
         if not text_value:
             result_row[output_column] = ""
             continue
-        cache_key = (text_value, prompt_paradigm)
-        result_row[output_column] = response_cache[cache_key].get(payload_key, "")
+        cache_key = (text_value, condition_spec.prompt_mode)
+        result_row[output_column] = response_cache[cache_key].get("score", "")
 
     return result_row
 
