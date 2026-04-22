@@ -64,34 +64,56 @@
 \begin{frame}{报告结构}
   \begin{enumerate}
     \item 总览：三项研究的问题链与共用语料
-    \item 研究 1a：9 个 LLM 中英文仇恨识别（H1a.1 vs H1a.2）
+    \item 研究 1a：9 个 LLM（Large Language Model，大语言模型）中英文仇恨识别（H1a.1 vs H1a.2）
     \item 研究 1b：9 个 LLM 性别配对评分（H1b.1、H1b.2、H1b.3）
     \item 研究 2a：779 个人类评分 session 性别配对评分（H2a.1--H2a.4；与 1b 配对）
-    \item 研究 2a·ICC：人机偏差模式题项级相似度（H2a.ICC.1--.3）
-    \item 研究 2a·CS：人机跨尺度稳健性比较（H2a.CS.1--.2）
+    \item 研究 2a$\cdot$ICC（Intraclass Correlation Coefficient，类内相关系数）：人机偏差模式题项级相似度（H2a.ICC.1--.3）
+    \item 研究 2a$\cdot$CS（Cross-Scale similarity，跨尺度相似度）：人机跨尺度稳健性比较（H2a.CS.1--.2）
     \item 综合结论与研究局限
   \end{enumerate}
+\end{frame}
+
+\begin{frame}{统计量速览（正文指标速览）}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{p{0.22\textwidth}p{0.73\textwidth}}
+    \toprule
+    符号 / 检验 & 读法与判读准则 \\
+    \midrule
+    $\Delta_{F-M}$ & 同一对语句中\,女人版\,减\,男人版\,的评分差；$>0$ 即女人版被评得更严重。 \\
+    $d_z$         & 配对样本效应量；Cohen 约定：$0.2$ 小、$0.5$ 中、$0.8$ 大。本研究 $d_z$ 区间 $0.29$--$1.02$。 \\
+    Spearman $\rho_s$ & 两个排序之间的相关（$-1$ 到 $+1$）；越接近 $+1$ 越一致。 \\
+    方差比 $\frac{\text{Var}_{zh}}{\text{Var}_{en}}$ & 中文 vs 英文模型分数的\emph{离散度}之比；$\gg 1$ 即中文端被拉得更开。 \\
+    Bartlett / Levene & 方差同质性检验，$p<.05$ 即拒绝"两组方差相等"。 \\
+    FDR (False Discovery Rate，Benjamini--Hochberg) $q$ & 多重检验校正后的显著性阈值；$q<.05$ 即在控制错误发现率下仍显著。 \\
+    Bootstrap 95\% CI (Confidence Interval) & 有放回重抽样 $B=2000$ 次得到的置信区间；不含 $0$ 即与零效应显著不同。 \\
+    ICC(2,1) & Intraclass Correlation Coefficient（类内相关系数）；双向随机、单次测量的绝对一致性；Koo \& Li (2016) 分档：$<.50$ poor、$.50$--$.75$ moderate、$.75$--$.90$ good、$>.90$ excellent。 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.3em}
+  \small 下文所有数字都可以回到这张表对齐解读。
 \end{frame}
 
 \begin{frame}{三项研究的问题链}
   \begin{columns}[T,onlytextwidth]
     \column{0.32\textwidth}
       \begin{block}{研究 1a}
-        \small 9 个 LLM 能否在中英文仇恨识别任务上表现出\emph{跨语言稳定}的能力？若不然，差距来自哪里？
+        \small 9 个 LLM 能否在广泛的中英文仇恨识别任务上表现出\emph{跨语言稳定}的能力？若不然，差距来自哪里？在特定的性别仇恨上又是如何表现？
       \end{block}
     \column{0.32\textwidth}
       \begin{block}{研究 1b}
-        \small 仅替换性别指称词，9 个 LLM 对\emph{女人版}与\emph{男人版}攻击性评分是否系统性不同？
+        \small 仅替换性别指称词，9个LLM、3种计分方式对\emph{女人版}与\emph{男人版}攻击性评分是否存在系统性不同？
       \end{block}
     \column{0.32\textwidth}
       \begin{block}{研究 2a}
-        \small 779 个人类评分 session（来自 712 名中文母语被试）做同样的配对评分，人类是否呈现同方向偏差？哪些 LLM 题项级模式与人类最接近？
+        \small 中文母语人类对1b同样的内容（仅替换性别指代词）评分，人类是否呈现同LLM相似的方向偏差？男女是否有模式差异？哪些LLM模式与人类最接近？
       \end{block}
   \end{columns}
 
   \vspace{0.5em}
   \begin{itemize}
-    \item \textbf{共用语料}：371 对中文同质配对语句（minimal pairs）；3 层编码框架（10 一级 / 71 二级 / 183 三级攻击维度）。
+    \item \textbf{研究1b、2a共用语料}：371 对中文同质配对语句（minimal pairs）；3 层编码框架（10 一级 / 71 二级 / 183 三级攻击维度）。
     \item \textbf{共用评分尺度}：3 点 / 7 点 Likert / 0--100 滑块（三条平行测量）。
     \item \textbf{9 个 LLM}：Claude Opus 4.5、GPT-5.1、Gemma 4 31B、Llama 4 Maverick、Qwen 2.5 72B、GLM 4.6、Kimi K2、DeepSeek R1、DeepSeek V3.2。
   \end{itemize}
@@ -107,7 +129,7 @@
 
   \vspace{0.4em}
   \begin{itemize}
-    \item 9 个 LLM $\times$ 2 语言（中 / 英）$\times$ 2 提示（zero-shot / CoT）$=$ 36 个评估单元。
+    \item 9 个 LLM $\times$ 2 语言（中 / 英）$\times$ 2 提示（zero-shot / CoT，Chain-of-Thought，链式思考）$=$ 36 个评估单元。
     \item 指标：F1（分类准确度）+ Brier（概率校准）。
     \item 两条可证伪、互斥的假设作为框架。
   \end{itemize}
@@ -119,14 +141,14 @@
   \end{block}
 
   \begin{block}{H1a.2 语言覆盖不均假设}
-    \small 若差距源于训练语料对中文的暴露量不均（英文语料几乎覆盖所有厂商、中文覆盖量差异悬殊），则\emph{中文面板的跨模型方差应显著大于英文面板}。H1a.2 的诊断性特征不是"谁排第一换了"，而是"中文上的模型之间被拉得更开"。
+    \small 若差距源于训练语料对中文的覆盖不均（各厂商中文语料差异悬殊），则\emph{中文端模型间的方差应显著大于英文端}。H1a.2 的关键特征不是"排名谁变了"，而是"中文上模型之间的差距更大"。
   \end{block}
 
   \vspace{0.4em}
   两种假设的关键分界：\textbf{等方差（H1a.1）vs.\ 方差膨胀（H1a.2）}。
 \end{frame}
 
-\begin{frame}{研究 1a：F1 / Brier 散点与跨语言斜率}
+\begin{frame}{研究 1a：散点与斜率图——中文端模型间差异更大}
   \begin{columns}[T,onlytextwidth]
     \column{0.5\textwidth}
       \centering
@@ -139,7 +161,7 @@
   \small\centering 左：4 个面板的 F1--Brier 联合散点；右：每个模型从中文到英文的斜率图（菱形 = 面板均值 $\pm$ SD）。
 \end{frame}
 
-\begin{frame}{研究 1a：描述性统计}
+\begin{frame}{研究 1a：中文面板 SD 是英文的 3--4 倍——方差已显现不对称}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -161,7 +183,7 @@
   \textbf{一眼可见}：中文面板的 SD（0.077--0.085）约为英文面板 SD（0.020--0.024）的 \textbf{3--4 倍}——方差显著不对称。
 \end{frame}
 
-\begin{frame}{研究 1a：跨语言排序稳定性与方差同质性}
+\begin{frame}{研究 1a：F1 排序跨语言基本保留，但方差比 10--15 倍——拒绝等方差}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -187,30 +209,29 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{研究 1a：两条判决性事实}
-  \begin{alertblock}{判决性事实 1 —— 均值侧的温和平移}
-    \small $\Delta_\text{F1}(zh-en)$：zero-shot $M = -0.046$（SD $0.069$，7/9 负）；CoT $M = -0.050$（SD $0.063$，7/9 负）。$\Delta_\text{Brier}(zh-en)$：均 $+0.04$ 左右（8/9 正）。均值差距\emph{温和}，H1a.1 与 H1a.2 均可近似拟合。
+\begin{frame}{研究 1a：两个关键发现}
+  \begin{alertblock}{发现一：均值差距不大，两种假设都能解释}
+    \small $\Delta_\text{F1}(zh-en)$：zero-shot $M = -0.046$（SD $0.069$，7/9 为负）；CoT $M = -0.050$（SD $0.063$，7/9 为负）。$\Delta_\text{Brier}(zh-en)$：约 $+0.04$（8/9 为正）。均值差距不大，H1a.1 与 H1a.2 都能大致解释。
   \end{alertblock}
 
-  \begin{alertblock}{判决性事实 2 —— 方差侧的极端不对称}
-    \small 中文面板的 F1 离散度约为英文的 $12.7$ 倍（zero-shot）至 $15.0$ 倍（CoT）。\emph{这是 H1a.2 而非 H1a.1 的诊断性特征}——中文不是把 9 个模型统一下调，而是把它们拉得更开。
+  \begin{alertblock}{发现二：中文端模型之间差异大得多——这才是关键}
+    \small 中文 F1 的标准差约为英文的 $12.7$ 倍（zero-shot）至 $15.0$ 倍（CoT）。这不是所有模型在中文上统一变差，而是\emph{有的模型中文很强，有的中文很弱}——这正是 H1a.2 所预测的。
   \end{alertblock}
 \end{frame}
 
-\begin{frame}{研究 1a：方差膨胀的模型层面来源（F1 条形）}
+\begin{frame}{研究 1a：Gemma 中文塌陷、Qwen 中文反向领先——方差膨胀有具体模型来源}
   \centering
-  \includegraphics[width=0.84\textwidth,height=0.66\textheight,keepaspectratio]{\artifacts/validated_csv_hate_f1_2x2_bars.pdf}
+  \includegraphics[width=0.80\textwidth,height=0.56\textheight,keepaspectratio]{\artifacts/validated_csv_hate_f1_2x2_bars.pdf}
 
-  \vspace{0.1em}
-  \small
-  \begin{itemize}
+  \footnotesize
+  \begin{itemize}\setlength{\itemsep}{0.1em}
     \item \textbf{Gemma-4-31B} 中文塌陷：$\Delta_{zh-en} = -0.171$（zero-shot），下端离群。
     \item \textbf{Qwen-2.5-72B} 中文反向领先：$\Delta_{zh-en} = +0.066$，上端离群。
-    \item CoT 并未均质地压缩方差（zero-shot $12.7\times$ $\to$ CoT $15.0\times$）。
+    \item CoT 并没有缩小各模型间的差异（方差比：zero-shot $12.7\times$ $\to$ CoT $15.0\times$）。
   \end{itemize}
 \end{frame}
 
-\begin{frame}{研究 1a：F1 随提示策略的变化（哑铃图）}
+\begin{frame}{研究 1a：CoT 并非普适增益，其方向取决于模型对该语言的掌握程度}
   \centering
   \includegraphics[width=0.88\textwidth,height=0.60\textheight,keepaspectratio]{\artifacts/validated_csv_hate_f1_2x2_dumbbell.pdf}
 
@@ -219,19 +240,19 @@
   \begin{itemize}
     \item 每根水平线 = 同一模型从 zero-shot 到 CoT 的 F1 轨迹；按语言分两面板。
     \item \textbf{CoT 并非普适增益}：Qwen 在中文 $0.751 \to 0.639$；Llama 在中文 $0.641 \to 0.736$；英文面板变化很小。
-    \item 提示策略的收益方向取决于模型是否已掌握该语言的任务格式——削弱 H1a.1 的"整体平移"预测。
+    \item CoT 能否带来提升，取决于模型对这门语言的基础掌握程度——这与 H1a.1 预测的"整体平移"不符。
   \end{itemize}
 \end{frame}
 
-\begin{frame}{研究 1a：Brier 校准的面板比较（条形）}
+\begin{frame}{研究 1a：Brier 校准复现同一方差膨胀格局——中文端离散度 10--15 倍}
   \centering
   \includegraphics[width=0.84\textwidth,height=0.68\textheight,keepaspectratio]{\artifacts/validated_csv_hate_brier_2x2_bars.pdf}
 
   \vspace{0.1em}
-  \footnotesize Brier 越低越好。中文面板下模型间\emph{校准能力}的离散度约为英文面板的 $10.7$--$15.1$ 倍——与 F1 一致的方差膨胀格局。
+  \footnotesize Brier 越低越好。中文端各模型之间的概率校准差异，约是英文端的 $10.7$--$15.1$ 倍——与 F1 的结果一致，中文端方差更大。
 \end{frame}
 
-\begin{frame}{研究 1a：Brier 随提示策略的变化（哑铃图）}
+\begin{frame}{研究 1a：Brier 的"校准增益"与 F1 的"分类增益"不同步——两者可解耦}
   \centering
   \includegraphics[width=0.88\textwidth,height=0.62\textheight,keepaspectratio]{\artifacts/validated_csv_hate_brier_2x2_dumbbell.pdf}
 
@@ -239,11 +260,11 @@
   \footnotesize
   \begin{itemize}
     \item \textbf{CoT 对 Brier 非单调}：Llama 中文 $0.300 \to 0.243$；Qwen 英文 $0.254 \to 0.289$。
-    \item 提示策略的"校准增益"与"F1 增益"不同步——支持 F1 与 Brier 解耦。
+    \item CoT 对概率校准的影响与对 F1 的影响并不同步——F1 和 Brier 的高低不总一致。
   \end{itemize}
 \end{frame}
 
-\begin{frame}{研究 1a：F1 与 Brier 的解耦（英文 zero-shot 诊断）}
+\begin{frame}{研究 1a：F1 榜首不一定是最佳——Llama 分类好却过度自信，Qwen 概率更贴近真实}
   \footnotesize
   \begin{table}
     \centering
@@ -260,27 +281,11 @@
 
   \vspace{0.4em}
   \begin{block}{关键观察}
-    \small Llama 更常给"方向对但过度自信"的预测；Qwen 分类略逊但概率\emph{更贴近真实频率}。若下游需要\emph{可靠风险阈值}（人机协作审核中"把模糊样本留给人工"），F1 榜首不一定是最佳选择——\textbf{F1 与 Brier 在同一面板内可显著解耦}。
+    \small Llama 分类准确率最高，但概率输出偏向过度自信；Qwen 分类略逊但概率\emph{更贴近真实频率}。如果后续需要用概率来设定审核门槛（比如"低于多少置信度就交给人工判断"），F1 第一不一定是最合适的选择——\textbf{F1 和 Brier 可以相互独立}。
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 1a 辅助：HateXplain 自然数据的"目标性别"评分}
-  \begin{columns}[T,onlytextwidth]
-    \column{0.55\textwidth}
-      \centering
-      \includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{\artifacts/placeholder_a_1a_gender_target_mean_score.pdf}
-    \column{0.45\textwidth}
-      \small
-      \begin{itemize}
-        \item 按 HateXplain \texttt{target} 字段抽取"仅 Women"（$n=175$）与"仅 Men"（$n=36$）两子集。
-        \item 9 个模型在 zero-shot / CoT 下\emph{均}把"针对男性"帖打得更高（total：3.19 vs 2.64；3.35 vs 2.72），方向与"女性方向偏差"预期相反。
-        \item \textbf{不等于 LLM 保护男性}：Men 样本仅 36 条，集中在与族群交叉的极端仇恨语境；Women 样本覆盖更广。
-        \item \emph{样本构成混淆 $>$ 真实偏差}——正是研究 1b 采用配对设计的直接动因。
-      \end{itemize}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{研究 1a：H1a.1 vs H1a.2 的判决}
+\begin{frame}{研究 1a：H1a.1 被证伪、H1a.2 被支持——差距的主要来源是中文语料暴露不均}
   \small
   \begin{table}
     \centering
@@ -297,14 +302,29 @@
 
   \vspace{0.4em}
   \begin{block}{一行结论}
-    \small 中英性能差距主要不来自标注定义分歧，而来自训练语料对中文的不均衡暴露；\emph{完全驳回 H1a.1 需跨标注体系的证据}，但当前数据的方差膨胀已超出 H1a.1 的预测。
+    \small 中英性能差距的主要来源不是标注定义上的分歧，而是各模型中文训练语料的多寡不同；严格驳回 H1a.1 还需要跨标注体系的证据，但当前数据中方差的不对称已超出 H1a.1 所能预测的范围。
   \end{block}
+\end{frame}
+
+% --- 1a 辅助 / 过渡到 1b --------------------------------------------------
+\begin{frame}{研究 1a 过渡 $\to$ 1b：HateXplain 上"针对男性"帖反被打更高——样本构成混淆 $>$ 真实偏差}
+  \centering
+  \includegraphics[width=0.80\textwidth,height=0.46\textheight,keepaspectratio]{\artifacts/placeholder_a_1a_gender_target_mean_score.pdf}
+
+  \scriptsize
+  \begin{itemize}\setlength{\itemsep}{0.1em}
+    \item 按 HateXplain \texttt{target} 字段抽取"仅 Women"（$n=175$）与"仅 Men"（$n=36$）两子集；9 个 LLM 在 zero-shot / CoT 下\emph{均}把"针对男性"帖打得更高（total：$3.19$ vs $2.64$；$3.35$ vs $2.72$），与"女性方向偏差"预期相反。
+    \item \textbf{并不等于 LLM 保护男性}：Men 样本仅 $36$ 条且集中在与族群交叉的极端仇恨语境；Women 样本覆盖更广——\emph{"性别"与"语境极端性"被混淆}。
+    \item \textbf{样本构成混淆 $>$ 真实偏差}——只有剥离语义内容、只留性别指称的\emph{最小配对设计}才能分离评估偏差，这正是研究 1b 的动因。
+  \end{itemize}
 \end{frame}
 
 % ===========================================================================
 \section{研究 1b：9 个 LLM 性别配对评分}
 
 \begin{frame}{研究 1b：研究问题与设计}
+  \small 承接 1a 过渡页的结论——自然数据中"性别 $\times$ 语境极端性"的样本构成混淆掩盖了真实评估偏差；1b 以\textbf{最小配对设计}消除语义差异，只保留性别指称作为唯一操纵变量。
+
   \begin{block}{核心问题}
     \small 在同一语义模板下，仅替换性别指称词（女人版 $\leftrightarrow$ 男人版），9 个 LLM 对攻击性的判定是否系统性不同？
   \end{block}
@@ -332,25 +352,25 @@
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.1 整体 $d_z$ 森林图（9 模型 $\times$ 3 尺度）}
+\begin{frame}{研究 1b：27/27 单元 $q<10^{-7}$，$d_z\in[0.29,1.02]$——H1b.1 强支持}
   \centering
   \includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{\artifacts/overall_dz_three_scale_forest.pdf}
 
   \vspace{0.1em}
-  \footnotesize 每 panel 一种尺度；每条横线为该模型在该尺度下 $d_z$ 的 95\% CI；共享 x 轴。\textbf{全部 27 单元 $q < 10^{-7}$}；$d_z$ 区间 $[0.29, 1.02]$（覆盖 3.5 倍强度区间）。
+  \footnotesize 每个面板对应一种评分尺度；每条横线为该模型 $d_z$ 的 95\% bootstrap CI；三个面板共享 x 轴。\textbf{全部 27 个模型-尺度组合 $q < 10^{-7}$}；$d_z$ 从 $0.29$ 到 $1.02$，模型间相差最多约 3.5 倍。
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.1 方向性分解（9 模型 $\times$ 3 尺度）}
+\begin{frame}{研究 1b：持平带随尺度分辨率从 $80\%$ 收缩到 $38\%$——量级被更细地记录}
   \centering
-  \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{\artifacts/directionality_three_scale_grid.pdf}
+  \includegraphics[width=\textwidth,height=0.66\textheight,keepaspectratio]{\artifacts/directionality_three_scale_grid.pdf}
 
-  \vspace{0.1em}
-  \footnotesize 红 = 女人版更高；灰 = 持平；蓝 = 男人版更高。\textbf{持平带随尺度分辨率单调收缩}：跨 9 模型中位 $80.1\% \to 62.0\% \to 37.7\%$（3 点 $\to$ 7 点 $\to$ 滑块）——\emph{不是偏差消失}，而是连续尺度允许更细的量级差异被记录。
+  \scriptsize 红 = 女人版更高；灰 = 持平；蓝 = 男人版更高。\textbf{持平的比例随尺度粒度变细而下降}：9 模型中位 $80.1\% \to 62.0\% \to 37.7\%$（3 点 $\to$ 7 点 $\to$ 滑块）——\emph{不是偏差减少了}，而是更细的尺度把原本"持平"的小差异也记录下来了。
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.1 27 单元完整统计（1/2）}
+\begin{frame}{研究 1b：27 单元完整统计（1/2）——所有模型三尺度均显著 $\Delta_{F-M}>0$}
   \scriptsize
   \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{0.9}
   \begin{table}
     \centering
     \begin{tabular}{llccccc}
@@ -386,9 +406,10 @@
   \end{table}
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.1 27 单元完整统计（2/2）}
+\begin{frame}{研究 1b：27 单元完整统计（2/2）——9 模型全部同方向，27 个 $q$ 均 $<10^{-7}$}
   \scriptsize
   \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{0.9}
   \begin{table}
     \centering
     \begin{tabular}{llccccc}
@@ -417,13 +438,12 @@
       \bottomrule
     \end{tabular}
   \end{table}
-  \vspace{0.2em}
   \begin{alertblock}{判决}
-    \scriptsize \textbf{27/27 单元} $\Delta_{F-M}>0$，$q$ 全部 $<10^{-7}$；$d_z$ 区间 $[0.29, 1.02]$——\textbf{H1b.1 的零假设（语义内容）证伪，H1b.1 本身（评估偏差）支持}。
+    \scriptsize \textbf{27/27 单元} $\Delta_{F-M}>0$，$q$ 均 $<10^{-7}$；$d_z \in [0.29, 1.02]$——\textbf{H1b.1 的零假设（语义内容）证伪，H1b.1 本身（评估偏差）支持}。
   \end{alertblock}
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.1 配对差分布（3 代表模型 $\times$ 3 尺度）}
+\begin{frame}{研究 1b：9 子图分布一致右偏、三尺度贯通——配对差的右偏是稳健现象}
   \centering
   {\tiny GPT-5.1 \hfill\hfill Qwen 2.5 72B \hfill\hfill DeepSeek V3.2\par}\vspace{-0.1em}
   \begin{minipage}[t]{0.32\textwidth}\centering\includegraphics[width=\linewidth,height=0.20\textheight,keepaspectratio]{\oneb/attack_3pt/panels/fig2_difference_distribution_panel_1.pdf}\end{minipage}\hfill%
@@ -444,20 +464,20 @@
   \footnotesize 行 = 3 点 / 7 点 / 滑块；列 = GPT-5.1 / Qwen 2.5 72B / DeepSeek V3.2。9 子图全部右偏；3 点行仅 3 档、7 点行渐宽、滑块行最连续。
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.1 的三条跨尺度规律}
+\begin{frame}{研究 1b：三条跨尺度规律}
   \footnotesize
-  \begin{block}{规律 1：排序跨尺度高度保守}
-    \small 任一尺度下 $d_z$ 最大者（Gemma 于滑块、GPT-5.1 于 7 点／3 点）在其它尺度仍在前列；最小者（DeepSeek V3.2、GLM 4.6、Llama Maverick）亦然——下节用跨尺度 Spearman $\rho_s$ 定量化。
+  \begin{block}{规律 1：哪个模型偏差更大的排名跨尺度相当稳定}
+    \small 偏差最大的模型（Gemma 在滑块、GPT-5.1 在 7 点和 3 点）在其他尺度下也排前列；偏差最小的（DeepSeek V3.2、GLM 4.6、Llama Maverick）也类似——下节用 Spearman $\rho_s$ 定量呈现。
   \end{block}
-  \begin{block}{规律 2：持平率随分辨率单调收缩}
-    \small 跨 9 模型中位 $80.1\% \to 62.0\% \to 37.7\%$（3 点 $\to$ 7 点 $\to$ 滑块）。不是偏差消失，是连续尺度记录下更细的差异。
+  \begin{block}{规律 2：持平的题项随尺度变细而减少}
+    \small 9 模型的中位持平率：$80.1\% \to 62.0\% \to 37.7\%$（3 点 $\to$ 7 点 $\to$ 滑块）。偏差没有消失，只是更细的尺度把更小的差别也记下来了。
   \end{block}
-  \begin{block}{规律 3：滑块并非对所有模型都放大 $d_z$}
-    \small Gemma（$0.77\to 1.02$）、Claude（$0.69\to 0.75$）、两个 DeepSeek 被滑块放大；但 GPT-5.1（$0.84\to 0.71$）、Kimi K2、Llama Maverick 反而持平或稍降——"滑块即更高分辨率的同一偏差"这一朴素图景对部分模型不成立。
+  \begin{block}{规律 3：换成滑块不是对所有模型都会放大 $d_z$}
+    \small Gemma（$0.77\to 1.02$）、Claude（$0.69\to 0.75$）、两个 DeepSeek 在滑块下 $d_z$ 更大；但 GPT-5.1（$0.84\to 0.71$）、Kimi K2、Llama 反而持平或略降——"滑块只是分辨率更高的同一套偏差"并不适用于所有模型。
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.1 ——三尺度效应量对齐}
+\begin{frame}{研究 1b：27/27 单元 $q<.001$、跨尺度强度量级稳健——整体偏差方向三尺度一致}
   \footnotesize
   \setlength{\tabcolsep}{3pt}
   \begin{table}
@@ -487,7 +507,7 @@
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 1b：三尺度 $d_z$ 的跨模型两两散点}
+\begin{frame}{研究 1b：跨模型 $d_z$ 在任意两尺度间贴近对角线——排序稳定，滑块仅稍放大}
   \centering
   \includegraphics[width=0.88\textwidth,height=0.70\textheight,keepaspectratio]{\oneb/placeholder_b_three_scale_dz_scatter.pdf}
 
@@ -499,7 +519,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.2 维度层面（代表性模型森林图）}
+\begin{frame}{研究 1b：9 个模型均把"性化 + 外貌"列打得最深——维度集中性有模型内证据}
   \centering
   \begin{columns}[T,onlytextwidth]
     \column{0.33\textwidth}
@@ -517,15 +537,14 @@
   \small GPT-5.1 覆盖面最广（7 领域 $d_z \geq 0.77$）；DeepSeek V3.2 最集中（仅 4 领域显著）；性化 + 外貌在所有 9 模型均最强。
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.2 ——模型 $\times$ 领域（7 点 Likert）}
+\begin{frame}{研究 1b：列方向（维度）与行方向（模型）共同显示——H1b.2 维度集中性支持}
   \centering
-  \includegraphics[width=0.78\textwidth,height=0.78\textheight,keepaspectratio]{\oneb/placeholder_c_model_by_level1_dz_heatmap.pdf}
+  \includegraphics[width=0.74\textwidth,height=0.66\textheight,keepaspectratio]{\oneb/placeholder_c_model_by_level1_dz_heatmap.pdf}
 
-  \vspace{0.1em}
-  \footnotesize \textbf{两条一致性结构}——列方向：性化 + 外貌两列在 9 模型均深红（$d_z$ 多数 $> 0.8$）；行方向：GPT-5.1 与 Gemma 覆盖全行（7 领域 $d_z \geq 0.77$），DeepSeek V3.2 仅少数列显著。
+  \scriptsize \textbf{两条一致性结构}——列方向：性化 + 外貌两列在 9 模型均深红（$d_z$ 多数 $> 0.8$）；行方向：GPT-5.1 与 Gemma 覆盖全行（7 领域 $d_z \geq 0.77$），DeepSeek V3.2 仅少数列显著。
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.2 ——模型 $\times$ 领域 $\times$ 尺度}
+\begin{frame}{研究 1b：30 单元（9 模型 $\times$ 3 尺度）下"性化 + 外貌"一致深红——H1b.2 稳健}
   \centering
   \includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{\artifacts/model_by_level1_by_scale_dz_heatmap.pdf}
 
@@ -533,7 +552,7 @@
   \footnotesize 9 模型 $\times$ 10 领域 $\times$ 3 尺度的 $d_z$ 热图。\emph{性化 + 外貌两列在三尺度 $\times$ 9 模型的 30 单元里一致深红}；两列合计构成了维度集中性的主要载体——\textbf{H1b.2 支持}。
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.3 的三层粒度：聚合／维度／题项}
+\begin{frame}{研究 1b：跨尺度同构的诊断分三层——聚合、维度、题项，自由度递增}
   \footnotesize
   \begin{itemize}
     \item \textbf{聚合层}：每模型 $\to$ 一个 $d_z$ 标量；9 模型构成长 9 向量。
@@ -543,11 +562,11 @@
 
   \vspace{0.5em}
   \begin{block}{}
-    \small 从粗到细，可用自由度越来越多；\emph{跨尺度相似度理论上应当依次下降}——但下降到哪里、在哪一层已经基本丢光原有结构，是一个实证问题。下面依次给出三层的 Spearman $\rho_s$。
+    \small 分析越细，变量越多，跨尺度的一致性理论上会下降——但在哪一层开始基本不一致，是需要实际数据来回答的。下面依次呈现三层的 Spearman $\rho_s$。
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.3 聚合层（9 模型 $d_z$ 作标量）}
+\begin{frame}{研究 1b：聚合层 $\rho_s = 0.57$--$0.85$——"谁偏差更强"的排序跨尺度高度一致}
   \centering
   \includegraphics[width=0.84\textwidth,height=0.62\textheight,keepaspectratio]{\artifacts/overall_dz_cross_scale_scatter.pdf}
 
@@ -563,27 +582,23 @@
   \end{tabular}
 
   \vspace{0.2em}
-  \small 聚合层 $\rho_s \geq 0.57$——\emph{"谁偏差更强"的排序跨尺度高度一致}。
+  \small 聚合层 $\rho_s \geq 0.57$——\emph{哪个模型偏差更大的排名在三种尺度之间相当一致}。
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.3 维度层（10 一级领域 $d_z$ 作单位）}
+\begin{frame}{研究 1b：维度层中位 $\rho = 0.35$--$0.48$——模型间异质性明显、部分模型出现负相关}
   \centering
-  \includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{\artifacts/dimension_level_cross_scale_rho_forest.pdf}
+  \includegraphics[width=\textwidth,height=0.60\textheight,keepaspectratio]{\artifacts/dimension_level_cross_scale_rho_forest.pdf}
 
-  \vspace{0.05em}
-  \footnotesize 9 模型的中位 $\rho$：3pt vs 7pt $=+0.35$，7pt vs slider $=+0.42$，3pt vs slider $=+0.48$——低于聚合层但高于题项层。\textbf{模型间高度异质}：GPT-5.1／Gemma 三对均 $>+0.6$；Claude（3pt vs 7pt $\rho=-0.27$）、DeepSeek V3.2（$\rho=-0.43$）出现负相关。
-
-  \vspace{0.15em}
-  \small "哪几个维度最强"对部分模型已开始随尺度格式漂移。
+  \scriptsize 9 模型中位 $\rho$：3pt vs 7pt $=+0.35$，7pt vs slider $=+0.42$，3pt vs slider $=+0.48$——低于聚合层但高于题项层。\textbf{模型间差异明显}：GPT-5.1 与 Gemma 三对均 $>+0.6$；Claude（3pt vs 7pt $\rho=-0.27$）与 DeepSeek V3.2（$\rho=-0.43$）出现负相关——对这些模型而言，"哪几个维度偏差最强"会随尺度变化而改变。
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.3 题项层（371 对 $\Delta_i$ 向量）}
+\begin{frame}{研究 1b：题项层中位 $\rho \approx 0$--$0.15$——"具体哪一句最偏"跨尺度几乎独立}
   \centering
-  \includegraphics[width=\textwidth,height=0.66\textheight,keepaspectratio]{\artifacts/within_model_cross_scale_similarity.pdf}
+  \includegraphics[width=\textwidth,height=0.56\textheight,keepaspectratio]{\artifacts/within_model_cross_scale_similarity.pdf}
 
-  \vspace{0.1em}
-  \small
+  \footnotesize
   \setlength{\tabcolsep}{5pt}
+  \renewcommand{\arraystretch}{0.95}
   \begin{tabular}{lccc}
     \toprule
     层级 & 3pt vs 7pt & 7pt vs slider & 3pt vs slider \\
@@ -594,7 +609,7 @@
   \end{tabular}
 \end{frame}
 
-\begin{frame}{研究 1b：H1b.3 的三层判决}
+\begin{frame}{研究 1b：H1b.3 的结果因分析层级而异，需分层汇报}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -612,11 +627,11 @@
 
   \vspace{0.3em}
   \begin{block}{分层结论}
-    \small "偏差是单一潜在向量、只是被不同尺度以不同分辨率取样"的朴素图景——\emph{在聚合级成立、在维度级部分成立、在题项级不成立}。噪声在题项级被完整保留，在聚合级被平均抵消；维度级介于二者之间、同时模型间异质性最强。
+    \small 简单来说——"三种尺度在测同一套偏差"这个直觉，在整体 $d_z$ 排名上是对的，在维度层面部分成立，但在题项层面不成立。题项级别的个别差异在求均值时被抵消了；维度层面介于两者之间，同时模型间差异最大。
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 1b：配对散点（代表性模型，7 点 Likert）}
+\begin{frame}{研究 1b：持平不是中立——偏差被集中到少数决策分化的题项上}
   \centering
   \begin{columns}[T,onlytextwidth]
     \column{0.48\textwidth}
@@ -639,7 +654,7 @@
   \small 高持平比例模型一旦打破持平、方向几乎全部偏向女人版得分更高；\emph{持平不是中立}——偏差被集中到少数决策分化的题项上。
 \end{frame}
 
-\begin{frame}{研究 1b：三条假设的判决汇总}
+\begin{frame}{研究 1b 小结：H1b.1／H1b.2 支持、H1b.3 分层——整体量级稳、具体题项重组}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -657,7 +672,7 @@
 
   \vspace{0.3em}
   \begin{block}{一行结论}
-    \small 9 个 LLM 一致把"女人版"打得更高，集中在身体／性相关维度；\emph{整体量级}跨尺度稳定，但\emph{具体哪一句}跨尺度显著重组。
+    \small 9 个 LLM 一致把"女人版"打得更高，偏差集中在身体／性相关维度；整体效应量在三种尺度之间相当稳定，但\emph{具体哪一条语句}偏差最大，换一种尺度结果就不同了。
   \end{block}
 \end{frame}
 
@@ -665,6 +680,8 @@
 \section{研究 2a：779 个人类评分 session 性别配对评分}
 
 \begin{frame}{研究 2a：研究问题与设计}
+  \small\emph{从 1b 到 2a 的过渡}：1b 告诉我们 9 个 LLM 对女人版一致打得更高，但 LLM 的训练语料本身就包含了人类标注——单看 LLM 无法区分"模型在模仿人类偏差"与"模型放大了人类偏差"。2a 把同一套最小配对带回人类被试，取得了可与 LLM 直接比对的基线。
+
   \begin{block}{核心问题}
     \small 在研究 1b 的同一套 371 对中文配对语料上，招募 712 名中文母语被试打分（合计 779 个有效评分 session，\textbf{全文以 session 为分析单元}）；人类是否与 LLM 同方向？被试性别与尺度谁是更大的异质来源？
   \end{block}
@@ -706,11 +723,11 @@
 \end{frame}
 
 \begin{frame}{研究 2a：被试人口学特征（按尺度条件拆分）}
-  \scriptsize
+  \tiny
   \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{0.92}
   \begin{table}
     \centering
-    \caption{\scriptsize 779 个 session 的被试人口学分布（列内 \% = 该尺度条件下的占比）}
     \begin{tabular}{lrrrr}
       \toprule
       变量 / 取值 & 3 点（$n{=}268$） & 7 点（$n{=}244$） & 滑块（$n{=}267$） & 全样本（$n{=}779$） \\
@@ -745,32 +762,27 @@
     \end{tabular}
   \end{table}
 
-  \vspace{0.2em}
-  \begin{itemize}
-    \scriptsize
-    \item \textbf{结构可比}：3 组在年龄（18--24 岁主力段 $65.7\%$--$74.9\%$）、学历（本科 $75.0\%$--$78.7\%$）、学生比例（$3.4\%$--$7.8\%$）上高度对齐。
-    \item \textbf{样本画像}：$18$--$34$ 岁青年 $96.1\%$、本科及以上 $85.2\%$、月收入 $\leq 8000$ 元的中低收入段 $82.5\%$——典型中文互联网青年样本。
-    \item 收入分布稍有波动（滑块条件 $3000$ 元及以下偏多、3 点条件 $5001$--$8000$ 元偏多），落在随机分派自然波动范围内，不构成系统性分层。
-  \end{itemize}
+  \vspace{0.1em}
+  \scriptsize \textbf{结构可比}：3 组在年龄、学历、学生比例上高度对齐；\textbf{样本画像}：18--34 岁青年 $96.1\%$、本科及以上 $85.2\%$、月收入 $\leq 8000$ 元 $82.5\%$——典型中文互联网青年样本；收入分布的波动在随机分派自然范围内，不构成系统性分层。
 \end{frame}
 
 \begin{frame}{研究 2a：四条可证伪假设（重排以与 1b 配对）}
   \footnotesize
-  \begin{block}{H2a.1 F$>$M 主效应延拓假设（对应 H1b.1）}
-    \small 人类被试在三尺度下 $\Delta_{F-M} > 0$，方向一致——对 1b 的评估偏差在人类端做延拓性复制。
+  \begin{block}{H2a.1 F$>$M 主效应假设（对应 H1b.1）}
+    \small 人类被试在三种尺度下均呈 $\Delta_{F-M} > 0$，方向与模型一致——在人类端重复 1b 的发现。
   \end{block}
-  \begin{block}{H2a.2 维度集中延拓假设（对应 H1b.2）}
-    \small 人类端 10 一级领域 $d_z$ 集中于"性化攻击"与"外貌形象攻击"，与 H1b.2 所识别的刻板印象维度重合；且该集中结构应被被试性别差异进一步调制——女性被试在这两个核心维度上尤其突出。
+  \begin{block}{H2a.2 维度集中假设（对应 H1b.2）}
+    \small 人类端 10 个一级领域中，$d_z$ 同样集中在"性化攻击"与"外貌形象攻击"，与 H1b.2 的模型结果重合；且被试性别会进一步调节这一结构——女性被试在这两个维度上尤其突出。
   \end{block}
-  \begin{block}{H2a.3 被试性别异质假设（2a 特有）}
-    \small 女性被试的 $d_z$ 显著大于男性被试（现实经验塑造敏感度差异），方向均为 $\Delta_{F-M}>0$。
+  \begin{block}{H2a.3 被试性别差异假设（2a 特有）}
+    \small 女性被试的 $d_z$ 显著大于男性被试（日常经验影响敏感度），两组方向均为 $\Delta_{F-M}>0$。
   \end{block}
-  \begin{block}{H2a.4 "尺度 $\ll$ 被试性别"层级假设（2a 特有）}
-    \small $2 \times 3$（被试性别 $\times$ 尺度）网格内，\emph{固定分组、变动尺度}的组内极差 $\ll$ \emph{固定尺度、变动分组}的组间差——尺度只是测量工具，被试性别才是主导异质来源。
+  \begin{block}{H2a.4 尺度的影响小于被试性别的影响（2a 特有）}
+    \small 在 $2 \times 3$（被试性别 $\times$ 尺度）的设计中，\emph{固定分组、换尺度}时 $d_z$ 变动范围，远小于\emph{固定尺度、换性别分组}时的差距——尺度是测量工具，被试性别才是更重要的变异来源。
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 2a：H2a.1 ——整体方向性}
+\begin{frame}{研究 2a：人类三尺度 $d_z = 0.51$--$0.62$——与 LLM 同方向，H2a.1 支持}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -792,7 +804,7 @@
   \end{alertblock}
 \end{frame}
 
-\begin{frame}{研究 2a：H2a.1 —— 配对差分布（人类三尺度）}
+\begin{frame}{研究 2a：人类三尺度配对差分布均右偏——与 LLM 端分布形状一致}
   \centering
   \begin{columns}[T,onlytextwidth]
     \column{0.33\textwidth}
@@ -810,7 +822,7 @@
   \small 三尺度下分布均系统性右偏；虚线为 0；与 9 个 LLM 一致。
 \end{frame}
 
-\begin{frame}{研究 2a：H2a.1 —— 方向性分解（人类三尺度）}
+\begin{frame}{研究 2a：女人版更高的题项占比 $69\%$--$74\%$——方向与 9 个 LLM 完全一致}
   \centering
   \includegraphics[width=0.82\textwidth,height=0.72\textheight,keepaspectratio]{\humanfig/fig3_directionality.pdf}
 
@@ -818,7 +830,7 @@
   \small 三尺度下女人版更高的题项占比 $69.3\%$--$73.6\%$；男人版更高仅 $25.6\%$--$30.7\%$——9/9 模型方向与人类方向完全一致。
 \end{frame}
 
-\begin{frame}{研究 2a：H2a.3 ——被试性别 3 倍效应}
+\begin{frame}{研究 2a：女性被试 $d_z$ 稳定约为男性被试的 3 倍（3.0／3.6／3.5 倍）}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -843,7 +855,7 @@
   \end{alertblock}
 \end{frame}
 
-\begin{frame}{研究 2a：H2a.3 —— 被试性别 $\times$ 尺度 的分布图}
+\begin{frame}{研究 2a：女性被试行的右偏显著强于男性——H2a.3 的视觉证据}
   \centering
   \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{\humanpgfig/fig2_participant_gender_difference_distribution.pdf}
 
@@ -851,7 +863,7 @@
   \small 行 = 被试性别；列 = 评分尺度。\emph{女性被试}行上分布右偏显著强于男性被试行，且该模式跨三尺度一致。
 \end{frame}
 
-\begin{frame}{研究 2a：H2a.4 ——尺度 $\ll$ 性别层级}
+\begin{frame}{研究 2a：组间差约为组内差的 4--8 倍——被试性别才是主导异质来源}
   \small
   \begin{itemize}
     \item \textbf{固定分组、变动尺度}的组内 $d_z$ 极差：
@@ -870,7 +882,7 @@
   \end{alertblock}
 \end{frame}
 
-\begin{frame}{研究 2a：H2a.2 ——维度集中延拓（男 vs 女 $\times$ 3 尺度）}
+\begin{frame}{研究 2a：性化 + 外貌恰是 9 个 LLM 最集中的列——人机共同热区}
   \centering
   \includegraphics[width=0.92\textwidth,height=0.78\textheight,keepaspectratio]{\humanpgfig/fig4_participant_gender_level1_forest.pdf}
 
@@ -878,7 +890,7 @@
   \small 人类整体 $d_z$ 集中于\textbf{性化攻击}与\textbf{外貌形象攻击}两列——恰是 1b 所有 9 模型均显著的列（与 H1b.2 重合）；该集中结构在\emph{女性被试}上尤为突出——\textbf{H2a.2 支持}。
 \end{frame}
 
-\begin{frame}{研究 2a：配对散点（人类三尺度）}
+\begin{frame}{研究 2a：人类持平带比 LLM 稀——个体差异大、少有题项平均分完全一致}
   \centering
   \begin{columns}[T,onlytextwidth]
     \column{0.33\textwidth}
@@ -896,7 +908,7 @@
   \small 横轴 = 男人版题项平均分；纵轴 = 女人版；对角线上方密度 = 女人版更高的题项比例。\emph{持平带显著比 LLM 更稀}——人类评分个体差异大、不易给出完全一致的题项\emph{平均}分。
 \end{frame}
 
-\begin{frame}{研究 2a：四条假设的判决汇总}
+\begin{frame}{研究 2a 小结：四条假设全部支持——人机同方向，被试性别是最稳健异质来源}
   \small
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -920,9 +932,11 @@
 \end{frame}
 
 % ===========================================================================
-\section{研究 2a·ICC：人机偏差模式的题项级相似度}
+\section{研究 2a$\cdot$ICC（Intraclass Correlation Coefficient，类内相关系数）：人机偏差模式的题项级相似度}
 
-\begin{frame}{研究 2a·ICC：研究问题与设计}
+\begin{frame}{研究 2a$\cdot$ICC：研究问题与设计}
+  \small\emph{从 2a 到 2a$\cdot$ICC 的过渡}：到这里我们已经确认人机在"整体方向"和"量级排序"上一致；但\textbf{方向一致不等于题项级模式一致}——人机可能在"哪一整类题最严重"上意见相同、却在"具体哪一句最严重"上各走各的。2a$\cdot$ICC（Intraclass Correlation Coefficient，类内相关系数）就是从题项级追问人机对齐。
+
   \begin{block}{核心问题}
     \small 人机在\emph{方向}与\emph{量级}上已达成一致；在\emph{题项层面}，哪一个 LLM 的偏差分布与人类最接近？\emph{哪一句被判为最偏差}这一问题上人机是否达成共识？
   \end{block}
@@ -939,15 +953,15 @@
   \begin{block}{H2a.ICC.1 单一"最像人"模型假设（零假设）}
     \small 若 9 个 LLM 的对齐已收敛到同一种"类人"结构，则 9 个单元的 top-1 应稳定为同一模型。
   \end{block}
-  \begin{block}{H2a.ICC.2 多模型漂移假设（与 ICC.1 互斥）}
-    \small top-1 会随被试子群与尺度漂移——每个单元的"最像人"模型不同。
+  \begin{block}{H2a.ICC.2 "最像人"模型因子群而异（与 ICC.1 互斥）}
+    \small 不同被试子群或尺度下，top-1 会切换到不同的 LLM——每个单元的"最像人"模型各不相同。
   \end{block}
-  \begin{block}{H2a.ICC.3 量级-模式共指假设}
-    \small $d_z$ 更大的被试子群（女性）应与 LLM 的题项级模式更接近、ICC 更高。若反之，则提示\emph{量级}与\emph{模式}刻画的不是同一维度偏差。
+  \begin{block}{H2a.ICC.3 效应量大则题项级也更一致}
+    \small $d_z$ 更大的被试子群（女性）应与 LLM 的题项级模式更接近、ICC 更高。若结果相反，说明\emph{整体效应量}与\emph{题项级模式相似度}反映的是两个不同维度的偏差。
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 2a·ICC：9 个单元的"最像人"模型}
+\begin{frame}{研究 2a·ICC：5 个不同模型在 9 个单元轮流登顶——不存在普适"最像人"模型}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -973,30 +987,30 @@
   \small \textbf{5 个不同模型}在 9 个单元轮流登顶（Claude $\times 3$、Llama $\times 2$、DeepSeek R1 $\times 2$、GLM $\times 1$、Qwen $\times 1$）。
 \end{frame}
 
-\begin{frame}{研究 2a·ICC：全体被试 $\times$ 3 尺度的森林图}
+\begin{frame}{研究 2a·ICC：Claude 4.5 于 7 点／滑块胜出——ICC 随尺度分辨率上升}
   \centering
   \includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{\artifacts/human_model_delta_similarity.pdf}
 \end{frame}
 
-\begin{frame}{研究 2a·ICC：按被试性别 $\times$ 尺度的森林图}
+\begin{frame}{研究 2a·ICC：拆开被试性别后 top-1 跳到 GLM／DeepSeek R1／Qwen——不同子群下最相似模型不同}
   \centering
   \includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{\artifacts/human_model_delta_similarity_by_participant_gender.pdf}
 \end{frame}
 
-\begin{frame}{研究 2a·ICC：三条可报告的观察}
+\begin{frame}{研究 2a·ICC：三条主要观察}
   \footnotesize
-  \begin{block}{观察一：最相似模型随被试子群漂移}
-    \small 9 个单元里 5 个不同 top-1。全体样本下 Claude 4.5 在 7 点与滑块胜出；拆开后男性 7 点 = GLM 4.6，女性滑块 = Qwen——\emph{"最像人"声明必须显式交代被试子群与尺度}。
+  \begin{block}{观察一：没有固定的"最像人"模型，子群不同则冠军不同}
+    \small 9 个单元里出现 5 个不同 top-1。全体样本下 Claude 4.5 在 7 点与滑块胜出；拆开被试性别后，男性 7 点 = GLM 4.6，女性滑块 = Qwen——因此"某 LLM 最像人"的说法必须注明是哪个被试群体、哪种尺度。
   \end{block}
-  \begin{block}{观察二：ICC 随尺度分辨率上升——3 点下信号被压缩}
-    \small 最大 ICC(2,1) 在全体被试下 $0.089 \to 0.158 \to 0.222$；9 个单元全部位于 Koo \& Li (2016) 的 poor 区间（$<0.50$）。3 点尺度下的题项级对齐信号显著衰减——后续研究建议锚定 7 点或滑块。
+  \begin{block}{观察二：ICC 随尺度精度提升而上升——3 点尺度下题项级对齐最弱}
+    \small 全体被试最大 ICC(2,1) 从 3 点 $0.089$ 升至 7 点 $0.158$、滑块 $0.222$；但 9 个单元全部处于 Koo \& Li (2016) 的 poor 区间（$<0.50$）。3 点尺度只有三档取值，偏差值被压缩，题项间差异难以区分——后续题项级分析建议使用 7 点或滑块。
   \end{block}
-  \begin{block}{观察三："量级-模式"张力}
-    \small 男性被试 7 点／滑块的 CI 均不含 0；女性被试相反反而跨 0。\emph{$d_z$ 大的子群题项级更难被 LLM 拟合}——两套指标刻画两类偏差。提出"对齐偏斜"假设。
+  \begin{block}{观察三：效应量大的子群，题项级反而与 LLM 更不像}
+    \small 男性被试 7 点／滑块的 CI 均不含 0，即题项级与 LLM 有实质相关；女性被试 CI 反而跨 0。女性被试整体 $d_z$ 更大，却在哪道题最严重这一问题上与 LLM 更不一致——效应量与题项级模式刻画的是不同维度的偏差。据此提出"对齐偏斜"假设。
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 2a·ICC：三条假设的判决汇总}
+\begin{frame}{研究 2a·ICC 小结：没有固定的"最像人"模型，效应量大不等于题项更一致}
   \small
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -1006,23 +1020,25 @@
       假设 & 关键预测 & 数据判决 \\
       \midrule
       H2a.ICC.1 单一模型 & 9 单元 top-1 同一模型 & \textbf{证伪}（5 个不同 top-1） \\
-      H2a.ICC.2 多模型漂移 & top-1 随子群与尺度漂移 & \textbf{支持} \\
-      H2a.ICC.3 量级-模式共指 & $d_z$ 大 $\Rightarrow$ ICC 高 & \textbf{证伪}（女性 $d_z$ 大但 ICC 反而较低） \\
+      H2a.ICC.2 最像人模型因子群而异 & top-1 随被试子群与尺度切换 & \textbf{支持} \\
+      H2a.ICC.3 效应量 $\Rightarrow$ 题项级一致 & $d_z$ 大 $\Rightarrow$ ICC 高 & \textbf{证伪}（$d_z$ 大但 ICC 反而低） \\
       \bottomrule
     \end{tabular}
   \end{table}
 
   \vspace{0.2em}
-  \begin{alertblock}{"量级-模式张力"的解读}
-    \small 女性被试\emph{整体}更倾向判女人版为攻击，但\emph{她们具体偏向的题项}与 9 个 LLM 偏向的具体题项重合度较低；男性被试量级弱但题项偏好与 LLM 更接近。\\
-    \textbf{假设}：当前 LLM 对齐更多捕获"被男性评分者识别为攻击性"的题项特征——\emph{对齐偏斜}（alignment skew）而非\emph{对齐不足}（alignment shortfall）。可通过以女性评分者数据做 RLHF 再校准检验。
+  \begin{alertblock}{效应量大不等于题项级一致性高}
+    \small 女性被试\emph{整体}效应量大，但\emph{哪道题最严重}与 LLM 的判断重合度较低；男性被试效应量弱，但题项偏好与 LLM 更接近。\\
+    \textbf{假设}：LLM 对齐更多捕获"男性评分者视角下的攻击性"（alignment skew）——对齐方向存在偏斜，而非总量不足。可用女性评分者数据做 RLHF 再校准验证。
   \end{alertblock}
 \end{frame}
 
 % ===========================================================================
-\section{研究 2a·CS：人机跨尺度稳健性比较}
+\section{研究 2a$\cdot$CS（Cross-Scale similarity，跨尺度相似度）：人机跨尺度稳健性比较}
 
-\begin{frame}{研究 2a·CS：研究问题}
+\begin{frame}{研究 2a$\cdot$CS：研究问题}
+  \small\emph{从 2a$\cdot$ICC 到 2a$\cdot$CS 的过渡}：上一节给出了一个看似令人不安的结果——人机题项级相似度全部落在 poor 档。但这可能有两个解释：一是人机之间本来就不像，二是\textbf{人类自己在三尺度间也不像}。2a$\cdot$CS（Cross-Scale similarity，跨尺度相似度）这一节正是做这个\emph{人类内部自洽}的前置检验，也顺便比较人机谁更稳。
+
   \begin{block}{核心问题}
     \small 人类被试在三种打分尺度下是否给出相互一致的题项级偏差模式？若不然，与 LLM 相比谁更受尺度影响？
   \end{block}
@@ -1045,20 +1061,20 @@
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 2a·CS：仅人类三子群的跨尺度 $\rho$}
+\begin{frame}{研究 2a·CS：人类三个被试群体的题项级跨尺度相关均低于 0.13}
   \centering
   \includegraphics[width=0.88\textwidth,height=0.68\textheight,keepaspectratio]{\artifacts/within_human_cross_scale_similarity.pdf}
 
   \vspace{0.1em}
-  \small 全体 / 男性 / 女性被试在三对尺度组合上均呈 $\rho<0.13$；多数 CI 跨越 $0$——\emph{人类在题项级上三尺度几乎是三套独立答案}。
+  \small 全体 / 男性 / 女性被试在三对尺度组合上均呈 $\rho<0.13$；多数 CI 跨越 $0$——\emph{同一批题，换一种打分尺度，具体哪道题最偏的排序就基本重组}。
 \end{frame}
 
-\begin{frame}{研究 2a·CS：题项级结果——人机并列森林}
+\begin{frame}{研究 2a·CS：人机并列森林——中位 $\rho$ 同量级，模型间分化更大}
   \centering
   \includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{\artifacts/within_rater_cross_scale_similarity_human_vs_llm.pdf}
 \end{frame}
 
-\begin{frame}{研究 2a·CS：题项级数值}
+\begin{frame}{研究 2a·CS：LLM 与人类跨尺度相关相近，但模型间分化更大——H2a.CS.2 不支持}
   \footnotesize
   \setlength{\tabcolsep}{4pt}
   \begin{table}
@@ -1078,11 +1094,11 @@
     \small
     \item \textbf{人类}：9 个单元 $\rho$ 全部 $< 0.13$——题项级跨尺度显著重组。
     \item \textbf{LLM}：中位与人类同量级；3pt vs 7pt 上 LLM 中位 $0.006$ 甚至 \emph{低于}人类 $0.105$。
-    \item \textbf{离差}：LLM 跨模型跨度是人类跨子群的 \textbf{4--5 倍}（GPT-5.1／Gemma 稳健，Claude 负 $\rho$ 显著）。
+    \item \textbf{模型间分化}：LLM 跨模型跨度是人类跨被试子群的 \textbf{4--5 倍}（GPT-5.1／Gemma 稳健，Claude 负 $\rho$ 显著）。
   \end{itemize}
 \end{frame}
 
-\begin{frame}{研究 2a·CS：聚合级——领域 $d_z$ 作单位}
+\begin{frame}{研究 2a·CS：聚合级 $+0.86/+0.72/+0.58$ 复刻 LLM 端排序——人机共识}
   \footnotesize
   \setlength{\tabcolsep}{5pt}
   \begin{table}
@@ -1103,12 +1119,12 @@
   \vspace{0.2em}
   \begin{alertblock}{聚合级的共识}
     \small 全体被试 $+0.86 / +0.72 / +0.58$ \textbf{几乎完全复刻} LLM 端的 $+0.78 / +0.85 / +0.57$。
-    \\女性被试与 LLM 共同指向\emph{"3pt--7pt 最像、3pt--slider 最不像"}的离散同族模式。
-    \\男性被试因信号弱（$d_z$ 压缩到较窄区间）使得 Spearman 不稳定，但这并非反例。
+    \\女性被试与 LLM 均指向同一个排序：3pt 与 7pt 之间最相似、3pt 与滑块之间最不像——这与"3pt 和 7pt 同属离散 Likert"的直觉一致。
+    \\男性被试的 $d_z$ 整体较小，Spearman 不稳定，不构成反例。
   \end{alertblock}
 \end{frame}
 
-\begin{frame}{研究 2a·CS：两条假设的判决汇总}
+\begin{frame}{研究 2a·CS 小结：题项级上人机都受尺度影响；在领域层面人机结果相似}
   \small
   \setlength{\tabcolsep}{3pt}
   \begin{table}
@@ -1126,8 +1142,8 @@
 
   \vspace{0.3em}
   \begin{block}{分层结论}
-    \small \textbf{题项级}：人机都一样受尺度影响，不存在"LLM 更理性客观"。真正的人机差别是\emph{离差}——LLM 跨模型跨度是人类 4--5 倍，两极分化。\\
-    \textbf{聚合级（领域维度）}：人机共同支持"3pt--7pt 最像、3pt--slider 最不像"。
+    \small \textbf{题项级}：人与 LLM 同样受尺度影响，不存在"LLM 更理性客观"。人机之间真正的差别在于\emph{模型间的分散程度}——LLM 跨模型的跨度是人类跨被试子群的 4--5 倍，模型间两极分化明显（GPT-5.1 正相关、Claude 负相关）。\\
+    \textbf{聚合级（领域维度）}：人机共同支持"3pt--7pt 最像、3pt--slider 最不像"的排序。
   \end{block}
 \end{frame}
 
@@ -1173,12 +1189,12 @@
       \midrule
       \multicolumn{3}{l}{\textit{研究 2a·ICC}} \\
       H2a.ICC.1 单一"最像人" & 9 单元 top-1 同一模型 & \textbf{证伪}（5 个不同 top-1） \\
-      H2a.ICC.2 多模型漂移 & top-1 随子群与尺度漂移 & \textbf{支持} \\
-      H2a.ICC.3 量级-模式共指 & $d_z$ 大 $\Rightarrow$ ICC 高 & \textbf{证伪}（方向相反，提示"对齐偏斜"） \\
+      H2a.ICC.2 最像人模型因子群而异 & top-1 随被试子群与尺度切换 & \textbf{支持} \\
+      H2a.ICC.3 效应量大则题项级也更一致 & $d_z$ 大 $\Rightarrow$ ICC 高 & \textbf{证伪}（女性 $d_z$ 大、ICC 反而更低，提示对齐偏斜） \\
       \midrule
       \multicolumn{3}{l}{\textit{研究 2a·CS}（H2a.CS.1 与 1b 的 H1b.3 题项层配对）} \\
       H2a.CS.1 主张（$\leftrightarrow$ H1b.3 题项层） & 人类题项级 $\rho$ 偏低 & \textbf{支持} \\
-      H2a.CS.1 次级（离散同族） & 3pt-7pt $\gg$ 含 slider 两对 & \textbf{题项级证伪；聚合级支持} \\
+      H2a.CS.1 次级（3pt--7pt 最相似） & 3pt-7pt $\gg$ 含 slider 两对 & \textbf{题项级证伪；聚合级支持} \\
       H2a.CS.2 LLM 更稳健 & LLM $\rho \gg$ 人类 $\rho$ & \textbf{证伪}（同量级） \\
       \bottomrule
     \end{tabular}
@@ -1190,8 +1206,8 @@
     \item \textbf{1a}：中英性能差距主要不来自标注定义分歧，而来自训练语料对中文的不均衡暴露（方差比 $12.7$--$15.0$ 倍）。
     \item \textbf{1b}：9 个 LLM 一致把"女人版"打得更高，集中在身体／性相关维度；\emph{整体量级}跨尺度稳定，但\emph{具体哪一句}跨尺度显著重组。
     \item \textbf{2a}：人类也同方向偏差；女性被试约为男性被试的 \textbf{3 倍}，跨尺度保持；3 倍差距在性化／外貌两域最强。
-    \item \textbf{2a·ICC}：\emph{没有一个 LLM 在所有单元都最像人}；\emph{效应量大的女性被试反而在题项级更难被 LLM 拟合}——提示"对齐偏斜"而非"对齐不足"。
-    \item \textbf{2a·CS}：\emph{题项级}人机都同样受尺度影响（不存在"LLM 更理性客观"）；\emph{领域级聚合}上两端共同支持"3pt--7pt 最像、3pt--slider 最不像"。
+    \item \textbf{2a·ICC}：没有哪个 LLM 在所有被试子群和尺度下都最像人；女性被试效应量更大，但在哪道题最严重上与 LLM 反而更不一致——模型的对齐方向更偏向男性评分者，而非对齐的总量不够。
+    \item \textbf{2a·CS}：题项级上人与 LLM 同样受尺度影响；领域级聚合上两者均支持"3pt--7pt 最像、3pt--slider 最不像"。
   \end{itemize}
 \end{frame}
 
@@ -1212,6 +1228,20 @@
     \item \textbf{模型生态}：9 个 LLM 覆盖主流中、西方厂商；拓展到 30B 以下或专用审核模型仍需验证。
     \item \textbf{维度细粒度}：一级领域已覆盖；二级 / 三级维度的细粒度交互尚未开展。
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusions：三个带回家的信息}
+  \small
+  \begin{enumerate}
+    \item \textbf{中英性能差距的"方差侧"比"均值侧"更能说明问题}——方差比 $12.7$--$15.0$ 倍、Bartlett / Levene 一致拒绝等方差；这是 H1a.2（语料暴露不均）而非 H1a.1（定义分歧）的诊断性特征。
+    \item \textbf{9 个 LLM 与人类被试同方向}地把"女人版"打得更高，共同集中于\emph{性化 + 外貌}两域；整体量级跨尺度稳定、但\emph{具体哪一句最偏}跨尺度显著重组——偏差是一个必须分层陈述的现象。
+    \item \textbf{换尺度对效应量的影响，远小于换被试性别的影响}（前者极差约 $0.05$--$0.11$，后者差距 $0.43$--$0.51$，后者约为前者的 4--8 倍）。女性被试 $d_z$ 更大，但题项级与 LLM 的一致性反而更低——模型更能拟合男性评分者识别出的攻击性题项，而不是女性评分者；这种方向性的偏差可称为\textbf{对齐偏斜}（alignment skew），有别于整体对齐不足。
+  \end{enumerate}
+
+  \vspace{0.3em}
+  \begin{alertblock}{一句话}
+    \small 人机的共同偏差落在同一片"身体／性"领域，但究竟\emph{偏哪一句}跨评分者／跨尺度不稳；"LLM 最像人"的回答必须显式写明——\emph{像哪一群人、在哪一个尺度}。
+  \end{alertblock}
 \end{frame}
 
 \begin{frame}{致谢}
