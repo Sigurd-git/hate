@@ -58,11 +58,14 @@ fi
 
 compiled_pages_dir="${build_dir}/compiled_pages"
 manual_pages_dir="${build_dir}/manual_pages"
+normalized_manual_pdf="${build_dir}/manual_normalized.pdf"
 mkdir -p "${compiled_pages_dir}" "${manual_pages_dir}"
 
 pdfseparate "${output_pdf}" "${compiled_pages_dir}/page-%03d.pdf"
+gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite \
+  -sOutputFile="${normalized_manual_pdf}" "${manual_pdf}"
 pdfseparate -f "${override_page_number}" -l "${override_page_number}" \
-  "${manual_pdf}" "${manual_pages_dir}/page-%03d.pdf"
+  "${normalized_manual_pdf}" "${manual_pages_dir}/page-%03d.pdf"
 
 stitched_parts=()
 for ((page_index = 1; page_index <= page_count; page_index++)); do

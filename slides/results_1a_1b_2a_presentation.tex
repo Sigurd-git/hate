@@ -42,6 +42,20 @@
 \usepackage{xcolor}
 \usepackage{pdfpages}
 
+% Prefer PNG companions for external matplotlib figures when available.
+% This avoids PDF font embedding issues that can surface as garbled CJK text
+% in some viewers while keeping native vector graphics for the slide chrome.
+\ExplSyntaxOn
+\cs_new_eq:NN \OriginalIncludegraphics \includegraphics
+\RenewDocumentCommand{\includegraphics}{O{} m}{%
+  \tl_set:Nx \l_tmpa_tl { #2 }%
+  \regex_replace_once:nnN { \.pdf \z } { .png } \l_tmpa_tl
+  \file_if_exist:nTF { \l_tmpa_tl }
+    { \OriginalIncludegraphics[#1]{\l_tmpa_tl} }
+    { \OriginalIncludegraphics[#1]{#2} }
+}
+\ExplSyntaxOff
+
 % Paths relative to the slides/ directory (same convention as the paper tex).
 \newcommand{\artifacts}{../artifacts}
 \newcommand{\oneb}{../outputs/group_swap_1b/1b_groupswap_demensionsentence/analysis_1b/figures}
@@ -601,18 +615,19 @@
   \centering
   \begin{columns}[T,onlytextwidth]
     \column{0.48\textwidth}
-      \includegraphics[width=\linewidth,height=0.34\textheight,keepaspectratio]{\oneb/attack_7pt_likert/panels/fig1_paired_scores_panel_2.pdf}\\[-0.2em]
+      \includegraphics[width=\linewidth,height=0.24\textheight,keepaspectratio]{\oneb/attack_7pt_likert/panels/fig1_paired_scores_panel_2.pdf}\\[-0.2em]
       {\scriptsize Claude Opus 4.5（持平 65.0\%，不持平时 64:1）}
     \column{0.48\textwidth}
-      \includegraphics[width=\linewidth,height=0.34\textheight,keepaspectratio]{\oneb/attack_7pt_likert/panels/fig1_paired_scores_panel_4.pdf}\\[-0.2em]
+      \includegraphics[width=\linewidth,height=0.24\textheight,keepaspectratio]{\oneb/attack_7pt_likert/panels/fig1_paired_scores_panel_4.pdf}\\[-0.2em]
       {\scriptsize Llama Maverick（持平 71.4\%，不持平时 9.6:1）}
   \end{columns}
+  \vspace{0.6em}
   \begin{columns}[T,onlytextwidth]
     \column{0.48\textwidth}
-      \includegraphics[width=\linewidth,height=0.34\textheight,keepaspectratio]{\oneb/attack_7pt_likert/panels/fig1_paired_scores_panel_8.pdf}\\[-0.2em]
+      \includegraphics[width=\linewidth,height=0.24\textheight,keepaspectratio]{\oneb/attack_7pt_likert/panels/fig1_paired_scores_panel_8.pdf}\\[-0.2em]
       {\scriptsize Qwen 2.5 72B（持平 73.9\%，不持平时 96:1）}
     \column{0.48\textwidth}
-      \includegraphics[width=\linewidth,height=0.34\textheight,keepaspectratio]{\oneb/attack_7pt_likert/panels/fig1_paired_scores_panel_1.pdf}\\[-0.2em]
+      \includegraphics[width=\linewidth,height=0.24\textheight,keepaspectratio]{\oneb/attack_7pt_likert/panels/fig1_paired_scores_panel_1.pdf}\\[-0.2em]
       {\scriptsize GPT-5.1（持平 54.2\%，不持平时 55.7:1）}
   \end{columns}
 
@@ -1171,47 +1186,25 @@
   \end{table}
 \end{frame}
 
-\begin{frame}{全文总结}
-  \begin{itemize}
-    \item \textbf{1a}：中英性能差距主要不来自标注定义分歧，而来自训练语料对中文的不均衡暴露（方差比 $12.7$--$15.0$ 倍）
-    \item \textbf{1b}：9 个 LLM 一致把"女人版"打得更高，集中在身体／性相关维度；\emph{整体量级}跨尺度稳定，但\emph{具体哪一句}跨尺度显著重组。
-    \item \textbf{2a}：人类也同方向偏差；女性被试约为男性被试的 \textbf{3 倍}，跨尺度保持；3 倍差距在性化／外貌两域最强。
-    \item \textbf{2a·ICC}：没有哪个 LLM 在所有被试子群和尺度下都最像人；女性被试效应量更大，但在哪道题最严重上与 LLM 反而更不一致——模型的对齐方向更偏向男性评分者，而非对齐的总量不够。
-    \item \textbf{2a·CS}：题项级上人与 LLM 同样受尺度影响；领域级聚合上两者均支持"3pt--7pt 最像、3pt--slider 最不像"。
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{方法论推论}
-  \begin{itemize}
-    \item \textbf{题项级对齐研究应锚定 7 点或滑块}：3 点尺度将 $\Delta_i$ 压缩到至多三档取值，可检测的题项级信号显著衰减；聚合级另当别论。
-    \item \textbf{人机相似度声明必须显式交代"人是谁"}：全体样本下 Claude 4.5 领先，但拆开男／女被试后冠军跳到 GLM 4.6、DeepSeek R1、Qwen 2.5 72B——"哪个 LLM 最像人"无跨尺度、跨被试性别的稳定答案。
-    \item \textbf{"量级"与"模式"是两个独立维度}：女性被试 $d_z$ 更大但 ICC 更弱——两者可相互偏离。
-    \item \textbf{聚合级与题项级须分层陈述}：偏差在聚合上共享、在题项级分化；任何单一层级声明都可能误读。
-  \end{itemize}
-\end{frame}
-
 \begin{frame}{研究局限与后续方向}
   \begin{itemize}
-    \item \textbf{语言范围}：配对分析仅在中文语境下展开；英文平行语料尚未完成，H1b.1 在英文下的表现不做声明。
-    \item \textbf{ICC 绝对值}：全部 9 单元 ICC 位于 Koo \& Li (2016) 的 poor 区间；这是"人机题项级偏差排序仅存在弱对齐"的真实度量，而非实验失败。
-    \item \textbf{对齐偏斜的直接检验}：以女性评分者数据做 RLHF 再校准，看 ICC 是否系统性上升——可作为后续实验。
-    \item \textbf{模型生态}：9 个 LLM 覆盖主流中、西方厂商；拓展到 30B 以下或专用审核模型仍需验证。
-    \item \textbf{维度细粒度}：一级领域已覆盖；二级 / 三级维度的细粒度交互尚未开展。
+    \item \textbf{语言范围}：当前最小配对分析聚焦中文；英文平行语料仍在整理，因此这里的结论暂时只针对中文场景。
+    \item \textbf{ICC 绝对值}：9 个单元的 ICC 都落在 Koo \& Li (2016) 所定义的 poor 区间；这更像是在说明人机题项级对应本来就比较弱，而不是实验"没做出来"。
+    \item \textbf{对齐偏斜的直接检验}：如果后续用女性评分者数据做再校准，并观察 ICC 是否系统上升，就能更直接检验"对齐偏斜"这一路径。
+    \item \textbf{模型生态}：本研究覆盖了主流的中、西方通用 LLM；更小参数模型或专用审核模型是否呈现同样模式，还需要继续检验。
+    \item \textbf{维度细粒度}：目前较稳健的结论主要集中在一级维度；二级 / 三级维度之间更细的交互关系，还有待展开。
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Conclusions：三个带回家的信息}
-  \small
+\begin{frame}{Conclusions}
+  \footnotesize
   \begin{enumerate}
-    \item \textbf{中英性能差距的"方差侧"比"均值侧"更能说明问题}——方差比 $12.7$--$15.0$ 倍、Bartlett / Levene 一致拒绝等方差；这是 H1a.2（语料暴露不均）而非 H1a.1（定义分歧）的诊断性特征。
-    \item \textbf{9 个 LLM 与人类被试同方向}地把"女人版"打得更高，共同集中于\emph{性化 + 外貌}两域；整体量级跨尺度稳定、但\emph{具体哪一句最偏}跨尺度显著重组——偏差是一个必须分层陈述的现象。
-    \item \textbf{换尺度对效应量的影响，远小于换被试性别的影响}（前者极差约 $0.05$--$0.11$，后者差距 $0.43$--$0.51$，后者约为前者的 4--8 倍）。女性被试 $d_z$ 更大，但题项级与 LLM 的一致性反而更低——模型更能拟合男性评分者识别出的攻击性题项，而不是女性评分者；这种方向性的偏差可称为\textbf{对齐偏斜}（alignment skew），有别于整体对齐不足。
+    \item \textbf{中英差距最值得关注的是中文端更大的离散度，而不只是平均分差。}方差比达到 $12.7$--$15.0$ 倍，更像是在反映各模型对中文语料掌握程度不同，而不只是任务定义不同。
+    \item \textbf{9 个 LLM 和人类都更倾向于把"女人版"评得更高，且共同集中在\emph{性化 + 外貌}内容上。}这说明人机在偏差方向和热点维度上确实有稳定重合。
+    \item \textbf{评分者是谁，比量表形式更能影响结果。}女性被试的总体效应量约为男性的 3 倍，组间差也约为组内差的 4--8 倍，说明被试性别才是更强的异质来源。
+    \item \textbf{并不存在一个普适的"最像人"模型。}top-1 会随着被试子群和尺度切换，而且无论人类还是 LLM，题项级结果都会随尺度明显重排，所以任何"最像人"的结论都必须说明是\emph{像哪一群人、在哪一种尺度}。
   \end{enumerate}
 
-  \vspace{0.3em}
-  \begin{alertblock}{一句话}
-    \small 人机的共同偏差落在同一片"身体／性"领域，但究竟\emph{偏哪一句}跨评分者／跨尺度不稳；"LLM 最像人"的回答必须显式写明——\emph{像哪一群人、在哪一个尺度}。
-  \end{alertblock}
 \end{frame}
 
 \begin{frame}{致谢}
