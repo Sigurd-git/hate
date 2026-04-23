@@ -367,7 +367,6 @@
     \small \textbf{与 2a 的配对关系}：H1b.1 $\leftrightarrow$ H2a.1（F$>$M 主效应）、H1b.2 $\leftrightarrow$ H2a.2（维度集中）、H1b.3 $\leftrightarrow$ H2a.CS.1（题项级跨尺度同构）。
   \end{block}
 \end{frame}
-}
 
 \begin{frame}{研究 1b：27 单元完整统计（1/2）——所有模型三尺度均显著 $\Delta_{F-M}>0$}
   \scriptsize
@@ -853,22 +852,18 @@
   \small 行 = 被试性别；列 = 评分尺度。\emph{女性被试}行上分布右偏显著强于男性被试行，且该模式跨三尺度一致。
 \end{frame}
 
-\begin{frame}{研究 2a：组间差约为组内差的 4--8 倍——被试性别才是主导异质来源}
+\begin{frame}{研究 2a：2$\times$3 重复测量 ANOVA 显示被试性别主效应更强}
   \small
   \begin{itemize}
-    \item \textbf{固定分组、变动尺度}的组内 $d_z$ 极差：
-      \begin{itemize}
-        \small
-        \item 女性被试：$0.655 \to 0.704 \to 0.590$，极差 $= 0.114$。
-        \item 男性被试：$0.219 \to 0.198 \to 0.167$，极差 $= 0.052$。
-      \end{itemize}
-    \item \textbf{固定尺度、变动分组}的组间 $d_z$ 差：$0.43$--$0.51$。
-    \item 后者约为前者的 \textbf{4--8 倍}。
+    \item 以 371 个题项为重复测量单元；将各格子的 $\Delta_{F-M}$ 按各自量表上限归一化后，检验\textbf{被试性别（男 / 女）$\times$量表（3 点 / 7 点 / 滑块）}。
+    \item \textbf{被试性别主效应显著}：$F(1,370)=111.17$，$p<.001$，$\eta_G^2=.044$。
+    \item \textbf{量表主效应也显著，但更小}：$F(2,740)=9.44$，$p_{GG}<.001$，$\eta_G^2=.007$。
+    \item \textbf{交互不显著}：$F(2,740)=1.79$，$p_{GG}=.169$。
   \end{itemize}
 
   \vspace{0.3em}
   \begin{alertblock}{判决}
-    \small 尺度选择是相对中性的测量决策；被试性别才是决定效应量的关键变量——\textbf{H2a.4 支持}。
+    \small 量表形式并非完全无关，但其解释量明显小于被试性别（$\eta_G^2$: $.007$ vs $.044$）；\textbf{H2a.4 支持}。
   \end{alertblock}
 \end{frame}
 
@@ -891,20 +886,19 @@
 \end{frame}
 
 \begin{frame}{研究 2a 小结：四条假设全部支持——人机同方向，被试性别是最稳健异质来源}
-  \small
-  \setlength{\tabcolsep}{4pt}
+  \footnotesize
   \begin{table}
     \centering
-    \begin{tabular}{lll}
+    \begin{tabularx}{\textwidth}{>{\RaggedRight\arraybackslash}p{0.22\textwidth}>{\RaggedRight\arraybackslash}p{0.28\textwidth}X}
       \toprule
       假设 & 关键预测 & 数据判决 \\
       \midrule
       H2a.1 主效应延拓（对应 H1b.1） & 人类三尺度 $\Delta_{F-M}>0$ & \textbf{支持}（$d_z = 0.51$--$0.62$，$q<10^{-18}$） \\
       H2a.2 维度集中延拓（对应 H1b.2） & 性化 + 外貌最强，女性被试尤其 & \textbf{支持}（与 LLM 最集中领域重合） \\
       H2a.3 被试性别异质 & 女性 $d_z$ $>$ 男性 $d_z$ & \textbf{支持}（3.0--3.6 倍，跨尺度稳定） \\
-      H2a.4 尺度 $\ll$ 性别 & 组内 $\ll$ 组间 & \textbf{支持}（4--8 倍关系） \\
+      H2a.4 尺度 $\ll$ 性别 & 性别主效应 $>$ 量表主效应 & \textbf{支持}（RM-ANOVA：性别效应量更大，交互不显著） \\
       \bottomrule
-    \end{tabular}
+    \end{tabularx}
   \end{table}
 
   \vspace{0.3em}
@@ -1157,7 +1151,7 @@
       H2a.1 主效应延拓 $\leftrightarrow$ H1b.1 & 人类三尺度 $\Delta_{F-M}>0$ & \textbf{支持} \\
       H2a.2 维度集中延拓 $\leftrightarrow$ H1b.2 & 性化 + 外貌最强，女性尤其 & \textbf{支持} \\
       H2a.3 被试性别异质 & 女性 $d_z$ $>$ 男性 $d_z$ & \textbf{支持}（3 倍） \\
-      H2a.4 尺度 $\ll$ 性别 & 组内 $\ll$ 组间 & \textbf{支持}（4--8 倍） \\
+      H2a.4 尺度 $\ll$ 性别 & 性别主效应 $>$ 量表主效应 & \textbf{支持}（RM-ANOVA：$\eta_G^2=.044$ $> .007$） \\
       \bottomrule
     \end{tabular}
   \end{table}
@@ -1188,21 +1182,21 @@
 
 \begin{frame}{研究局限与后续方向}
   \begin{itemize}
-    \item \textbf{语言范围}：当前最小配对分析聚焦中文；英文平行语料仍在整理，因此这里的结论暂时只针对中文场景。
-    \item \textbf{ICC 绝对值}：9 个单元的 ICC 都落在 Koo \& Li (2016) 所定义的 poor 区间；这更像是在说明人机题项级对应本来就比较弱，而不是实验"没做出来"。
-    \item \textbf{对齐偏斜的直接检验}：如果后续用女性评分者数据做再校准，并观察 ICC 是否系统上升，就能更直接检验"对齐偏斜"这一路径。
-    \item \textbf{模型生态}：本研究覆盖了主流的中、西方通用 LLM；更小参数模型或专用审核模型是否呈现同样模式，还需要继续检验。
-    \item \textbf{维度细粒度}：目前较稳健的结论主要集中在一级维度；二级 / 三级维度之间更细的交互关系，还有待展开。
+    \item \textbf{语言范围}：目前的最小配对分析主要做在中文上，英文平行语料我还在继续整理，所以现在能给出的结论暂时只限定在中文场景里。
+    \item \textbf{ICC 绝对值}：9 个单元的 ICC 都落在 Koo \& Li (2016) 的 poor 区间；我倾向于把它看作人机题项级对应本来就比较弱的真实反映。
+    \item \textbf{对齐偏斜的直接检验}：后续如果能用女性评分者的数据做再校准，再观察 ICC 会不会系统地抬升。
+    \item \textbf{模型生态}：本研究覆盖的主要是主流的中、西方通用 LLM；至于更小参数的模型或者专用的审核模型会不会呈现同样的模式，还需要在之后的工作里继续检验。
+    \item \textbf{维度细粒度}：目前相对稳健的结论主要还集中在一级维度，二级 / 三级维度之间更细的交互关系，就留给后续再展开。
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Conclusions}
   \footnotesize
   \begin{enumerate}
-    \item \textbf{中英差距最值得关注的是中文端更大的离散度，而不只是平均分差。}方差比达到 $12.7$--$15.0$ 倍，更像是在反映各模型对中文语料掌握程度不同，而不只是任务定义不同。
-    \item \textbf{9 个 LLM 和人类都更倾向于把"女人版"评得更高，且共同集中在\emph{性化 + 外貌}内容上。}这说明人机在偏差方向和热点维度上确实有稳定重合。
-    \item \textbf{评分者是谁，比量表形式更能影响结果。}女性被试的总体效应量约为男性的 3 倍，组间差也约为组内差的 4--8 倍，说明被试性别才是更强的异质来源。
-    \item \textbf{并不存在一个普适的"最像人"模型。}top-1 会随着被试子群和尺度切换，而且无论人类还是 LLM，题项级结果都会随尺度明显重排，所以任何"最像人"的结论都必须说明是\emph{像哪一群人、在哪一种尺度}。
+    \item \textbf{中英差距里最值得关注的，其实是中文端更大的离散度，而不只是平均分差。}方差比能到 $12.7$--$15.0$ 倍，我更倾向于把它读成各模型对中文语料掌握程度的差异，而不只是任务定义层面的分歧。
+    \item \textbf{9 个 LLM 和人类都倾向于把"女人版"评得更高，而且共同集中在\emph{性化 + 外貌}这块内容上。}这让我觉得，人机之间在偏差方向和热点维度上确实存在比较稳定的重合。
+    \item \textbf{比起量表形式，评分者本身是谁反而更能左右结果。}女性被试的总体效应量大约是男性的 3 倍；在按量表归一化后的题项偏差上，2$\times$3 RM-ANOVA 也显示性别主效应（$\eta_G^2=.044$）明显大于量表主效应（$.007$）。
+    \item \textbf{至少在目前的数据里，并不存在一个普适意义上"最像人"的模型。}top-1 会随着被试子群和尺度切换，而且不管是人类还是 LLM，题项级结果都会随尺度明显重排；所以任何"最像人"的说法，都得交代清楚是\emph{像哪一群人、在哪一种尺度下。}
   \end{enumerate}
 
 \end{frame}
