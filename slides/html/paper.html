@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Xuan Bao" />
+  <meta name="dcterms.date" content="2026-04-29" />
+  <title>Measurement-Conditional Alignment of Human and LLM Gender Bias in Attack Ratings</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="paper.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Measurement-Conditional Alignment of Human and LLM
+Gender Bias in Attack Ratings</h1>
+<p class="author">Xuan Bao</p>
+<p class="date">2026-04-29</p>
+<div class="abstract">
+<div class="abstract-title">Abstract</div>
+<p>Large language models (LLMs) are increasingly used to evaluate
+offensive speech, but it remains unclear whether they reproduce the
+gender-differential judgements that humans make when sentence content is
+held fixed. This study constructed 371 Chinese minimal pairs of
+attack-laden sentences in which only the gender referent was changed,
+and collected ratings from nine production LLMs and 779 valid Chinese
+participant sessions under three response formats: 3-point category,
+7-point Likert, and 0–100 slider. The primary outcome was the
+female-minus-male attack-rating gap,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
+summarized by Cohen’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+across paired items. Natural-corpus comparisons were not sufficient for
+this question: in a preliminary check, male-targeted posts received
+higher raw attack ratings than female-targeted posts, but the
+male-targeted subset was smaller and more lexically extreme. The
+minimal-pair design therefore became necessary. In the minimal-pair
+data, all 36 rater-by-scale cells showed positive
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.
+This direction-level agreement did not imply full alignment. On the
+3-point scale, the same nine LLMs were larger than male participants
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.22</mn></mrow><annotation encoding="application/x-tex">d_z = 0.22</annotation></semantics></math>),
+did not exceed female participants
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.66</mn></mrow><annotation encoding="application/x-tex">d_z = 0.66</annotation></semantics></math>),
+and split around the overall-human reference
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.62</mn></mrow><annotation encoding="application/x-tex">d_z = 0.62</annotation></semantics></math>).
+Sexualization and appearance were the shared high-sensitivity domains,
+but finer rating scales dampened human
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+while amplifying most LLM
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values. Item-level agreement remained weak: the best human–LLM ICC(2,1)
+was 0.22 even where aggregate effects were close. Human–LLM alignment in
+this task should therefore be reported as a structured profile across
+reference groups, rating scales, and analytic levels, not as a single
+alignment coefficient.</p>
+</div>
+</header>
+<h1 id="sec:intro">Introduction</h1>
+<p>LLMs are increasingly used as annotators and evaluators for
+offensive, hateful, and harassing speech. As this delegation expands, a
+basic measurement question becomes unavoidable: when a model is compared
+with humans, what exactly is being compared? Overall accuracy and score
+correlation are useful, but they do not tell us whether a model
+reproduces the way human judgements change when only the target’s gender
+changes.</p>
+<p>Offensive-speech evaluation is sensitive to both the target and the
+rater. The same insult may be judged differently when directed at a
+woman rather than a man, and that difference may itself vary across
+human subgroups and response formats. We use <em>gender-differential
+effect</em> for this quantity and operationalize it as the
+female-minus-male attack-rating gap,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.
+When the paper uses the shorter term <em>bias</em>, it refers only to a
+larger positive
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+or
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>;
+it does not by itself assign moral or legal responsibility.</p>
+<p>Existing human–LLM comparisons often treat human ratings as a single
+target and report a single alignment coefficient. That approach is too
+coarse for the present question. First, natural-language corpora
+confound target gender with content: if male-targeted posts are more
+extreme, their higher attack ratings cannot be interpreted as a
+target-gender effect. Second, a pooled human baseline can hide subgroup
+differences among human raters. Third, a model that resembles humans on
+a coarse 3-point annotation scale may diverge on a finer scale that
+permits more response gradation. These are not technical details; they
+determine the answer to the alignment question.</p>
+<p>This study therefore combines three design features: minimal pairs
+that hold sentence content fixed, disaggregated human reference groups,
+and three response formats. We ask four questions, each tied to a
+different level of comparison:</p>
+<dl>
+<dt>Direction.</dt>
+<dd>
+<p>Do humans and LLMs agree that female-targeted versions receive higher
+attack ratings than matched male-targeted versions?</p>
+</dd>
+<dt>Magnitude.</dt>
+<dd>
+<p>If the direction is shared, does the size of the effect match humans,
+and does the answer change when the reference is male participants,
+female participants, or the pooled human aggregate?</p>
+</dd>
+<dt>Domain structure.</dt>
+<dd>
+<p>Are the largest effects located in the same broad attack domains?</p>
+</dd>
+<dt>Measurement and localization.</dt>
+<dd>
+<p>Does the answer remain stable across 3-point, 7-point, and slider
+scales, and does aggregate agreement imply agreement on which individual
+items carry the gap?</p>
+</dd>
+</dl>
+<p>The central finding is that agreement is real but limited. Humans and
+LLMs agree on direction and broadly agree on the two highest-sensitivity
+domains, sexualization and appearance. They do not support a single
+magnitude claim. The same model panel looks stronger than male
+participants, no stronger than female participants, and mixed against
+the pooled human aggregate. Finer rating scales also change the
+comparison: human effects dampen or peak in the middle, whereas most LLM
+effects increase. Finally, item-level agreement remains weak even when
+aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+is close. The contribution of the paper is therefore a structured
+account of where human–LLM alignment holds, where it breaks, and why a
+single human baseline or a single alignment coefficient is not
+sufficient.</p>
+<h1 id="sec:methods">Methods</h1>
+<h2 id="materials-minimal-pair-design">Materials: minimal-pair
+design</h2>
+<p>A native Chinese-speaking research team constructed 371 minimal pairs
+of attack-laden sentences. Within each pair, the two versions are
+identical except for a gender-referent substitution (e.g., <em>she</em>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>↔</mo><annotation encoding="application/x-tex">\leftrightarrow</annotation></semantics></math>
+<em>he</em>; <em>woman</em>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>↔</mo><annotation encoding="application/x-tex">\leftrightarrow</annotation></semantics></math>
+<em>man</em>; female-coded vs. male-coded names; female-coded
+vs. male-coded relational kin terms). The minimal-pair design is the
+design ingredient that lets us causally attribute any residual rating
+gap to the gender manipulation rather than to selection on content
+extremity, a confound that is endemic to natural-language gender
+comparisons (Section <a href="#sec:r1" data-reference-type="ref"
+data-reference="sec:r1">3.1</a>). Each item is tagged with a three-level
+domain hierarchy whose top level comprises 10 first-level attack domains
+(sexualization, appearance, gender role/expression, interpersonal
+relations, moral character, economic resources, social status, emotional
+stability, capability/competence, and intellectual rationality); only
+the first level is used in the main analyses.</p>
+<h2 id="llm-panel">LLM panel</h2>
+<p>Nine production LLMs were queried in November 2025 via their
+respective APIs: Anthropic Claude-Opus-4.5, DeepSeek-R1, DeepSeek-V3.2,
+Google Gemma-4-31B, Meta Llama-4-Maverick, Moonshot Kimi-K2-Thinking,
+OpenAI GPT-5.1, Qwen-2.5-72B-Instruct, and Z-AI GLM-4.6. Each model
+rated both the female-targeted and the male-targeted version of every
+minimal pair under all three rating formats:</p>
+<ul>
+<li><p><strong>3-point category</strong>:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><mn>0</mn><mo>=</mo><mtext mathvariant="normal">not attacking</mtext><mo>,</mo><mn>1</mn><mo>=</mo><mtext mathvariant="normal">mildly attacking</mtext><mo>,</mo><mn>2</mn><mo>=</mo><mtext mathvariant="normal">strongly attacking</mtext><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\{0 = \text{not attacking}, 1 = \text{mildly attacking}, 2 = \text{strongly attacking}\}</annotation></semantics></math>.</p></li>
+<li><p><strong>7-point Likert</strong>: 0–6, where 0 indicates no attack
+and larger values indicate stronger attack severity.</p></li>
+<li><p><strong>0–100 slider</strong>: a continuous numeric
+response.</p></li>
+</ul>
+<p>The main analyses use zero-shot responses; chain-of-thought variants
+were collected for the calibration check in Section <a href="#sec:r1"
+data-reference-type="ref" data-reference="sec:r1">3.1</a> but are not
+the focus of the rest of the paper.</p>
+<h2 id="human-study">Human study</h2>
+<p>We recruited 779 Chinese participants (after standard quality-control
+screening) online through social-media recruitment. Participants were
+randomly assigned to one of the three rating formats and rated both the
+female-targeted and the male-targeted version of every item in their
+assigned scale, with item presentation order randomized and attention
+checks interleaved. The final sample was nearly gender-balanced (392
+women and 387 men) and concentrated in the 18–24 and 24–34 age bands
+(Table <a href="#tab:participant-demographics" data-reference-type="ref"
+data-reference="tab:participant-demographics">1</a>). Item-level mean
+ratings were computed within each (rater group, scale) cell separately,
+where “rater group” refers to one of three human strata (overall, female
+participants, male participants) plus the nine LLMs. The participant
+pool is a young, online Chinese sample and is not nationally
+representative (see Limitations). All experiments received
+host-institution ethics approval.</p>
+<div id="tab:participant-demographics">
+<table>
+<caption>Participant counts by assigned rating condition, gender, and
+age band after quality-control screening. Participants were recruited
+online through social media.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Participant characteristic</th>
+<th style="text-align: right;">3-point</th>
+<th style="text-align: right;">7-point</th>
+<th style="text-align: right;">Slider</th>
+<th style="text-align: right;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Assigned condition</td>
+<td style="text-align: right;">268</td>
+<td style="text-align: right;">244</td>
+<td style="text-align: right;">267</td>
+<td style="text-align: right;">779</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Female participants</td>
+<td style="text-align: right;">134</td>
+<td style="text-align: right;">128</td>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">392</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Male participants</td>
+<td style="text-align: right;">134</td>
+<td style="text-align: right;">116</td>
+<td style="text-align: right;">137</td>
+<td style="text-align: right;">387</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Age 12–18</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Age 18–24</td>
+<td style="text-align: right;">176</td>
+<td style="text-align: right;">162</td>
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">538</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Age 24–34</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">210</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Age 35–50</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Age 50+</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="outcome-and-effect-size-definition">Outcome and effect-size
+definition</h2>
+<p>The primary item-level outcome is the female-minus-male attack-rating
+gap,
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><msubsup><mi>s</mi><mi>F</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>−</mo><msubsup><mi>s</mi><mi>M</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>,</mo></mrow><annotation encoding="application/x-tex">\Delta^{(i)}_{F-M} \;=\; s^{(i)}_F - s^{(i)}_M ,</annotation></semantics></math>
+where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>s</mi><mi>F</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">s^{(i)}_F</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>s</mi><mi>M</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">s^{(i)}_M</annotation></semantics></math>
+are the mean attack ratings of the female-targeted and male-targeted
+versions of item
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+within a given rater group and scale. The summary effect size for a
+(rater group
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>,
+scale
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>)
+cell is Cohen’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>,
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>r</mi><mo>,</mo><mi>c</mi><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mfrac><msub><mover><msubsup><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo accent="true">¯</mo></mover><mi>i</mi></msub><mrow><mover><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">D</mi></mrow><mo accent="true">̂</mo></mover><mspace width="-0.167em"></mspace><msub><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mi>i</mi></msub></mrow></mfrac><mo>,</mo></mrow><annotation encoding="application/x-tex">d_z(r, c) \;=\; \frac{\overline{\Delta^{(i)}_{F-M}}_i}{\widehat{\mathrm{SD}}\!\left(\Delta^{(i)}_{F-M}\right)_i},</annotation></semantics></math>
+computed across the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>371</mn></mrow><annotation encoding="application/x-tex">i = 1, \dots, 371</annotation></semantics></math>
+paired items (the 371 paired items, not individual rater responses, are
+the unit of analysis for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>).
+We cross 12 rater groups (9 LLMs
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>+</mo><annotation encoding="application/x-tex">+</annotation></semantics></math>
+3 human strata) with 3 scales for a total of 36 (rater
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
+scale) cells. Where descriptive comparisons are made across scales, item
+means and gaps are normalized by scale-maximum so that the three scales
+are placed on a common 0–1 axis;
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+itself is scale-free.</p>
+<h1 id="sec:results">Results</h1>
+<p>The Results are organized around a single empirical spine: humans and
+LLMs agree on the direction of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
+but whether they agree in magnitude depends on which human group serves
+as the reference, and whether that agreement is stable depends on the
+rating scale and on the analytic level. We develop this story in five
+layers — direction, magnitude relative to a chosen human reference,
+content structure across attack domains, measurement response across
+rating scales, and item-by-item localization — and close with a
+structured alignment profile. A short motivational section first
+establishes why a minimal-pair
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+design is necessary; it is not the primary empirical contribution of the
+paper.</p>
+<h2 id="sec:r1">Natural-corpus contrasts do not identify a target-gender
+effect</h2>
+<p>A raw comparison in natural hate-speech data points in the wrong
+direction for the question of interest. In a descriptive HateXplain
+check, posts targeting men received higher mean attack ratings than
+posts targeting women. That pattern did not imply that male targets
+cause higher perceived attack severity. The male-targeted subset was
+smaller and more lexically extreme, so target gender and content
+severity were confounded.</p>
+<p>This result rules out a simple natural-corpus interpretation. If the
+goal is to estimate whether the gender referent itself changes attack
+ratings, raw male-target versus female-target comparisons are not
+informative. The rest of the Results therefore uses the 371 minimal
+pairs, where each female-targeted sentence is matched to a male-targeted
+sentence with the same attack content. The estimand is the paired
+female-minus-male gap,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.</p>
+<h2 id="sec:r2">Humans and LLMs agree on the direction of the gap</h2>
+<p>The first question is whether the sign of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+is shared. It is. Every one of the 36 rater-by-scale cells had positive
+mean
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.
+Among human raters, the female-targeted version received a higher
+aggregated rating for 58.2%–74.7% of items, depending on participant
+group and scale. Among LLMs, exact ties were common on the 3-point
+scale, but the mean gap was still positive in every model cell; all 27
+LLM cells reached BH-FDR adjusted
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>&lt;</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>7</mn></mrow></msup></mrow><annotation encoding="application/x-tex">q &lt; 10^{-7}</annotation></semantics></math>
+for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\Delta_{F-M} &gt; 0</annotation></semantics></math>.</p>
+<p>This is the strongest and simplest form of alignment in the paper.
+Humans and LLMs both rate female-targeted versions of the same attack
+sentence as more attacking on average. The result is also limited: it
+establishes direction only. It does not show that humans and LLMs agree
+on the size of the gap, the domains in which it is largest, the way it
+changes with scale, or the specific items that drive it.</p>
+<h2 id="sec:r3">Magnitude alignment depends on the human reference
+group</h2>
+<p>The second layer probes the size of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.
+We use the 3-point scale as the anchor for this section because it most
+closely resembles the categorical labels used in standard hate-speech
+and offensive-content annotation. Throughout, “larger
+gender-differential effect” refers to a larger positive
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+and is not a normative claim. The three human reference values on the
+3-point scale are
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.219</mn></mrow><annotation encoding="application/x-tex">d_z = 0.219</annotation></semantics></math>
+for male participants,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.621</mn></mrow><annotation encoding="application/x-tex">d_z = 0.621</annotation></semantics></math>
+for the overall human aggregate, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.655</mn></mrow><annotation encoding="application/x-tex">d_z = 0.655</annotation></semantics></math>
+for female participants. The nine LLMs span
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.289</mn></mrow><annotation encoding="application/x-tex">d_z = 0.289</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.653</mn><annotation encoding="application/x-tex">0.653</annotation></semantics></math>
+on the same scale (Table <a href="#tab:dz-3pt" data-reference-type="ref"
+data-reference="tab:dz-3pt">2</a>); Figure <a href="#fig:reference-gap"
+data-reference-type="ref" data-reference="fig:reference-gap">1</a> shows
+the corresponding model-minus-human gaps.</p>
+<figure id="fig:reference-gap">
+<img src="fig_r3_reference_group_delta_dz_forest.png" />
+<figcaption>Bootstrap intervals for the 3-point magnitude comparison.
+Each point is an LLM’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+minus the human-reference
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>;
+intervals are item-level percentile bootstrap 95% intervals over the 371
+paired items. The same model panel is mostly above the male-participant
+reference, split around the overall-human reference, and at or below the
+female-participant reference.</figcaption>
+</figure>
+<div id="tab:dz-3pt">
+<table>
+<caption>3-point summary, sorted within each block by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
+Means are normalized to scale max. The overall-human row sits between
+Claude-Opus-4.5 and Qwen-2.5-72B; female participants are at the upper
+boundary of the LLM range, and male participants are well below
+it.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Rater</th>
+<th style="text-align: center;">Mean (M)</th>
+<th style="text-align: center;">Mean (F)</th>
+<th
+style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>Δ</mi><mo accent="true">¯</mo></mover><mi>/</mi><mtext mathvariant="normal">max</mtext></mrow><annotation encoding="application/x-tex">\overline{\Delta}/\text{max}</annotation></semantics></math></th>
+<th
+style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Male participants</td>
+<td style="text-align: center;">0.573</td>
+<td style="text-align: center;">0.602</td>
+<td style="text-align: center;">0.030</td>
+<td style="text-align: center;">0.219</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Overall humans</td>
+<td style="text-align: center;">0.562</td>
+<td style="text-align: center;">0.622</td>
+<td style="text-align: center;">0.060</td>
+<td style="text-align: center;">0.621</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Female participants</td>
+<td style="text-align: center;">0.552</td>
+<td style="text-align: center;">0.642</td>
+<td style="text-align: center;">0.090</td>
+<td style="text-align: center;">0.655</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DeepSeek-R1</td>
+<td style="text-align: center;">0.892</td>
+<td style="text-align: center;">0.945</td>
+<td style="text-align: center;">0.053</td>
+<td style="text-align: center;">0.289</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DeepSeek-V3.2</td>
+<td style="text-align: center;">0.807</td>
+<td style="text-align: center;">0.869</td>
+<td style="text-align: center;">0.062</td>
+<td style="text-align: center;">0.289</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GLM-4.6</td>
+<td style="text-align: center;">0.846</td>
+<td style="text-align: center;">0.907</td>
+<td style="text-align: center;">0.061</td>
+<td style="text-align: center;">0.297</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Llama-4-Maverick</td>
+<td style="text-align: center;">0.784</td>
+<td style="text-align: center;">0.854</td>
+<td style="text-align: center;">0.070</td>
+<td style="text-align: center;">0.379</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gemma-4-31B</td>
+<td style="text-align: center;">0.902</td>
+<td style="text-align: center;">0.973</td>
+<td style="text-align: center;">0.071</td>
+<td style="text-align: center;">0.408</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Claude-Opus-4.5</td>
+<td style="text-align: center;">0.834</td>
+<td style="text-align: center;">0.934</td>
+<td style="text-align: center;">0.100</td>
+<td style="text-align: center;">0.498</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Qwen-2.5-72B</td>
+<td style="text-align: center;">0.796</td>
+<td style="text-align: center;">0.914</td>
+<td style="text-align: center;">0.117</td>
+<td style="text-align: center;">0.553</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Kimi-K2-Thinking</td>
+<td style="text-align: center;">0.709</td>
+<td style="text-align: center;">0.853</td>
+<td style="text-align: center;">0.144</td>
+<td style="text-align: center;">0.572</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GPT-5.1</td>
+<td style="text-align: center;">0.737</td>
+<td style="text-align: center;">0.887</td>
+<td style="text-align: center;">0.150</td>
+<td style="text-align: center;">0.653</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The comparison changes with the human reference group. Against male
+participants
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.219</mn></mrow><annotation encoding="application/x-tex">d_z = 0.219</annotation></semantics></math>),
+all nine LLM point estimates are larger, and six bootstrap intervals are
+entirely above zero. Against female participants
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.655</mn></mrow><annotation encoding="application/x-tex">d_z = 0.655</annotation></semantics></math>),
+no LLM point estimate exceeds the female-participant reference; six
+intervals are entirely below zero, while Qwen-2.5-72B, Kimi-K2-Thinking,
+and GPT-5.1 overlap zero. Against the overall human aggregate
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.621</mn></mrow><annotation encoding="application/x-tex">d_z = 0.621</annotation></semantics></math>),
+five LLMs are clearly lower (DeepSeek-R1, DeepSeek-V3.2, GLM-4.6,
+Llama-4-Maverick, and Gemma-4-31B), while Claude-Opus-4.5, Qwen-2.5-72B,
+Kimi-K2-Thinking, and GPT-5.1 overlap the aggregate reference.</p>
+<p>Thus the question “Are LLMs more gender-differential than humans?”
+has no reference-free answer. The same nine models look larger than male
+participants, no larger than female participants, and mixed against the
+pooled human estimate. A pooled human baseline is therefore not a
+neutral target; it is a weighted mixture of subgroups that differ in the
+outcome being evaluated.</p>
+<h2 id="sec:r4">Humans and LLMs locate the largest effects in
+sexualization and appearance</h2>
+<p>The next question is whether the effect is diffuse or concentrated in
+the same content domains. Figure <a href="#fig:domain-alignment"
+data-reference-type="ref" data-reference="fig:domain-alignment">2</a>
+shows first-level domain
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values for the three human strata and for the LLM median, with domains
+kept in a fixed order. Sexualization and appearance are the shared
+high-sensitivity domains. This pattern is important because it shows
+that the population-level gap is not only a positive average; it has a
+recognizable content structure.</p>
+<figure id="fig:domain-alignment">
+<img src="fig_r4_domain_alignment_forest.png" />
+<figcaption>Forest plot of domain-level Cohen’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values for the female-minus-male gap. Points show the three human strata
+and the LLM median within each response format. Domains are kept in a
+fixed order; sexualization and appearance are listed first because they
+are the shared high-sensitivity domains across humans and
+LLMs.</figcaption>
+</figure>
+<p>On the human side, sexualization and appearance are the two
+highest-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+domains at every scale for the overall human aggregate: sexualization
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>1.47</mn></mrow><annotation encoding="application/x-tex">d_z = 1.47</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1.42</mn><annotation encoding="application/x-tex">1.42</annotation></semantics></math>,
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1.18</mn><annotation encoding="application/x-tex">1.18</annotation></semantics></math>
+across the three scales, and appearance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.76</mn></mrow><annotation encoding="application/x-tex">d_z = 0.76</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.80</mn><annotation encoding="application/x-tex">0.80</annotation></semantics></math>,
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.61</mn><annotation encoding="application/x-tex">0.61</annotation></semantics></math>.
+Female participants show the same hot zone. Male participants have a
+smaller overall effect, but their largest positive domain effects still
+fall in sexualization and appearance.</p>
+<p>The LLMs share the same broad location but not always the same
+internal ordering. The two hot-zone domains are consistently prominent
+in the LLM median. However, on the 3-point scale, some models flatten or
+invert the sexualization-above-appearance ordering; for example,
+DeepSeek-V3.2 has sexualization
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mo>−</mo><mn>0.06</mn></mrow><annotation encoding="application/x-tex">d_z = -0.06</annotation></semantics></math>
+and appearance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.37</mn></mrow><annotation encoding="application/x-tex">d_z = 0.37</annotation></semantics></math>.
+On the 7-point and slider scales, most models recover a more human-like
+ordering. Domain alignment therefore holds for hot-zone location, but it
+is weaker for the ordering of the two hot-zone domains.</p>
+<div id="tab:hotzone">
+<table>
+<caption>Cohen’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+in the two hot-zone domains, by rater and scale. The four LLMs are
+illustrative and span the range of behaviour observed in the full panel.
+Humans preserve the sexualization-above-appearance ordering at every
+scale. Most LLMs do not preserve this internal ordering on the 3-point
+scale but recover it on the 7-point and slider scales.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th colspan="3" style="text-align: center;">Sexualization
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+<th colspan="3" style="text-align: center;">Appearance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span>2-4</span> (lr)<span>5-7</span>
+Rater</td>
+<td style="text-align: center;">3pt</td>
+<td style="text-align: center;">7pt</td>
+<td style="text-align: center;">Slider</td>
+<td style="text-align: center;">3pt</td>
+<td style="text-align: center;">7pt</td>
+<td style="text-align: center;">Slider</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Overall humans</td>
+<td style="text-align: center;">1.47</td>
+<td style="text-align: center;">1.42</td>
+<td style="text-align: center;">1.18</td>
+<td style="text-align: center;">0.76</td>
+<td style="text-align: center;">0.80</td>
+<td style="text-align: center;">0.61</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Female participants</td>
+<td style="text-align: center;">1.33</td>
+<td style="text-align: center;">1.35</td>
+<td style="text-align: center;">1.09</td>
+<td style="text-align: center;">0.64</td>
+<td style="text-align: center;">0.81</td>
+<td style="text-align: center;">0.69</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Male participants</td>
+<td style="text-align: center;">1.03</td>
+<td style="text-align: center;">0.75</td>
+<td style="text-align: center;">0.56</td>
+<td style="text-align: center;">0.42</td>
+<td style="text-align: center;">0.16</td>
+<td style="text-align: center;">0.23</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DeepSeek-V3.2</td>
+<td
+style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>−</mo><annotation encoding="application/x-tex">-</annotation></semantics></math>0.06</td>
+<td style="text-align: center;">0.69</td>
+<td style="text-align: center;">1.13</td>
+<td style="text-align: center;">0.37</td>
+<td style="text-align: center;">0.70</td>
+<td style="text-align: center;">0.57</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Claude-Opus-4.5</td>
+<td style="text-align: center;">0.46</td>
+<td style="text-align: center;">1.06</td>
+<td style="text-align: center;">0.88</td>
+<td style="text-align: center;">0.56</td>
+<td style="text-align: center;">1.01</td>
+<td style="text-align: center;">1.49</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GPT-5.1</td>
+<td style="text-align: center;">0.65</td>
+<td style="text-align: center;">1.06</td>
+<td style="text-align: center;">0.84</td>
+<td style="text-align: center;">0.68</td>
+<td style="text-align: center;">0.87</td>
+<td style="text-align: center;">1.03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gemma-4-31B</td>
+<td style="text-align: center;">0.51</td>
+<td style="text-align: center;">1.06</td>
+<td style="text-align: center;">0.86</td>
+<td style="text-align: center;">0.56</td>
+<td style="text-align: center;">1.19</td>
+<td style="text-align: center;">1.15</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="sec:r5">Rating granularity changes the magnitude comparison</h2>
+<p>The fourth question is whether the magnitude comparison is stable
+across response formats. It is not. Figure <a href="#fig:scale-response"
+data-reference-type="ref" data-reference="fig:scale-response">3</a>
+shows the cross-scale trajectory of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
+Human effects stay flat or decline as the scale becomes finer: overall
+humans move from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.621</mn><annotation encoding="application/x-tex">0.621</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.588</mn><annotation encoding="application/x-tex">0.588</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.512</mn><annotation encoding="application/x-tex">0.512</annotation></semantics></math>,
+male participants from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.219</mn><annotation encoding="application/x-tex">0.219</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.198</mn><annotation encoding="application/x-tex">0.198</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.167</mn><annotation encoding="application/x-tex">0.167</annotation></semantics></math>,
+and female participants from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.655</mn><annotation encoding="application/x-tex">0.655</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.704</mn><annotation encoding="application/x-tex">0.704</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.590</mn><annotation encoding="application/x-tex">0.590</annotation></semantics></math>.
+Most LLMs move in the opposite direction. Six of nine models show
+monotonic or near-monotonic increases, with Gemma-4-31B rising from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.408</mn><annotation encoding="application/x-tex">0.408</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.773</mn><annotation encoding="application/x-tex">0.773</annotation></semantics></math>
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1.016</mn><annotation encoding="application/x-tex">1.016</annotation></semantics></math>.</p>
+<figure id="fig:scale-response">
+<img src="fig_r5_scale_response_trajectory.png" />
+<figcaption>Cohen’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+across rating formats. Human reference lines are shown in black, blue,
+and green; LLMs are grey, with Gemma-4-31B, GPT-5.1, and Claude-Opus-4.5
+highlighted. Finer scales dampen or flatten human effects but amplify
+most LLM effects, changing the apparent model-human
+comparison.</figcaption>
+</figure>
+<p>This scale dependence changes the verdict. On the 3-point scale, five
+of nine LLMs sit below the overall-human reference. On the slider, five
+of nine sit at or above it. Coarse annotation categories therefore make
+the model panel look more moderate relative to humans than the slider
+does. This is a measurement-level result: the scale changes the observed
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+pattern, and therefore the apparent alignment.</p>
+<div id="tab:scale-response">
+<table>
+<caption>Cohen’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+as a function of rating granularity. On the human side,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+stays flat or decreases as the scale becomes finer; on the LLM side,
+most
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values increase. The crossover entails that the same human–LLM
+comparison yields a different verdict on the 3-point scale than on the
+slider. The cross-rater scale-response contrast is descriptive in the
+present analysis.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Rater</th>
+<th style="text-align: center;">3pt
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+<th style="text-align: center;">7pt
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+<th style="text-align: center;">Slider
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+<th style="text-align: left;">Trend across scales</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Overall humans</td>
+<td style="text-align: center;">0.621</td>
+<td style="text-align: center;">0.588</td>
+<td style="text-align: center;">0.512</td>
+<td style="text-align: left;">decrease (monotonic)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Male participants</td>
+<td style="text-align: center;">0.219</td>
+<td style="text-align: center;">0.198</td>
+<td style="text-align: center;">0.167</td>
+<td style="text-align: left;">decrease (monotonic)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Female participants</td>
+<td style="text-align: center;">0.655</td>
+<td style="text-align: center;">0.704</td>
+<td style="text-align: center;">0.590</td>
+<td style="text-align: left;">7pt peak, slider decline</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Claude-Opus-4.5</td>
+<td style="text-align: center;">0.498</td>
+<td style="text-align: center;">0.693</td>
+<td style="text-align: center;">0.748</td>
+<td style="text-align: left;">increase (monotonic)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DeepSeek-R1</td>
+<td style="text-align: center;">0.289</td>
+<td style="text-align: center;">0.422</td>
+<td style="text-align: center;">0.510</td>
+<td style="text-align: left;">increase (monotonic)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DeepSeek-V3.2</td>
+<td style="text-align: center;">0.289</td>
+<td style="text-align: center;">0.371</td>
+<td style="text-align: center;">0.460</td>
+<td style="text-align: left;">increase (monotonic)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GLM-4.6</td>
+<td style="text-align: center;">0.297</td>
+<td style="text-align: center;">0.353</td>
+<td style="text-align: center;">0.423</td>
+<td style="text-align: left;">increase (monotonic)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gemma-4-31B</td>
+<td style="text-align: center;">0.408</td>
+<td style="text-align: center;">0.773</td>
+<td style="text-align: center;">1.016</td>
+<td style="text-align: left;">increase (steep)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GPT-5.1</td>
+<td style="text-align: center;">0.653</td>
+<td style="text-align: center;">0.840</td>
+<td style="text-align: center;">0.714</td>
+<td style="text-align: left;">7pt peak</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Kimi-K2-Thinking</td>
+<td style="text-align: center;">0.572</td>
+<td style="text-align: center;">0.505</td>
+<td style="text-align: center;">0.593</td>
+<td style="text-align: left;">approximately flat</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Llama-4-Maverick</td>
+<td style="text-align: center;">0.379</td>
+<td style="text-align: center;">0.477</td>
+<td style="text-align: center;">0.409</td>
+<td style="text-align: left;">7pt peak</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Qwen-2.5-72B</td>
+<td style="text-align: center;">0.553</td>
+<td style="text-align: center;">0.578</td>
+<td style="text-align: center;">0.686</td>
+<td style="text-align: left;">increase</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A human-side repeated-measures ANOVA clarifies the human component of
+this pattern. In a stimulus-as-unit analysis of normalized
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
+participant gender had a substantially larger effect,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>,</mo><mn>370</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>111.17</mn></mrow><annotation encoding="application/x-tex">F(1, 370) = 111.17</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>&lt;</mo><mn>.001</mn></mrow><annotation encoding="application/x-tex">p &lt; .001</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>η</mi><mi>G</mi><mn>2</mn></msubsup><mo>=</mo><mn>.044</mn></mrow><annotation encoding="application/x-tex">\eta^2_G = .044</annotation></semantics></math>,
+than scale,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo>,</mo><mn>740</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>9.44</mn></mrow><annotation encoding="application/x-tex">F(2, 740) = 9.44</annotation></semantics></math>,
+Greenhouse–Geisser corrected
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>&lt;</mo><mn>.001</mn></mrow><annotation encoding="application/x-tex">p &lt; .001</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>η</mi><mi>G</mi><mn>2</mn></msubsup><mo>=</mo><mn>.007</mn></mrow><annotation encoding="application/x-tex">\eta^2_G = .007</annotation></semantics></math>.
+The participant-gender by scale interaction was not significant,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo>,</mo><mn>740</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1.79</mn></mrow><annotation encoding="application/x-tex">F(2, 740) = 1.79</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.169</mn></mrow><annotation encoding="application/x-tex">p = .169</annotation></semantics></math>.
+Female participants exceeded male participants within every scale after
+BH-FDR correction. Thus participant gender is the larger human-side
+determinant of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
+but scale still changes the observed effect. The cross-rater human–LLM
+scale contrast remains descriptive because LLMs are deterministic raters
+rather than participant-level random effects.</p>
+<h2 id="sec:r6">Item-level localization remains weak</h2>
+<p>The final question is whether aggregate and domain-level agreement
+imply agreement about individual items. They do not. Item-level Spearman
+correlations of normalized
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+within humans across scale pairs are low,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>∈</mo><mrow><mo stretchy="true" form="prefix">[</mo><mn>0.04</mn><mo>,</mo><mn>0.13</mn><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">\rho \in [0.04, 0.13]</annotation></semantics></math>.
+Within LLMs, the median item-level cross-scale
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+is approximately
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.08</mn><annotation encoding="application/x-tex">0.08</annotation></semantics></math>.
+When the same vectors are aggregated to the 10-domain level,
+correlations are much higher:
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>∈</mo><mrow><mo stretchy="true" form="prefix">[</mo><mn>0.57</mn><mo>,</mo><mn>0.85</mn><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">\rho \in [0.57, 0.85]</annotation></semantics></math>
+on the LLM side and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>∈</mo><mrow><mo stretchy="true" form="prefix">[</mo><mn>0.58</mn><mo>,</mo><mn>0.86</mn><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">\rho \in [0.58, 0.86]</annotation></semantics></math>
+on the human side. The effect is therefore more stable as a broad domain
+structure than as an item-by-item map.</p>
+<figure id="fig:item-dissociation">
+<img src="fig_r6_aggregate_item_dissociation.png" />
+<figcaption>Aggregate magnitude agreement does not imply item-level
+agreement. Left: item-level ICC(2,1) remains low even when the aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+gap from overall humans is small. Right: the closest model by ICC
+changes across human reference groups and scales, and the best value in
+any cell remains in the poor-agreement range.</figcaption>
+</figure>
+<p>Human–LLM item-level agreement shows the same dissociation (Figure <a
+href="#fig:item-dissociation" data-reference-type="ref"
+data-reference="fig:item-dissociation">4</a>). The best observed
+ICC(2,1) is 0.222, for Claude-Opus-4.5 against the overall-human
+aggregate on the slider scale. The best 3-point ICC against overall
+humans is 0.089, and the best 7-point ICC is 0.158. Across the nine
+human-reference-by-scale cells, the closest model changes rather than
+converging on a single most human-like model. Matching aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+is therefore not enough to reproduce the item-by-item pattern of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.</p>
+<p>This result places a boundary on the alignment claim. Humans and LLMs
+share the direction of the effect and the broad hot-zone domains. They
+do not show strong item-level interchangeability. A single ICC would
+miss the aggregate and domain-level agreement; a single aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+would miss the item-level disagreement. Both levels are needed.</p>
+<h2 id="sec:r7">Alignment is conditional on reference group, scale, and
+analytic level</h2>
+<p>The results form a structured answer rather than a single alignment
+score (Table <a href="#tab:alignment-summary" data-reference-type="ref"
+data-reference="tab:alignment-summary">5</a>). Direction-level agreement
+is strong. Magnitude agreement depends on the human reference group.
+Domain-level agreement is present for sexualization and appearance, but
+not perfectly for their ordering. Scale changes the model-human
+comparison. Item-level agreement remains weak.</p>
+<div id="tab:alignment-summary">
+<table style="width:87%;">
+<caption>Structured alignment profile. The table separates the questions
+that a single alignment coefficient would collapse: direction,
+magnitude, domain structure, scale response, and item-level
+localization.</caption>
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 18%" />
+<col style="width: 28%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Question</th>
+<th style="text-align: left;">Answer</th>
+<th style="text-align: left;">Main evidence</th>
+<th style="text-align: left;">Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Do humans and LLMs agree on
+direction?</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">36/36 rater-by-scale cells have positive
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math></td>
+<td style="text-align: left;">Direction is shared</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Do they agree in magnitude?</td>
+<td style="text-align: left;">It depends on the human reference</td>
+<td style="text-align: left;">LLMs are above male participants, at or
+below female participants, and mixed against overall humans</td>
+<td style="text-align: left;">A pooled human baseline is not
+neutral</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Do they locate the effect in the same
+domains?</td>
+<td style="text-align: left;">Broadly yes</td>
+<td style="text-align: left;">Sexualization and appearance are the
+shared high-sensitivity domains</td>
+<td style="text-align: left;">Domain-level structure is shared</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Does scale preserve the comparison?</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Human
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+dampens or peaks; most LLM
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values increase</td>
+<td style="text-align: left;">Alignment is scale-conditioned</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Does aggregate agreement imply item
+agreement?</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Best ICC(2,1) is 0.222; closest model
+changes across cells</td>
+<td style="text-align: left;">Item-level interchangeability is weak</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Human–LLM alignment in gender-differential attack ratings is
+therefore not a single coefficient. It is a profile whose answer changes
+with the human reference group, the rating scale, and the level of
+analysis.</p>
+<h1 id="sec:discussion">Discussion</h1>
+<p>This study shows why human–LLM alignment cannot be evaluated with one
+human baseline and one coefficient. Direction-level agreement is real:
+every human group and every LLM rated female-targeted versions as more
+attacking on average. But the same data also show that this agreement is
+incomplete. The magnitude comparison changes with the human reference
+group, the response scale changes the model-human gap, and item-level
+agreement remains weak.</p>
+<h4 id="minimal-pairs-change-the-question-being-answered.">Minimal pairs
+change the question being answered.</h4>
+<p>The natural-corpus check is useful because it fails in an informative
+way. Male-targeted posts had higher raw attack ratings, but they were
+also fewer and more extreme. A natural-data contrast therefore mixes
+target gender with content severity. The minimal-pair design removes
+that ambiguity. It lets the paper ask a narrower but cleaner question:
+holding attack content fixed, does changing the target gender change the
+rating, and do LLMs and humans show the same pattern of change?</p>
+<h4 id="the-human-reference-group-is-part-of-the-measurement-model.">The
+human reference group is part of the measurement model.</h4>
+<p>“Humans” are not a homogeneous gold standard in these data. Female
+and male participants produced different
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+values on the same items, and the participant-gender main effect on the
+human side was much larger than the scale main effect. This is why the
+same LLM can be described differently depending on the chosen reference.
+Against male participants, the model panel looks stronger; against
+female participants, it does not; against the pooled human aggregate, it
+splits. Reporting only a pooled human baseline would hide the subgroup
+structure that determines the comparison.</p>
+<h4 id="the-response-scale-is-not-a-neutral-interface.">The response
+scale is not a neutral interface.</h4>
+<p>The 3-point, 7-point, and slider formats produce different
+model-human comparisons. Human
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values dampen or peak in the middle as scales become finer, whereas most
+LLM
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values increase. Coarse annotation categories therefore make several
+LLMs appear closer to or below the overall-human reference, while slider
+ratings move several of them above it. This does not mean that one scale
+is the correct scale. It means that an alignment estimate is conditional
+on the response format used to obtain it.</p>
+<h4
+id="aggregate-and-item-level-alignment-answer-different-questions.">Aggregate
+and item-level alignment answer different questions.</h4>
+<p>Aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+captures the average size of the gender-differential effect. ICC(2,1)
+captures whether the same individual items carry that effect. These two
+questions should not be collapsed. In this study, humans and LLMs share
+the broad direction and the sexualization/appearance hot zone, but
+item-level ICC remains low. Reporting ICC alone would understate the
+aggregate and domain-level agreement; reporting aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+alone would overstate fine-grained interchangeability.</p>
+<p>The methodological implication is straightforward. Evaluations of LLM
+social judgements should specify the human reference group, the response
+scale, and the analytic level. Without those three pieces, an alignment
+claim is underspecified.</p>
+<h1 id="limitations-and-future-work">Limitations and Future Work</h1>
+<p>The minimal-pair items are Chinese; whether the same pattern of
+measurement-conditional alignment holds in a parallel English corpus,
+where the gender-marking morphology and pronoun system differ, is an
+open question that we are pursuing in follow-up work. The participant
+pool is a Chinese online sample with a young, urban skew and is not
+nationally representative; the human reference values reported here
+should be read as the values of <em>this</em> pool rather than as
+universal human baselines. The LLM panel is a snapshot of November 2025
+production models; reproducibility under later versions and under
+fine-tuned annotation prompts will require re-evaluation. We used
+zero-shot prompting as the main setting; whether chain-of-thought,
+system-prompt scaffolding, or task-specific fine-tuning attenuate the
+granularity inversion is open. The minimal-pair design isolates the
+gender referent but may not capture all pragmatic and contextual
+features of real hate speech, including multimodal cues, reply context,
+and audience-targeted dog-whistle language. Participant gender is
+treated as binary in the present analysis because the data permit only
+that contrast at sample sizes large enough for stable per-cell
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>;
+future work with larger non-binary samples should examine more nuanced
+identity variables. Finally, the three rating formats may differ not
+only in granularity but also in cognitive demand, time on task, and
+anchor availability; disentangling those mechanisms will require
+dedicated psychophysical follow-up.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>When attack content is held fixed, humans and LLMs agree on the
+direction of the gender-differential effect: female-targeted versions
+receive higher attack ratings on average. They also share a broad
+content structure, with the largest effects concentrated in
+sexualization and appearance. The agreement stops short of full
+interchangeability. Magnitude depends on the human reference group,
+scale changes the model-human comparison, and item-level ICC remains low
+even when aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+is close. The practical conclusion is that LLM alignment on
+gender-differential attack ratings should be reported as a profile
+across reference groups, response formats, and analytic levels. The
+relevant question is not simply whether LLMs are more or less biased
+than humans, but which humans, under which measurement scale, and at
+which level of analysis.</p>
+<h1 id="app:slider-summary">Slider per-rater summary (counterpart of
+Table <a href="#tab:dz-3pt" data-reference-type="ref"
+data-reference="tab:dz-3pt">2</a>)</h1>
+<div id="tab:dz-slider">
+<table>
+<caption>Per-rater slider-scale summary, sorted within each block by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
+Means are normalized to scale max. On the slider scale, five LLMs (Kimi,
+Qwen, GPT-5.1, Claude, Gemma) sit at or above the overall-human
+reference, the inversion of the 3-point pattern in Table <a
+href="#tab:dz-3pt" data-reference-type="ref"
+data-reference="tab:dz-3pt">2</a>.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Rater</th>
+<th style="text-align: center;">Mean (M)</th>
+<th style="text-align: center;">Mean (F)</th>
+<th
+style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>Δ</mi><mo accent="true">¯</mo></mover><mi>/</mi><mtext mathvariant="normal">max</mtext></mrow><annotation encoding="application/x-tex">\overline{\Delta}/\text{max}</annotation></semantics></math></th>
+<th
+style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Male participants</td>
+<td style="text-align: center;">0.631</td>
+<td style="text-align: center;">0.648</td>
+<td style="text-align: center;">0.017</td>
+<td style="text-align: center;">0.167</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Overall humans</td>
+<td style="text-align: center;">0.626</td>
+<td style="text-align: center;">0.662</td>
+<td style="text-align: center;">0.036</td>
+<td style="text-align: center;">0.512</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Female participants</td>
+<td style="text-align: center;">0.621</td>
+<td style="text-align: center;">0.677</td>
+<td style="text-align: center;">0.056</td>
+<td style="text-align: center;">0.590</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Llama-4-Maverick</td>
+<td style="text-align: center;">0.704</td>
+<td style="text-align: center;">0.733</td>
+<td style="text-align: center;">0.029</td>
+<td style="text-align: center;">0.409</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GLM-4.6</td>
+<td style="text-align: center;">0.785</td>
+<td style="text-align: center;">0.817</td>
+<td style="text-align: center;">0.031</td>
+<td style="text-align: center;">0.423</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DeepSeek-V3.2</td>
+<td style="text-align: center;">0.748</td>
+<td style="text-align: center;">0.787</td>
+<td style="text-align: center;">0.039</td>
+<td style="text-align: center;">0.460</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DeepSeek-R1</td>
+<td style="text-align: center;">0.770</td>
+<td style="text-align: center;">0.814</td>
+<td style="text-align: center;">0.043</td>
+<td style="text-align: center;">0.510</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Kimi-K2-Thinking</td>
+<td style="text-align: center;">0.700</td>
+<td style="text-align: center;">0.764</td>
+<td style="text-align: center;">0.064</td>
+<td style="text-align: center;">0.593</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Qwen-2.5-72B</td>
+<td style="text-align: center;">0.681</td>
+<td style="text-align: center;">0.741</td>
+<td style="text-align: center;">0.060</td>
+<td style="text-align: center;">0.686</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GPT-5.1</td>
+<td style="text-align: center;">0.728</td>
+<td style="text-align: center;">0.784</td>
+<td style="text-align: center;">0.056</td>
+<td style="text-align: center;">0.714</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Claude-Opus-4.5</td>
+<td style="text-align: center;">0.719</td>
+<td style="text-align: center;">0.754</td>
+<td style="text-align: center;">0.036</td>
+<td style="text-align: center;">0.748</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gemma-4-31B</td>
+<td style="text-align: center;">0.727</td>
+<td style="text-align: center;">0.794</td>
+<td style="text-align: center;">0.067</td>
+<td style="text-align: center;">1.016</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 class="unnumbered" id="data-and-code">Data and Code</h1>
+<p>All artifacts referenced here, including the revised reference-group
+bootstrap plot, domain forest plot, scale-response trajectory,
+item-level dissociation figure, analysis tables, and source code, are
+available in the project repository.</p>
+</body>
+</html>
