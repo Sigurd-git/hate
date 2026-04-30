@@ -559,10 +559,228 @@ def compute_level1_statistics(difference_frame: pd.DataFrame, bootstrap_iteratio
     return level1_frame.reset_index(drop=True)
 
 
+def build_h2a4_item_cell_frame(long_frame: pd.DataFrame) -> pd.DataFrame:
+    """Build the item-level 2x3 participant-gender x scale matrix for H2a.4."""
+    analysis_frame = long_frame.loc[long_frame["gender"].isin(PARTICIPANT_GENDER_CHOICES)].copy()
+    grouped = (
+        analysis_frame.groupby(["condition", "gender", "template_id", "shown_version"], dropna=False)
+        .agg(
+            n_ratings=("response_value_num", "size"),
+            mean_score=("response_value_num", "mean"),
+            dimension_1=("dimension_1", lambda values: next((value for value in values if pd.notna(value)), None)),
+            dimension_2=("dimension_2", lambda values: next((value for value in values if pd.notna(value)), None)),
+            dimension_3=("dimension_3", lambda values: next((value for value in values if pd.notna(value)), None)),
+        )
+        .reset_index()
+    )
+
+    male_version_frame = (
+        grouped.loc[grouped["shown_version"] == "男人版"]
+        .rename(columns={"mean_score": "mean_male_version", "n_ratings": "n_male_version_ratings"})
+        .drop(columns=["shown_version"])
+    )
+    female_version_frame = (
+        grouped.loc[grouped["shown_version"] == "女人版"]
+        .rename(columns={"mean_score": "mean_female_version", "n_ratings": "n_female_version_ratings"})
+        .drop(columns=["shown_version"])
+    )
+    cell_frame = male_version_frame.merge(
+        female_version_frame,
+        on=["condition", "gender", "template_id", "dimension_1", "dimension_2", "dimension_3"],
+        how="inner",
+        validate="one_to_one",
+    )
+    cell_frame["participant_gender"] = cell_frame["gender"]
+    cell_frame["participant_gender_label"] = cell_frame["participant_gender"].map(participant_gender_label)
+    cell_frame["条件标签"] = cell_frame["condition"].map(condition_label)
+    cell_frame["scale_max"] = cell_frame["condition"].map(lambda condition_name: CONDITION_SCALE_LIMITS[condition_name][1])
+    cell_frame["delta_female_minus_male"] = (
+        cell_frame["mean_female_version"] - cell_frame["mean_male_version"]
+    )
+    cell_frame["normalized_delta_female_minus_male"] = (
+        cell_frame["delta_female_minus_male"] / cell_frame["scale_max"]
+    )
+    return cell_frame[
+        [
+            "condition",
+            "条件标签",
+            "participant_gender",
+            "participant_gender_label",
+            "template_id",
+            "dimension_1",
+            "dimension_2",
+            "dimension_3",
+            "n_male_version_ratings",
+            "n_female_version_ratings",
+            "mean_male_version",
+            "mean_female_version",
+            "delta_female_minus_male",
+            "scale_max",
+            "normalized_delta_female_minus_male",
+        ]
+    ].sort_values(["participant_gender", "condition", "template_id"]).reset_index(drop=True)
+
+
+def compute_h2a4_cell_descriptives(h2a4_cell_frame: pd.DataFrame) -> pd.DataFrame:
+    rows: list[dict[str, object]] = []
+    for (participant_gender, condition_name), group in h2a4_cell_frame.groupby(["participant_gender", "condition"], sort=False):
+        normalized_values = group["normalized_delta_female_minus_male"].to_numpy(dtype=float)
+        rows.append(
+            {
+                "participant_gender": participant_gender,
+                "participant_gender_label": participant_gender_label(participant_gender),
+                "condition": condition_name,
+                "条件标签": condition_label(condition_name),
+                "n_templates": len(group),
+                "mean_normalized_delta": float(np.mean(normalized_values)),
+                "median_normalized_delta": float(np.median(normalized_values)),
+                "sd_normalized_delta": float(np.std(normalized_values, ddof=1)),
+                "cohens_dz": cohens_dz(normalized_values),
+                "female_version_higher": int(np.sum(normalized_values > 0)),
+                "male_version_higher": int(np.sum(normalized_values < 0)),
+                "ties": int(np.sum(normalized_values == 0)),
+            }
+        )
+    order_map = {condition_name: index for index, condition_name in enumerate(CONDITION_ORDER)}
+    descriptive_frame = pd.DataFrame(rows)
+    descriptive_frame["condition_order"] = descriptive_frame["condition"].map(order_map)
+    descriptive_frame["participant_gender_order"] = descriptive_frame["participant_gender"].map({"男": 0, "女": 1})
+    return descriptive_frame.sort_values(["participant_gender_order", "condition_order"]).drop(
+        columns=["participant_gender_order", "condition_order"]
+    ).reset_index(drop=True)
+
+
+def build_complete_h2a4_wide_frame(h2a4_cell_frame: pd.DataFrame) -> pd.DataFrame:
+    wide_frame = h2a4_cell_frame.pivot_table(
+        index="template_id",
+        columns=["participant_gender", "condition"],
+        values="normalized_delta_female_minus_male",
+        aggfunc="mean",
+    )
+    expected_columns = pd.MultiIndex.from_product([PARTICIPANT_GENDER_CHOICES, CONDITION_ORDER])
+    wide_frame = wide_frame.reindex(columns=expected_columns).dropna()
+    return wide_frame
+
+
+def paired_posthoc_row(
+    wide_frame: pd.DataFrame,
+    family: str,
+    effect: str,
+    level_a: str,
+    level_b: str,
+    values_a: pd.Series,
+    values_b: pd.Series,
+) -> dict[str, object]:
+    paired_frame = pd.concat([values_a.rename("a"), values_b.rename("b")], axis=1).dropna()
+    difference_values = paired_frame["b"].to_numpy(dtype=float) - paired_frame["a"].to_numpy(dtype=float)
+    t_result = stats.ttest_rel(paired_frame["b"], paired_frame["a"], nan_policy="omit")
+    try:
+        wilcoxon_result = stats.wilcoxon(difference_values, zero_method="wilcox", alternative="two-sided")
+        wilcoxon_statistic = float(wilcoxon_result.statistic)
+        wilcoxon_p = float(wilcoxon_result.pvalue)
+    except ValueError:
+        wilcoxon_statistic = math.nan
+        wilcoxon_p = math.nan
+    ci_low, ci_high = bootstrap_mean_ci(difference_values, iterations=3000)
+    return {
+        "family": family,
+        "effect": effect,
+        "level_a": level_a,
+        "level_b": level_b,
+        "n_templates": len(paired_frame),
+        "mean_a": float(paired_frame["a"].mean()),
+        "mean_b": float(paired_frame["b"].mean()),
+        "mean_difference_b_minus_a": float(np.mean(difference_values)),
+        "median_difference_b_minus_a": float(np.median(difference_values)),
+        "ci_low": ci_low,
+        "ci_high": ci_high,
+        "cohens_dz": cohens_dz(difference_values),
+        "t_stat": float(t_result.statistic),
+        "t_p": float(t_result.pvalue),
+        "wilcoxon_stat": wilcoxon_statistic,
+        "wilcoxon_p": wilcoxon_p,
+        "complete_item_matrix_n": len(wide_frame),
+    }
+
+
+def compute_h2a4_posthoc_tests(h2a4_cell_frame: pd.DataFrame) -> pd.DataFrame:
+    """Paired post-hoc comparisons after the H2a.4 2x3 repeated-measures ANOVA."""
+    wide_frame = build_complete_h2a4_wide_frame(h2a4_cell_frame)
+    rows: list[dict[str, object]] = []
+
+    male_average = wide_frame["男"].mean(axis=1)
+    female_average = wide_frame["女"].mean(axis=1)
+    rows.append(
+        paired_posthoc_row(
+            wide_frame,
+            family="gender_main_effect",
+            effect="被试性别主效应",
+            level_a="男性被试（跨三种量表均值）",
+            level_b="女性被试（跨三种量表均值）",
+            values_a=male_average,
+            values_b=female_average,
+        )
+    )
+
+    for condition_name in CONDITION_ORDER:
+        rows.append(
+            paired_posthoc_row(
+                wide_frame,
+                family="gender_simple_effect_within_scale",
+                effect=f"被试性别简单效应 | {condition_label(condition_name)}",
+                level_a="男性被试",
+                level_b="女性被试",
+                values_a=wide_frame[("男", condition_name)],
+                values_b=wide_frame[("女", condition_name)],
+            )
+        )
+
+    for first_index, first_condition in enumerate(CONDITION_ORDER):
+        for second_condition in CONDITION_ORDER[first_index + 1:]:
+            first_average = wide_frame.loc[:, (slice(None), first_condition)].mean(axis=1)
+            second_average = wide_frame.loc[:, (slice(None), second_condition)].mean(axis=1)
+            rows.append(
+                paired_posthoc_row(
+                    wide_frame,
+                    family="scale_main_effect",
+                    effect="量表主效应",
+                    level_a=condition_label(first_condition),
+                    level_b=condition_label(second_condition),
+                    values_a=first_average,
+                    values_b=second_average,
+                )
+            )
+
+    for participant_gender in PARTICIPANT_GENDER_CHOICES:
+        gender_label = participant_gender_label(participant_gender)
+        for first_index, first_condition in enumerate(CONDITION_ORDER):
+            for second_condition in CONDITION_ORDER[first_index + 1:]:
+                rows.append(
+                    paired_posthoc_row(
+                        wide_frame,
+                        family="scale_simple_effect_within_gender",
+                        effect=f"量表简单效应 | {gender_label}",
+                        level_a=condition_label(first_condition),
+                        level_b=condition_label(second_condition),
+                        values_a=wide_frame[(participant_gender, first_condition)],
+                        values_b=wide_frame[(participant_gender, second_condition)],
+                    )
+                )
+
+    posthoc_frame = pd.DataFrame(rows)
+    posthoc_frame["t_p_fdr"] = posthoc_frame.groupby("family")["t_p"].transform(benjamini_hochberg)
+    posthoc_frame["wilcoxon_p_fdr"] = posthoc_frame.groupby("family")["wilcoxon_p"].transform(
+        lambda values: benjamini_hochberg(values.fillna(1.0))
+    )
+    return posthoc_frame
+
+
 def configure_matplotlib_fonts() -> None:
     preferred_fonts = [
         "Noto Sans CJK SC",
+        "Noto Sans CJK JP",
         "Noto Serif CJK SC",
+        "Noto Serif CJK JP",
         "Source Han Sans SC",
         "Source Han Serif SC",
         "PingFang SC",
@@ -986,11 +1204,22 @@ def plot_figure4_level1_forest(
     plt.close(fig)
 
 
-def save_statistics_tables(output_dir: Path, overall_frame: pd.DataFrame, direction_frame: pd.DataFrame, level1_frame: pd.DataFrame) -> None:
+def save_statistics_tables(
+    output_dir: Path,
+    overall_frame: pd.DataFrame,
+    direction_frame: pd.DataFrame,
+    level1_frame: pd.DataFrame,
+    h2a4_cell_descriptive_frame: pd.DataFrame | None = None,
+    h2a4_posthoc_frame: pd.DataFrame | None = None,
+) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     overall_frame.to_csv(output_dir / "stats_overall.csv", index=False, encoding="utf-8-sig")
     direction_frame.to_csv(output_dir / "stats_directionality.csv", index=False, encoding="utf-8-sig")
     level1_frame.to_csv(output_dir / "stats_level1.csv", index=False, encoding="utf-8-sig")
+    if h2a4_cell_descriptive_frame is not None:
+        h2a4_cell_descriptive_frame.to_csv(output_dir / "h2a4_cell_descriptives.csv", index=False, encoding="utf-8-sig")
+    if h2a4_posthoc_frame is not None:
+        h2a4_posthoc_frame.to_csv(output_dir / "h2a4_posthoc_pairwise.csv", index=False, encoding="utf-8-sig")
 
 
 def write_excel_workbook(
@@ -1001,6 +1230,9 @@ def write_excel_workbook(
     overall_frame: pd.DataFrame,
     direction_frame: pd.DataFrame,
     level1_frame: pd.DataFrame,
+    h2a4_cell_frame: pd.DataFrame | None = None,
+    h2a4_cell_descriptive_frame: pd.DataFrame | None = None,
+    h2a4_posthoc_frame: pd.DataFrame | None = None,
 ) -> None:
     workbook_path.parent.mkdir(parents=True, exist_ok=True)
     with pd.ExcelWriter(workbook_path, engine="xlsxwriter") as writer:
@@ -1009,6 +1241,12 @@ def write_excel_workbook(
         overall_frame.to_excel(writer, sheet_name="stats_overall", index=False)
         direction_frame.to_excel(writer, sheet_name="stats_direction", index=False)
         level1_frame.to_excel(writer, sheet_name="stats_level1", index=False)
+        if h2a4_cell_frame is not None:
+            h2a4_cell_frame.to_excel(writer, sheet_name="h2a4_item_cells", index=False)
+        if h2a4_cell_descriptive_frame is not None:
+            h2a4_cell_descriptive_frame.to_excel(writer, sheet_name="h2a4_cell_desc", index=False)
+        if h2a4_posthoc_frame is not None:
+            h2a4_posthoc_frame.to_excel(writer, sheet_name="h2a4_posthoc", index=False)
         for sheet_name, level_name in (("topic_rank_l1", "一级维度"), ("topic_rank_l2", "二级维度"), ("topic_rank_l3", "三级维度")):
             topic_ranking_frame.loc[topic_ranking_frame["维度层级"] == level_name].to_excel(writer, sheet_name=sheet_name, index=False)
 
@@ -1020,6 +1258,7 @@ def write_markdown_summary(
     participant_gender: str | None,
     difference_frame: pd.DataFrame,
     overall_frame: pd.DataFrame,
+    h2a4_posthoc_frame: pd.DataFrame | None = None,
 ) -> None:
     summary_lines = [
         "# Human gender-difference analysis summary",
@@ -1034,6 +1273,25 @@ def write_markdown_summary(
         overall_frame.to_string(index=False),
         "",
     ]
+    if h2a4_posthoc_frame is not None:
+        summary_lines.extend(
+            [
+                "## H2a.4 post-hoc pairwise comparisons",
+                h2a4_posthoc_frame[
+                    [
+                        "family",
+                        "effect",
+                        "level_a",
+                        "level_b",
+                        "mean_difference_b_minus_a",
+                        "cohens_dz",
+                        "t_p_fdr",
+                        "wilcoxon_p_fdr",
+                    ]
+                ].to_string(index=False),
+                "",
+            ]
+        )
     (output_dir / "analysis_summary.md").write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
 
 
@@ -1086,9 +1344,25 @@ def main() -> None:
     overall_frame = compute_overall_statistics(difference_frame, arguments.bootstrap_iterations)
     direction_frame = compute_direction_statistics(difference_frame)
     level1_frame = compute_level1_statistics(difference_frame, arguments.bootstrap_iterations)
+    h2a4_cell_frame = None
+    h2a4_cell_descriptive_frame = None
+    h2a4_posthoc_frame = None
+    if arguments.gender is None:
+        h2a4_cell_frame = build_h2a4_item_cell_frame(long_frame)
+        h2a4_cell_descriptive_frame = compute_h2a4_cell_descriptives(h2a4_cell_frame)
+        h2a4_posthoc_frame = compute_h2a4_posthoc_tests(h2a4_cell_frame)
 
     write_csv_outputs(output_dir, template_score_frame, difference_frame, gender_score_long_frame, topic_ranking_frame)
-    save_statistics_tables(output_dir, overall_frame, direction_frame, level1_frame)
+    save_statistics_tables(
+        output_dir,
+        overall_frame,
+        direction_frame,
+        level1_frame,
+        h2a4_cell_descriptive_frame,
+        h2a4_posthoc_frame,
+    )
+    if h2a4_cell_frame is not None:
+        h2a4_cell_frame.to_csv(output_dir / "h2a4_item_cells.csv", index=False, encoding="utf-8-sig")
     write_excel_workbook(
         output_dir / ANALYSIS_WORKBOOK_NAME,
         template_score_frame,
@@ -1097,6 +1371,9 @@ def main() -> None:
         overall_frame,
         direction_frame,
         level1_frame,
+        h2a4_cell_frame,
+        h2a4_cell_descriptive_frame,
+        h2a4_posthoc_frame,
     )
     write_markdown_summary(
         output_dir,
@@ -1105,6 +1382,7 @@ def main() -> None:
         arguments.gender,
         difference_frame,
         overall_frame,
+        h2a4_posthoc_frame,
     )
 
     plot_figure1_paired_scores(

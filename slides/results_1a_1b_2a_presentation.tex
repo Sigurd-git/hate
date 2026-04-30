@@ -106,8 +106,8 @@
     \item 研究 1a：9 个 LLM（Large Language Model，大语言模型）中英文仇恨识别（H1a.1 vs H1a.2）
     \item 研究 1b：9 个 LLM 性别配对评分（H1b.1、H1b.2、H1b.3）
     \item 研究 2a：779 个人类评分 session 性别配对评分（H2a.1--H2a.4；与 1b 配对）
-    \item 研究 2a$\cdot$ICC（Intraclass Correlation Coefficient，类内相关系数）：人机偏差模式题项级相似度（H2a.ICC.1--.3）
-    \item 研究 2a$\cdot$CS（Cross-Scale similarity，跨尺度相似度）：人机跨尺度稳健性比较（H2a.CS.1--.2）
+    \item 研究 2a$\cdot$CS（Cross-Scale similarity，跨尺度相似度）：与 H1b.3 对位的人机跨尺度相似性（H2a.CS.1--.2）
+    \item 研究 2a$\cdot$ICC（Intraclass Correlation Coefficient，类内相关系数）：同尺度内的人机题项级相似度（H2a.ICC.1--.3）
     \item 综合结论与研究局限
   \end{enumerate}
 \end{frame}
@@ -493,15 +493,33 @@
   \end{block}
 \end{frame}
 
-\begin{frame}{研究 1b：跨模型 $d_z$ 在任意两尺度间贴近对角线——排序稳定，滑块仅稍放大}
-  \centering
-  \includegraphics[width=0.88\textwidth,height=0.70\textheight,keepaspectratio]{\oneb/placeholder_b_three_scale_dz_scatter.pdf}
+\begin{frame}{研究 1b：固定同一个模型看，三尺度下的 10 维 $d_z$ 向量有多像自己？}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{table}
+    \centering
+    \begin{tabular}{lccc}
+      \toprule
+      模型 & 3pt vs 7pt & 7pt vs slider & 3pt vs slider \\
+      \midrule
+      Claude Opus 4.5 & $-0.27$ & $+0.62$ & $-0.20$ \\
+      GPT-5.1 & $+0.73$ & $+0.65$ & $+0.62$ \\
+      Gemma 4 31B & $+0.80$ & $+0.03$ & $-0.05$ \\
+      Llama Maverick & $+0.43$ & $+0.55$ & $+0.48$ \\
+      Qwen 2.5 72B & $+0.35$ & $+0.42$ & $+0.68$ \\
+      GLM 4.6 & $+0.19$ & $+0.10$ & $+0.01$ \\
+      Kimi K2 & $+0.48$ & $+0.47$ & $+0.56$ \\
+      DeepSeek R1 & $+0.10$ & $-0.41$ & $+0.67$ \\
+      DeepSeek V3.2 & $-0.43$ & $+0.08$ & $-0.09$ \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
 
-  \vspace{0.1em}
+  \vspace{0.2em}
   \small
   \begin{itemize}
-    \item 每点一模型；三对尺度两两绘制；虚线 $y=x$。
-    \item 点贴近对角线 $\Rightarrow$ 跨模型 $d_z$ 排序稳定；滑块下若干模型略位于对角线上方（滑块分辨率高、小偏差被更充分记录）。
+    \item 每一行比较一个模型在三对尺度上的\textbf{10 维一级领域 $d_z$ 向量} Spearman $\rho$。
+    \item GPT-5.1、Kimi、Llama、Qwen 跨尺度相对稳定；Claude、DeepSeek V3.2、GLM 4.6 明显不稳；Gemma 与 DeepSeek R1 只在部分尺度对上相似。
   \end{itemize}
 \end{frame}
 
@@ -908,15 +926,149 @@
 \end{frame}
 
 % ===========================================================================
-\section{研究 2a$\cdot$ICC（Intraclass Correlation Coefficient，类内相关系数）：人机偏差模式的题项级相似度}
+\section{研究 2a$\cdot$CS（Cross-Scale similarity，跨尺度相似度）：与 1b 的 H1b.3 对位}
 
-\begin{frame}{研究 2a$\cdot$ICC：研究问题与设计}
+\begin{frame}{研究 2a$\cdot$CS：研究问题与设计}
+  \small\emph{从 1b 的 H1b.3 过渡到 2a}：在模型端，我们已经看到"三种尺度是不是在测同一件事"必须按层级分开说；因此到了 2a，最自然的下一步不是先问"哪个模型最像人"，而是先问\textbf{人类自己在三尺度下稳不稳}。
+
   \begin{block}{核心问题}
-    \small 人机在方向上已达成一致；在题项层面，哪一个 LLM 的偏差分布与人类最接近？哪一句被判为最偏差这一问题上人机是否达成共识？
+    \small 人类被试在三种打分尺度下是否给出相互一致的题项级偏差模式？若不然，与 LLM 相比谁更受尺度影响？
   \end{block}
 
-  \vspace{1.0em}
-  \small \textbf{题项级偏差向量}：$\Delta_i^\text{人} = \bar{y}_{i,\text{女}}^\text{人} - \bar{y}_{i,\text{男}}^\text{人}$；$\Delta_i^\text{模} = y_{i,\text{女}}^\text{模} - y_{i,\text{男}}^\text{模}$（同尺度内比较）。\\[0.5em]
+  \begin{itemize}
+    \item \textbf{与 1b 的对位关系}：H1b.3 问的是模型端跨尺度相似性；本节的 H2a.CS.1 / .2 则把同一个问题带回人类，并直接放在人机比较框架里。
+    \item \textbf{题项级}指标：每被试子群在每尺度的 $\Delta_i^\text{人}$（长 371），三对尺度间 Spearman $\rho$，bootstrap CI。
+    \item \textbf{聚合级}指标：以 10 个一级领域的 $d_z$ 为单位，三对尺度间 Spearman $\rho_s$——人类侧对照 LLM 侧的 9 模型 $d_z$ 向量（节 1b）。
+  \end{itemize}
+\end{frame}
+
+{\setbeamercolor{frametitle}{bg=black!90,fg=white}
+\begin{frame}{研究 2a·CS：两条假设（与 H1b.3 对位）}
+  \footnotesize
+  \begin{block}{H2a.CS.1 人类跨尺度不稳健假设}
+    \small 若人类评分易受题面呈现方式、记忆负担与锚点认知影响，则题项级 $\rho$ 应普遍偏低，三对组合中位数大致一致。\\
+    \textbf{次级预测}：3pt 与 7pt 同属离散 Likert、应共享更强结构；$\rho_{3pt\text{-}7pt} \gg \rho_{7pt\text{-}slider} \approx \rho_{3pt\text{-}slider}$。
+  \end{block}
+  \begin{block}{H2a.CS.2 LLM 跨尺度更稳健假设}
+    \small 若 LLM 作为"纯语言生成器"在不同尺度下对同一内容给成比例评分（如 3 点给 2、7 点给 $4$--$5$、滑块给 $66$），则 LLM 跨尺度 $\rho$ 应\emph{显著高于}人类。
+  \end{block}
+\end{frame}
+}
+
+\begin{frame}{研究 2a·CS：人类三个被试群体在三对尺度上的 $\rho$ 都很低}
+  \footnotesize
+  \setlength{\tabcolsep}{6pt}
+  \begin{table}
+    \centering
+    \begin{tabular}{lccc}
+      \toprule
+      被试子群 & 3pt vs 7pt & 7pt vs slider & 3pt vs slider \\
+      \midrule
+      全体被试 & $+0.118$ & $+0.091$ & $+0.124$ \\
+      男性被试 & $+0.105$ & $+0.008$ & $+0.066$ \\
+      女性被试 & $+0.011$ & $+0.077$ & $+0.108$ \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  \vspace{0.2em}
+  \small
+  \begin{itemize}
+    \item 9 个单元的 $\rho$ \textbf{全部低于 0.13}；多数 CI 跨越 $0$。
+    \item 也就是说，对人类而言，同一批题一旦换尺度，\emph{哪一道题更偏}的排序就会明显重组。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{研究 2a·CS：人机并列森林——中位 $\rho$ 同量级，模型间分化更大}
+  \centering
+  \includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{\artifacts/within_rater_cross_scale_similarity_human_vs_llm.pdf}
+\end{frame}
+
+\begin{frame}{研究 2a·CS：LLM 与人类跨尺度相关相近，但模型间分化更大——H2a.CS.2 不支持}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{table}
+    \centering
+    \begin{tabular}{lcccc}
+      \toprule
+      尺度对 & 人类中位 $\rho$ & 人类范围 & LLM 中位 $\rho$ & LLM 范围 \\
+      \midrule
+      3pt vs 7pt       & 0.105 & $[0.011, 0.118]$ & 0.006 & $[-0.233, +0.293]$ \\
+      7pt vs slider    & 0.077 & $[0.008, 0.091]$ & 0.152 & $[-0.017, +0.355]$ \\
+      3pt vs slider    & 0.108 & $[0.066, 0.124]$ & 0.116 & $[-0.043, +0.229]$ \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  \begin{itemize}
+    \small
+    \item \textbf{人类}：9 个单元 $\rho$ 全部 $< 0.13$——题项级跨尺度显著重组。
+    \item \textbf{LLM}：中位与人类同量级；3pt vs 7pt 上 LLM 中位 $0.006$ 甚至 \emph{低于}人类 $0.105$。
+    \item \textbf{模型间分化}：LLM 跨模型跨度是人类跨被试子群的 \textbf{4--5 倍}（GPT-5.1／Gemma 稳健，Claude 负 $\rho$ 显著）。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{研究 2a·CS：聚合级 $+0.86/+0.72/+0.58$ 复刻 LLM 端排序——人机共识}
+  \footnotesize
+  \setlength{\tabcolsep}{5pt}
+  \begin{table}
+    \centering
+    \begin{tabular}{llccc}
+      \toprule
+      评分者 & 分析单位 & 3pt vs 7pt & 7pt vs slider & 3pt vs slider \\
+      \midrule
+      LLM     & 9 模型整体 $d_z$         & $+0.783$（.013）   & $+0.850$（.004）  & $+0.567$（.112） \\
+      \midrule
+      全体被试 & 10 领域 $d_z$             & $+0.855$（.002）   & $+0.721$（.019）  & $+0.576$（.082） \\
+      男性被试 & 10 领域 $d_z$             & $+0.321$（.37）    & $+0.188$（.60）   & $+0.770$（.009） \\
+      女性被试 & 10 领域 $d_z$             & $+0.915$（$<$.001）& $+0.552$（.10）   & $+0.442$（.20）  \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  \vspace{0.2em}
+  \begin{alertblock}{聚合级的共识}
+    \small 全体被试 $+0.86 / +0.72 / +0.58$ \textbf{几乎完全复刻} LLM 端的 $+0.78 / +0.85 / +0.57$。
+    \\女性被试与 LLM 均指向同一个排序：3pt 与 7pt 之间最相似、3pt 与滑块之间最不像——这与"3pt 和 7pt 同属离散 Likert"的直觉一致。
+    \\男性被试的 $d_z$ 整体较小，Spearman 不稳定，不构成反例。
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{研究 2a·CS 小结：题项级上人机都受尺度影响；在领域层面人机结果相似}
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \begin{table}
+    \centering
+    \begin{tabular}{lll}
+      \toprule
+      假设 & 关键预测 & 数据判决 \\
+      \midrule
+      H2a.CS.1 主张 & 人类题项级 $\rho$ 普遍偏低 & \textbf{支持}（9 个单元 $\rho<0.13$） \\
+      H2a.CS.1 次级 & 3pt-7pt $\gg$ 含 slider 两对 & \textbf{题项级证伪}；\textbf{聚合级支持}（全体 $+0.86$ 最高） \\
+      H2a.CS.2     & LLM $\rho \gg$ 人类 $\rho$ & \textbf{证伪}（同量级；3pt-7pt LLM 甚至更低） \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  \vspace{0.3em}
+  \begin{block}{分层结论}
+    \small \textbf{题项级}：人与 LLM 同样受尺度影响，不存在"LLM 更理性客观"。人机之间真正的差别在于\emph{模型间的分散程度}——LLM 跨模型的跨度是人类跨被试子群的 4--5 倍，模型间两极分化明显（GPT-5.1 正相关、Claude 负相关）。\\
+    \textbf{聚合级（领域维度）}：人机共同支持"3pt--7pt 最像、3pt--slider 最不像"的排序。
+  \end{block}
+\end{frame}
+
+% ===========================================================================
+\section{研究 2a$\cdot$ICC（Intraclass Correlation Coefficient，类内相关系数）：同尺度内的人机题项级相似度}
+
+\begin{frame}{研究 2a$\cdot$ICC：研究问题与设计}
+  \small\emph{从 2a$\cdot$CS 到 2a$\cdot$ICC 的过渡}：既然上一节已经看到，无论人类还是 LLM，题项级结果都会随着尺度明显重排，那么"哪个模型最像人"这个问题就必须\textbf{固定在同一尺度内}来问。本节就在这个前提下，比的是\emph{同尺度内}的人机题项级偏差模式。
+
+  \begin{block}{核心问题}
+    \small 在固定同一评分尺度时，哪一个 LLM 的偏差分布与人类最接近？哪一句被判为最偏差这一问题上人机是否达成共识？
+  \end{block}
+
+  \vspace{0.8em}
+  \small \textbf{题项级偏差向量}：$\Delta_i^\text{人} = \bar{y}_{i,\text{女}}^\text{人} - \bar{y}_{i,\text{男}}^\text{人}$；$\Delta_i^\text{模} = y_{i,\text{女}}^\text{模} - y_{i,\text{男}}^\text{模}$（\textbf{同尺度内比较}）。\\[0.5em]
   \small \textbf{主指标}：ICC(2,1) 绝对一致；对照：ICC(3,1) 一致性。Bootstrap $B = 2000$ 95\% CI。\\[0.5em]
   \small \textbf{9 个单元}：3 被试子群（全体 / 男 / 女）$\times$ 3 尺度；每单元遍历 9 个 LLM、选 ICC(2,1) 最高者。
 \end{frame}
@@ -1011,122 +1163,6 @@
 \end{frame}
 
 % ===========================================================================
-\section{研究 2a$\cdot$CS（Cross-Scale similarity，跨尺度相似度）：人机跨尺度稳健性比较}
-
-\begin{frame}{研究 2a$\cdot$CS：研究问题}
-  \small\emph{从 2a$\cdot$ICC 到 2a$\cdot$CS 的过渡}：上一节给出了一个看似令人不安的结果——人机题项级相似度全部落在 poor 档。但这可能有两个解释：一是人机之间本来就不像，二是\textbf{人类自己在三尺度间也不像}。2a$\cdot$CS（Cross-Scale similarity，跨尺度相似度）这一节正是做这个\emph{人类内部自洽}的前置检验，也顺便比较人机谁更稳。
-
-  \begin{block}{核心问题}
-    \small 人类被试在三种打分尺度下是否给出相互一致的题项级偏差模式？若不然，与 LLM 相比谁更受尺度影响？
-  \end{block}
-
-  \begin{itemize}
-    \item 节 2a·ICC 已证明人机题项级 ICC 处于 poor 区间（$<0.5$）；本节进一步追问：\emph{两端各自}在三个尺度间是否\emph{自洽}？
-    \item \textbf{题项级}指标：每被试子群在每尺度的 $\Delta_i^\text{人}$（长 371），三对尺度间 Spearman $\rho$，bootstrap CI。
-    \item \textbf{聚合级}指标：以 10 个一级领域的 $d_z$ 为单位，三对尺度间 Spearman $\rho_s$——人类侧对照 LLM 侧的 9 模型 $d_z$ 向量（节 1b）。
-  \end{itemize}
-\end{frame}
-
-{\setbeamercolor{frametitle}{bg=black!90,fg=white}
-\begin{frame}{研究 2a·CS：两条假设}
-  \footnotesize
-  \begin{block}{H2a.CS.1 人类跨尺度不稳健假设}
-    \small 若人类评分易受题面呈现方式、记忆负担与锚点认知影响，则题项级 $\rho$ 应普遍偏低，三对组合中位数大致一致。\\
-    \textbf{次级预测}：3pt 与 7pt 同属离散 Likert、应共享更强结构；$\rho_{3pt\text{-}7pt} \gg \rho_{7pt\text{-}slider} \approx \rho_{3pt\text{-}slider}$。
-  \end{block}
-  \begin{block}{H2a.CS.2 LLM 跨尺度更稳健假设}
-    \small 若 LLM 作为"纯语言生成器"在不同尺度下对同一内容给成比例评分（如 3 点给 2、7 点给 $4$--$5$、滑块给 $66$），则 LLM 跨尺度 $\rho$ 应\emph{显著高于}人类。
-  \end{block}
-\end{frame}
-}
-
-\begin{frame}{研究 2a·CS：人类三个被试群体的题项级跨尺度相关均低于 0.13}
-  \centering
-  \includegraphics[width=0.88\textwidth,height=0.68\textheight,keepaspectratio]{\artifacts/within_human_cross_scale_similarity.pdf}
-
-  \vspace{0.1em}
-  \small 全体 / 男性 / 女性被试在三对尺度组合上均呈 $\rho<0.13$；多数 CI 跨越 $0$——\emph{同一批题，换一种打分尺度，具体哪道题最偏的排序就基本重组}。
-\end{frame}
-
-\begin{frame}{研究 2a·CS：人机并列森林——中位 $\rho$ 同量级，模型间分化更大}
-  \centering
-  \includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{\artifacts/within_rater_cross_scale_similarity_human_vs_llm.pdf}
-\end{frame}
-
-\begin{frame}{研究 2a·CS：LLM 与人类跨尺度相关相近，但模型间分化更大——H2a.CS.2 不支持}
-  \footnotesize
-  \setlength{\tabcolsep}{4pt}
-  \begin{table}
-    \centering
-    \begin{tabular}{lcccc}
-      \toprule
-      尺度对 & 人类中位 $\rho$ & 人类范围 & LLM 中位 $\rho$ & LLM 范围 \\
-      \midrule
-      3pt vs 7pt       & 0.105 & $[0.011, 0.118]$ & 0.006 & $[-0.233, +0.293]$ \\
-      7pt vs slider    & 0.077 & $[0.008, 0.091]$ & 0.152 & $[-0.017, +0.355]$ \\
-      3pt vs slider    & 0.108 & $[0.066, 0.124]$ & 0.116 & $[-0.043, +0.229]$ \\
-      \bottomrule
-    \end{tabular}
-  \end{table}
-
-  \begin{itemize}
-    \small
-    \item \textbf{人类}：9 个单元 $\rho$ 全部 $< 0.13$——题项级跨尺度显著重组。
-    \item \textbf{LLM}：中位与人类同量级；3pt vs 7pt 上 LLM 中位 $0.006$ 甚至 \emph{低于}人类 $0.105$。
-    \item \textbf{模型间分化}：LLM 跨模型跨度是人类跨被试子群的 \textbf{4--5 倍}（GPT-5.1／Gemma 稳健，Claude 负 $\rho$ 显著）。
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{研究 2a·CS：聚合级 $+0.86/+0.72/+0.58$ 复刻 LLM 端排序——人机共识}
-  \footnotesize
-  \setlength{\tabcolsep}{5pt}
-  \begin{table}
-    \centering
-    \begin{tabular}{llccc}
-      \toprule
-      评分者 & 分析单位 & 3pt vs 7pt & 7pt vs slider & 3pt vs slider \\
-      \midrule
-      LLM     & 9 模型整体 $d_z$         & $+0.783$（.013）   & $+0.850$（.004）  & $+0.567$（.112） \\
-      \midrule
-      全体被试 & 10 领域 $d_z$             & $+0.855$（.002）   & $+0.721$（.019）  & $+0.576$（.082） \\
-      男性被试 & 10 领域 $d_z$             & $+0.321$（.37）    & $+0.188$（.60）   & $+0.770$（.009） \\
-      女性被试 & 10 领域 $d_z$             & $+0.915$（$<$.001）& $+0.552$（.10）   & $+0.442$（.20）  \\
-      \bottomrule
-    \end{tabular}
-  \end{table}
-
-  \vspace{0.2em}
-  \begin{alertblock}{聚合级的共识}
-    \small 全体被试 $+0.86 / +0.72 / +0.58$ \textbf{几乎完全复刻} LLM 端的 $+0.78 / +0.85 / +0.57$。
-    \\女性被试与 LLM 均指向同一个排序：3pt 与 7pt 之间最相似、3pt 与滑块之间最不像——这与"3pt 和 7pt 同属离散 Likert"的直觉一致。
-    \\男性被试的 $d_z$ 整体较小，Spearman 不稳定，不构成反例。
-  \end{alertblock}
-\end{frame}
-
-\begin{frame}{研究 2a·CS 小结：题项级上人机都受尺度影响；在领域层面人机结果相似}
-  \small
-  \setlength{\tabcolsep}{3pt}
-  \begin{table}
-    \centering
-    \begin{tabular}{lll}
-      \toprule
-      假设 & 关键预测 & 数据判决 \\
-      \midrule
-      H2a.CS.1 主张 & 人类题项级 $\rho$ 普遍偏低 & \textbf{支持}（9 个单元 $\rho<0.13$） \\
-      H2a.CS.1 次级 & 3pt-7pt $\gg$ 含 slider 两对 & \textbf{题项级证伪}；\textbf{聚合级支持}（全体 $+0.86$ 最高） \\
-      H2a.CS.2     & LLM $\rho \gg$ 人类 $\rho$ & \textbf{证伪}（同量级；3pt-7pt LLM 甚至更低） \\
-      \bottomrule
-    \end{tabular}
-  \end{table}
-
-  \vspace{0.3em}
-  \begin{block}{分层结论}
-    \small \textbf{题项级}：人与 LLM 同样受尺度影响，不存在"LLM 更理性客观"。人机之间真正的差别在于\emph{模型间的分散程度}——LLM 跨模型的跨度是人类跨被试子群的 4--5 倍，模型间两极分化明显（GPT-5.1 正相关、Claude 负相关）。\\
-    \textbf{聚合级（领域维度）}：人机共同支持"3pt--7pt 最像、3pt--slider 最不像"的排序。
-  \end{block}
-\end{frame}
-
-% ===========================================================================
 \section{综合结论}
 
 \begin{frame}{全文假设清单（1/2）}
@@ -1166,15 +1202,15 @@
       \toprule
       假设 & 核心预测 & 判决 \\
       \midrule
-      \multicolumn{3}{l}{\textit{研究 2a·ICC}} \\
-      H2a.ICC.1 单一"最像人" & 9 单元 top-1 同一模型 & \textbf{证伪}（5 个不同 top-1） \\
-      H2a.ICC.2 最像人模型因子群而异 & top-1 随被试子群与尺度切换 & \textbf{支持} \\
-      H2a.ICC.3 效应量大则题项级也更一致 & $d_z$ 大 $\Rightarrow$ ICC 高 & \textbf{证伪}（女性 $d_z$ 大、ICC 反而更低，提示对齐偏斜） \\
-      \midrule
       \multicolumn{3}{l}{\textit{研究 2a·CS}（H2a.CS.1 与 1b 的 H1b.3 题项层配对）} \\
       H2a.CS.1 主张（$\leftrightarrow$ H1b.3 题项层） & 人类题项级 $\rho$ 偏低 & \textbf{支持} \\
       H2a.CS.1 次级（3pt--7pt 最相似） & 3pt-7pt $\gg$ 含 slider 两对 & \textbf{题项级证伪；聚合级支持} \\
       H2a.CS.2 LLM 更稳健 & LLM $\rho \gg$ 人类 $\rho$ & \textbf{证伪}（同量级） \\
+      \midrule
+      \multicolumn{3}{l}{\textit{研究 2a·ICC}} \\
+      H2a.ICC.1 单一"最像人" & 9 单元 top-1 同一模型 & \textbf{证伪}（5 个不同 top-1） \\
+      H2a.ICC.2 最像人模型因子群而异 & top-1 随被试子群与尺度切换 & \textbf{支持} \\
+      H2a.ICC.3 效应量大则题项级也更一致 & $d_z$ 大 $\Rightarrow$ ICC 高 & \textbf{证伪}（女性 $d_z$ 大、ICC 反而更低，提示对齐偏斜） \\
       \bottomrule
     \end{tabular}
   \end{table}

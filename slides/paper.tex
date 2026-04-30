@@ -1,0 +1,388 @@
+% !TEX program = xelatex
+% Compile from project root with:
+%   latexmk -xelatex -interaction=nonstopmode -halt-on-error -outdir=slides slides/paper.tex
+%
+% Revised draft. Numerical values are sourced from artifacts under
+%   artifacts/human_model_dz_descriptive_comparison/
+%   artifacts/human_model_delta_similarity.csv
+%   human/outputs/final_clean_long_gender_difference_analysis/
+
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{authblk}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont[BoldFont={Noto Sans CJK SC Bold}]{Noto Sans CJK SC}
+\setmainfont{TeX Gyre Termes}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{array}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\setlist{nosep}
+\usepackage[round]{natbib}
+
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, citecolor=blue!50!black, urlcolor=blue!50!black}
+
+\onehalfspacing
+% Paths are resolved relative to the directory in which xelatex is invoked
+% (project root when compiled via the standard latexmk command at the top of
+% this file), not relative to slides/. Both forms are listed for safety.
+\graphicspath{
+  {./}{artifacts/}{artifacts/paper_followups/}{artifacts/human_model_dz_descriptive_comparison/}
+  {human/outputs/final_clean_long_gender_difference_analysis/figures/}
+  {../}{../artifacts/}{../artifacts/paper_followups/}{../artifacts/human_model_dz_descriptive_comparison/}
+  {../human/outputs/final_clean_long_gender_difference_analysis/figures/}
+}
+
+\title{\bfseries Measurement-Conditional Alignment of Human and LLM Gender Bias in Attack Ratings:\\
+  A Minimal-Pair Comparison Across Nine Large Language Models and 779 Chinese Participants}
+
+\author[1]{Xuan Bao}
+\author[1]{[co-author placeholder]}
+\affil[1]{[Institutional affiliation placeholder]}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent Large language models (LLMs) are increasingly deployed to evaluate offensive speech, yet it is unclear whether they reproduce the gender-differential judgements that humans make when only the target's gender is varied. We constructed 371 Chinese minimal pairs of attack-laden sentences in which only the gender referent was swapped, and collected ratings from nine production LLMs and from 779 valid Chinese participant sessions, each crossing three rating formats (3-point category, 7-point Likert, 0--100 slider). The central outcome is the female-minus-male attack-rating gap, $\Delta_{F-M}$, summarized at the rater $\times$ scale level by Cohen's $d_z$. \textbf{Direction.} All 36 (rater $\times$ scale) cells showed $\Delta_{F-M} > 0$ on average; all 27 LLM cells reached BH-FDR adjusted $q < 10^{-7}$. \textbf{Magnitude.} On the 3-point scale, every LLM in the panel was descriptively \emph{more} gender-differential than male participants ($d_z = 0.22$) and no LLM exceeded the female-participant reference ($d_z = 0.66$), with GPT-5.1 a near-tie; against the overall human aggregate ($d_z = 0.62$) the same nine models split descriptively into a more-moderate group, a comparable group, and a single high-end model that approached the female-participant level. \textbf{Content.} For both humans and LLMs, sexualization and appearance-targeted attacks formed the shared hot zone in which the gap localized. \textbf{Measurement.} Descriptively, as the rating scale moved from 3-point to slider, human $d_z$ stayed flat or decreased while most LLM $d_z$ increased; a 2$\times$3 repeated-measures ANOVA on the human side confirmed a substantially larger participant-gender effect ($\eta^2_G = .044$) than scale effect ($\eta^2_G = .007$). \textbf{Item-level.} Item-level ICC(2,1) between humans and LLMs remained in the conventionally poor range (best $\le 0.22$) even where aggregate $d_z$ matched. We conclude that human--LLM alignment in this task is not a single scalar property: it is conditional on the human reference group, on the rating scale, and on the analytic level at which the comparison is made.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+LLMs are increasingly used or proposed as annotators and evaluators for offensive, hateful, and harassing speech, both in research pipelines and in deployed moderation systems. As this delegation expands, a basic question for AI safety, social-science measurement, and platform governance is whether the judgements an LLM produces reproduce the systematic biases of the humans it nominally substitutes for.
+
+Offensive-speech evaluation is not a neutral technical task. Whether a sentence reads as an attack depends on the target's social category, the rater's identity and prior experience, and the response format provided to the rater. The same insult can be coded as more or less offensive depending on whether the target is gendered female or male, and the magnitude of that gap is itself a meaningful psychological and ethical quantity. We therefore use the term \emph{gender-differential effect} (operationalized below as the female-minus-male gap, $\Delta_{F-M}$) instead of the morally loaded term \emph{bias}; where we use \emph{bias}, we mean only \emph{a larger positive $\Delta_{F-M}$ or $d_z$}, with no normative commitment.
+
+A growing literature has begun to compare LLMs and humans on offensive-speech judgements. Most of this work asks whether LLM ratings correlate with human ratings, or whether LLM classifications match human labels at the population level. These tests are insufficient for the question we ask here. A model can correlate with humans on raw scores while failing to reproduce the human \emph{pattern of gender-differential sensitivity}: it might rate every female-targeted sentence higher than the matched male-targeted version on a 3-point scale, yet do so with a magnitude very different from the magnitude humans show, or amplify a small human gap into a large machine gap when given a finer scale. To test this directly we need three design ingredients that are rarely combined: (i) minimal pairs that hold semantic content fixed and only vary the gender referent, so that any rating gap is causally attributable to the gender manipulation; (ii) multiple human reference groups, so that ``human baseline'' is not collapsed into a single scalar; and (iii) multiple rating scales, so that what looks like alignment under coarse moderation labels can be checked under finer psychophysical scales.
+
+The present paper combines all three. We ask three nested questions about gender-differential attack ratings, organized around $\Delta_{F-M}$ as a single spine:
+
+\begin{description}
+  \item[Direction.] When sentence content is held constant and only the gender referent is varied, do humans and LLMs both produce $\Delta_{F-M} > 0$? Do they agree at the population level on the sign of the gap?
+  \item[Magnitude.] If the sign is shared, is the size of $\Delta_{F-M}$ also comparable, and \emph{relative to which} group of humans? In particular, does the answer depend on whether the comparison is to male participants, to female participants, or to the pooled human aggregate?
+  \item[Measurement dependence.] Are the answers to direction and magnitude stable across 3-point category, 7-point Likert, and 0--100 slider response formats? Coarse 3-point categories most closely resemble standard hate-speech annotation labels; finer 7-point and slider formats are more typical of psychophysical measurement. Whether human--LLM alignment is robust to this choice has, to our knowledge, not been examined directly.
+\end{description}
+
+We show that alignment holds at the levels of direction and broad content structure: every rater group on every scale shows $\Delta_{F-M} > 0$, and the largest gaps consistently localize to sexualization and appearance-targeted attacks. Alignment becomes conditional or breaks at the levels of magnitude, scale response, and item-level localization: the same panel of nine LLMs is descriptively more gender-differential than male participants, does not exceed the female-participant reference (with GPT-5.1 a near-tie), and is heterogeneous against the pooled aggregate; humans dampen their $d_z$ descriptively as scales become finer while most LLMs amplify; and item-level ICC between humans and LLMs remains in the conventionally poor range even where aggregate $d_z$ matches. The contribution of the paper is therefore not a single alignment score but an account of \emph{which} layers of alignment hold and which do not, and of why human--LLM similarity in gender-differential attack ratings should be reported as a structured profile rather than a scalar.
+
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Materials: minimal-pair design}
+A native Chinese-speaking research team constructed 371 minimal pairs of attack-laden sentences. Within each pair, the two versions are identical except for a gender-referent substitution (e.g., \emph{she} $\leftrightarrow$ \emph{he}; \emph{woman} $\leftrightarrow$ \emph{man}; female-coded vs.\ male-coded names; female-coded vs.\ male-coded relational kin terms). The minimal-pair design is the design ingredient that lets us causally attribute any residual rating gap to the gender manipulation rather than to selection on content extremity, a confound that is endemic to natural-language gender comparisons (Section~\ref{sec:r1}). Each item is tagged with a three-level domain hierarchy whose top level comprises 10 first-level attack domains (sexualization, appearance, gender role/expression, interpersonal relations, moral character, economic resources, social status, emotional stability, capability/competence, and intellectual rationality); only the first level is used in the main analyses.
+
+\subsection{LLM panel}
+Nine production LLMs were queried in November 2025 via their respective APIs: Anthropic Claude-Opus-4.5, DeepSeek-R1, DeepSeek-V3.2, Google Gemma-4-31B, Meta Llama-4-Maverick, Moonshot Kimi-K2-Thinking, OpenAI GPT-5.1, Qwen-2.5-72B-Instruct, and Z-AI GLM-4.6. Each model rated both the female-targeted and the male-targeted version of every minimal pair under all three rating formats:
+
+\begin{itemize}
+  \item \textbf{3-point category}: $\{0 = \text{not attacking}, 1 = \text{mildly attacking}, 2 = \text{strongly attacking}\}$.
+  \item \textbf{7-point Likert}: 1--7 with verbally anchored endpoints.
+  \item \textbf{0--100 slider}: a continuous numeric response.
+\end{itemize}
+
+The main analyses use zero-shot responses; chain-of-thought variants were collected for the calibration check in Section~\ref{sec:r1} but are not the focus of the rest of the paper.
+
+\subsection{Human study}
+We recruited 779 Chinese participants (after standard quality-control screening) through an online panel. Participants were randomly assigned to one of the three rating formats and rated both the female-targeted and the male-targeted version of every item in their assigned scale, with item presentation order randomized and attention checks interleaved. Item-level mean ratings were computed within each (rater group, scale) cell separately, where ``rater group'' refers to one of three human strata (overall, female participants, male participants) plus the nine LLMs. The mean age of the participant sample was 24.7 years and roughly half identified as female; the participant pool is a young, urban Chinese online sample and is not nationally representative (see Limitations). All experiments received host-institution ethics approval.
+
+\subsection{Outcome and effect-size definition}
+The primary item-level outcome is the female-minus-male attack-rating gap,
+\[
+  \Delta^{(i)}_{F-M} \;=\; s^{(i)}_F - s^{(i)}_M ,
+\]
+where $s^{(i)}_F$ and $s^{(i)}_M$ are the mean attack ratings of the female-targeted and male-targeted versions of item $i$ within a given rater group and scale. The summary effect size for a (rater group $r$, scale $c$) cell is Cohen's $d_z$,
+\[
+  d_z(r, c) \;=\; \frac{\overline{\Delta^{(i)}_{F-M}}_i}{\widehat{\mathrm{SD}}\!\left(\Delta^{(i)}_{F-M}\right)_i},
+\]
+computed across the $i = 1, \dots, 371$ paired items (the 371 paired items, not individual rater responses, are the unit of analysis for $d_z$). We cross 12 rater groups (9 LLMs $+$ 3 human strata) with 3 scales for a total of 36 (rater $\times$ scale) cells. Where descriptive comparisons are made across scales, item means and gaps are normalized by scale-maximum so that the three scales are placed on a common 0--1 axis; $d_z$ itself is scale-free.
+
+\section{Results}
+\label{sec:results}
+
+The Results are organized around a single empirical spine: humans and LLMs agree on the direction of $\Delta_{F-M}$, but whether they agree in magnitude depends on which human group serves as the reference, and whether that agreement is stable depends on the rating scale and on the analytic level. We develop this story in five layers --- direction, magnitude relative to a chosen human reference, content structure across attack domains, measurement response across rating scales, and item-by-item localization --- and close with a structured alignment profile. A short motivational section first establishes why a minimal-pair $\Delta_{F-M}$ design is necessary; it is not the primary empirical contribution of the paper.
+
+\subsection{Minimal pairs motivate \texorpdfstring{$\Delta_{F-M}$}{Delta F-M} as the primary outcome}
+\label{sec:r1}
+
+Conventional hate-detection performance varies across the nine LLMs in our panel: F1 and Brier scores on a bilingual benchmark differ substantially within and across languages, and the F1-best and Brier-best models are not always the same (Supplementary Figure~S1). Detection competence is therefore neither uniform nor identifiable from a single metric. A second motivating observation comes from a descriptive comparison on a natural-language hate corpus (HateXplain): posts \emph{targeting men} received higher mean attack ratings than posts \emph{targeting women}, but inspection showed that the male-target subset was both smaller and more lexically extreme. Target gender and content extremity were confounded in the natural data, so raw natural-corpus differences cannot answer whether the gender of the target itself changes attack ratings.
+
+These checks are not the primary empirical contribution; they establish why a minimal-pair design is necessary. By holding semantic content fixed and varying only the gender referent, the 371 paired items yield an item-level $\Delta_{F-M}$ that is causally attributable to the gender manipulation. The remainder of the Results therefore treats $\Delta_{F-M}$, not raw hate-detection accuracy, as the central outcome.
+
+\subsection{All rater groups show positive \texorpdfstring{$\Delta_{F-M}$}{Delta F-M}}
+\label{sec:r2}
+
+The first layer of alignment is direction: do humans and LLMs agree on the sign of $\Delta_{F-M}$? Across the 36 (rater $\times$ scale) cells, every cell had $\overline{\Delta_{F-M}} > 0$, with no exceptions. Table~\ref{tab:directionality} reports the proportion of the 371 paired items in which the female-targeted version received a strictly higher rating, the two versions received exactly equal aggregated ratings (a tie), or the male-targeted version received a higher rating, for each of the twelve rater groups under each of the three scales. All 36 cells showed positive mean $\Delta_{F-M}$; corrected inferential tests for $\Delta_{F-M} > 0$ in each cell are reported in Supplementary Table~S1. Direction-level alignment is therefore strong but limited: every rater group under every scale shows positive $\Delta_{F-M}$, but this establishes only the sign of the effect. The remainder of the Results is devoted to whether the size, location, scale-dependence, and item-level localization of that effect are also shared.
+
+\begin{table}[t]
+  \small
+  \centering
+  \begin{tabular}{lccc ccc ccc}
+    \toprule
+    & \multicolumn{3}{c}{3-point} & \multicolumn{3}{c}{7-point Likert} & \multicolumn{3}{c}{Slider} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+    Rater & F$>$M & Tie & M$>$F & F$>$M & Tie & M$>$F & F$>$M & Tie & M$>$F \\
+    \midrule
+    Overall humans       & 73.6 & 0.8  & 25.6 & 72.2 & 0.0  & 27.8 & 69.3 & 0.0  & 30.7 \\
+    Female participants  & 74.4 & 3.2  & 22.4 & 74.7 & 1.3  & 24.0 & 71.7 & 0.3  & 28.0 \\
+    Male participants    & 58.2 & 3.2  & 38.5 & 55.0 & 1.1  & 43.9 & 57.7 & 0.0  & 42.3 \\
+    \midrule
+    Claude-Opus-4.5      & 19.9 & 80.1 & 0.0  & 34.5 & 65.0 & 0.5  & 49.3 & 49.6 & 1.1  \\
+    DeepSeek-R1          & 12.4 & 85.7 & 1.9  & 30.7 & 62.8 & 6.5  & 54.7 & 31.3 & 14.0 \\
+    DeepSeek-V3.2        & 16.2 & 80.1 & 3.8  & 30.7 & 60.1 & 9.2  & 56.1 & 25.9 & 18.1 \\
+    Gemma-4-31B          & 14.3 & 85.7 & 0.0  & 38.0 & 62.0 & 0.0  & 61.7 & 37.7 & 0.5  \\
+    GLM-4.6              & 15.1 & 81.9 & 3.0  & 31.0 & 59.0 & 10.0 & 34.0 & 60.1 & 5.9  \\
+    GPT-5.1              & 29.9 & 70.1 & 0.0  & 45.0 & 54.2 & 0.8  & 71.7 & 14.3 & 14.0 \\
+    Kimi-K2-Thinking     & 31.3 & 66.3 & 2.4  & 43.7 & 46.6 & 9.7  & 71.2 & 12.7 & 16.2 \\
+    Llama-4-Maverick     & 14.8 & 84.4 & 0.8  & 25.9 & 71.4 & 2.7  & 29.4 & 64.7 & 5.9  \\
+    Qwen-2.5-72B         & 23.5 & 76.5 & 0.0  & 25.9 & 73.9 & 0.3  & 49.9 & 49.9 & 0.3  \\
+    \bottomrule
+  \end{tabular}
+  \caption{Proportion (\%) of the 371 paired items in which the female-targeted version was rated strictly higher (F$>$M), the two versions tied at the level of aggregated ratings, or the male-targeted version was rated higher (M$>$F), per rater group and scale. Three human strata are stacked above the nine LLMs. Tie rates are descriptive indicators of response resolution and output quantization and are not directly comparable as psychological evidence: human ties are computed from aggregated participant-level group means, whereas LLM ties are computed from deterministic model outputs on discrete response cells, where exact equality is much more likely. Inferential statistics for $\Delta_{F-M} > 0$ in each cell are reported in Supplementary Table~S1.}
+  \label{tab:directionality}
+\end{table}
+
+At the population level, humans and LLMs agree that female-targeted versions of identically worded attack sentences receive higher attack ratings than the matched male-targeted versions. The asymmetry in tie rates between humans and LLMs is consistent with the response-resolution pattern developed in Section~\ref{sec:r5}, but should not be read as direct evidence that humans psychologically commit to a side while LLMs are indifferent. Direction-level alignment is therefore strong but limited: it establishes the sign of the effect, not its magnitude, domain structure, scale response, or item-level localization.
+
+\subsection{Magnitude alignment depends on the human reference group}
+\label{sec:r3}
+
+The second layer probes the size of $\Delta_{F-M}$. We use the 3-point scale as the anchor for this section because it most closely resembles the categorical labels used in standard hate-speech and offensive-content annotation. Throughout, ``larger gender-differential effect'' refers to a larger positive $d_z$ and is not a normative claim. The three human reference values on the 3-point scale are $d_z = 0.219$ for male participants, $d_z = 0.621$ for the overall human aggregate, and $d_z = 0.655$ for female participants. The nine LLMs span $d_z = 0.289$ to $0.653$ on the same scale (Table~\ref{tab:dz-3pt}); Figure~\ref{fig:dz-headline} shows the full $12 \times 3$ heatmap.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.86\linewidth]{fig1_dz_descriptive_heatmap.pdf}
+  \caption{Cohen's $d_z$ of $\Delta_{F-M}$ for each of the twelve rater groups (rows: nine LLMs and three human strata) under each of the three rating formats (columns). All 36 cells are positive; the colour scale is centred at $0$ with red indicating a larger female-minus-male gap.}
+  \label{fig:dz-headline}
+\end{figure}
+
+\begin{table}[t]
+  \small
+  \centering
+  \begin{tabular}{lcccc}
+    \toprule
+    Rater & Mean (M) & Mean (F) & $\overline{\Delta}/\text{max}$ & $d_z$ \\
+    \midrule
+    Male participants    & 0.573 & 0.602 & 0.030 & 0.219 \\
+    Overall humans       & 0.562 & 0.622 & 0.060 & 0.621 \\
+    Female participants  & 0.552 & 0.642 & 0.090 & 0.655 \\
+    \midrule
+    DeepSeek-R1          & 0.892 & 0.945 & 0.053 & 0.289 \\
+    DeepSeek-V3.2        & 0.807 & 0.869 & 0.062 & 0.289 \\
+    GLM-4.6              & 0.846 & 0.907 & 0.061 & 0.297 \\
+    Llama-4-Maverick     & 0.784 & 0.854 & 0.070 & 0.379 \\
+    Gemma-4-31B          & 0.902 & 0.973 & 0.071 & 0.408 \\
+    Claude-Opus-4.5      & 0.834 & 0.934 & 0.100 & 0.498 \\
+    Qwen-2.5-72B         & 0.796 & 0.914 & 0.117 & 0.553 \\
+    Kimi-K2-Thinking     & 0.709 & 0.853 & 0.144 & 0.572 \\
+    GPT-5.1              & 0.737 & 0.887 & 0.150 & 0.653 \\
+    \bottomrule
+  \end{tabular}
+  \caption{3-point summary, sorted within each block by $d_z$. Means are normalized to scale max. The overall-human row sits between Claude-Opus-4.5 and Qwen-2.5-72B; female participants are at the upper boundary of the LLM range, and male participants are well below it.}
+  \label{tab:dz-3pt}
+\end{table}
+
+The central observation in this layer is the \emph{reference-group reversal}: the human--LLM comparison changes interpretive category depending only on which human group serves as the reference. Against male participants ($d_z = 0.219$), all nine LLMs show a larger positive $d_z$. Against female participants ($d_z = 0.655$), no LLM exceeds the female-participant reference; all nine models are at or below it, with GPT-5.1 ($d_z = 0.653$) essentially tied with the female reference. Against the overall human aggregate ($d_z = 0.621$), the picture is mixed: five models sit below the aggregate point estimate (DeepSeek-R1, DeepSeek-V3.2, GLM-4.6, Llama-4-Maverick, and Gemma-4-31B; $d_z$ from $0.289$ to $0.408$), three are descriptively close to the aggregate (Claude-Opus-4.5 at $0.498$, Qwen-2.5-72B at $0.553$, Kimi-K2-Thinking at $0.572$), and a single high-end model (GPT-5.1, $d_z = 0.653$) sits near the female-participant reference. The categories ``below'', ``descriptively close'', and ``at the upper end'' are descriptive groupings of point estimates; formal equivalence between an LLM and a chosen human reference is not claimed and would require bootstrap confidence intervals for $\Delta d_z$ or a pre-specified equivalence margin.
+
+The familiar question ``Are LLMs more biased than humans?'' is therefore under-specified. The answer depends on which humans define the reference. In these data, the same model panel is uniformly more gender-differential than male participants, at or below the female-participant reference, and heterogeneous relative to the pooled human average. Model--human divergence is therefore not a property of the model alone; it is a property of the model relative to a chosen human reference group. A pooled human baseline is not a neutral target: it implicitly weights heterogeneous human subgroups, and a model-evaluation pipeline that compares LLMs to a single such baseline is silently choosing a position on the male--female axis revealed in these data.
+
+\subsection{Broad content structure aligns around sexualization and appearance}
+\label{sec:r4}
+
+The third layer asks a domain-level question: do humans and LLMs agree on \emph{which} broad attack domains carry the largest gender-differential effect? It is useful to separate two sub-claims: (i) hot-zone membership --- whether sexualization and appearance are among the highest-sensitivity domains, and (ii) hot-zone ordering --- whether sexualization is consistently above appearance. The two questions have different answers in our data.
+
+On the human side, sexualization (性化攻击) and appearance-targeted attacks (外貌形象攻击) are the two highest-$d_z$ domains at every scale. Among overall human raters, sexualization $d_z$ is $1.47$, $1.42$, and $1.18$ across the three scales, and appearance $d_z$ is $0.76$, $0.80$, and $0.61$. Female participants follow the same ordering. Male participants, despite an overall $d_z$ near zero, still locate the bulk of their smaller gap in these two columns: sexualization $d_z$ is $1.03$ on 3-point and appearance $d_z$ is $0.42$, while several non-sexualized domains show slightly negative $d_z$. The internal hot-zone ordering --- sexualization above appearance --- is therefore stable across scales on the human side.
+
+On the LLM side, hot-zone membership is broadly shared: the two leading domains are appearance and sexualization for most models at most scales, and the cross-model picture is one of similar broad-domain structure, less clearly expressed on the 3-point scale for some models. The internal hot-zone \emph{ordering}, however, is scale-sensitive on the model side. On 3-point, several LLMs --- DeepSeek-V3.2 (sexualization $d_z = -0.06$), GLM-4.6 (sexualization $d_z = 0.22$), and DeepSeek-R1 (sexualization $d_z = 0.46$ vs.\ appearance $d_z = 0.41$) --- show flattened or inverted hot-zone ordering. On the 7-point and slider scales, most LLMs recover the human-like sexualization-above-appearance ordering. The full per-model, per-domain forest grid for the 3-point scale is provided as Supplementary Figure~S2; we summarize the hot-zone columns in the main text via Table~\ref{tab:hotzone}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{model_level1_forest_grid_3pt.pdf}
+  \caption{Per-domain mean $\Delta_{F-M}$ with 95\% confidence intervals for each of the nine LLMs on the 3-point scale. Rows within each panel are ordered by $|d_z|$ descending and the panels therefore use a within-model rather than a fixed domain ordering; the figure is intended for within-panel rank comparison rather than for row-by-row alignment across panels. Red points and lines: paired Wilcoxon BH-FDR $q < .05$; grey: not significant. Sexualization (性化攻击) and appearance (外貌形象攻击) consistently sit at or near the top of every model's within-panel ordering. Per-cell item count $n$ is shown next to each domain label.}
+  \label{fig:domain-forest-3pt}
+\end{figure}
+
+Table~\ref{tab:hotzone} reports per-rater $d_z$ in the two hot-zone columns across the three scales, for the three human strata and for four illustrative LLMs that span the range of behaviour observed in the full panel: DeepSeek-V3.2, Claude-Opus-4.5, GPT-5.1, and Gemma-4-31B. The four-model selection is illustrative and is not the primary evidence for the shared hot-zone claim, which rests on the full per-model summaries reported in the supplementary materials and on the population-level human numbers above.
+
+\begin{table}[t]
+  \small
+  \centering
+  \begin{tabular}{lccc ccc}
+    \toprule
+    & \multicolumn{3}{c}{Sexualization $d_z$} & \multicolumn{3}{c}{Appearance $d_z$} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+    Rater & 3pt & 7pt & Slider & 3pt & 7pt & Slider \\
+    \midrule
+    Overall humans       & 1.47 & 1.42 & 1.18 & 0.76 & 0.80 & 0.61 \\
+    Female participants  & 1.33 & 1.35 & 1.09 & 0.64 & 0.81 & 0.69 \\
+    Male participants    & 1.03 & 0.75 & 0.56 & 0.42 & 0.16 & 0.23 \\
+    \midrule
+    DeepSeek-V3.2        & $-$0.06 & 0.69 & 1.13 & 0.37 & 0.70 & 0.57 \\
+    Claude-Opus-4.5      & 0.46 & 1.06 & 0.88 & 0.56 & 1.01 & 1.49 \\
+    GPT-5.1              & 0.65 & 1.06 & 0.84 & 0.68 & 0.87 & 1.03 \\
+    Gemma-4-31B          & 0.51 & 1.06 & 0.86 & 0.56 & 1.19 & 1.15 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Cohen's $d_z$ in the two hot-zone domains, by rater and scale. The four LLMs are illustrative and span the range of behaviour observed in the full panel. Humans preserve the sexualization-above-appearance ordering at every scale. Most LLMs do not preserve this internal ordering on the 3-point scale but recover it on the 7-point and slider scales.}
+  \label{tab:hotzone}
+\end{table}
+
+Two summary statements follow. First, hot-zone \emph{membership} --- sexualization and appearance as the two highest-sensitivity domains --- is broadly shared between humans and LLMs and suggests that the population-level effect is not merely statistical noise. Second, hot-zone \emph{ordering} is scale-sensitive: humans consistently show sexualization above appearance, whereas several LLMs show flattened or inverted ordering on the 3-point scale and recover the human-like ordering on finer scales. This compression previews the granularity-response divergence in Section~\ref{sec:r5}. Finally, broad-domain agreement across ten categories is not item-level agreement: shared hot zones across ten domains are compatible with weak correspondence across the 371 individual items, which we examine in Section~\ref{sec:r6}.
+
+\subsection{Rating granularity changes apparent human--LLM alignment}
+\label{sec:r5}
+
+The fourth layer asks whether the alignment in Sections~\ref{sec:r2}--\ref{sec:r4} is stable across measurement scales. The central evidence is the descriptive cross-scale trajectory of $d_z$ (Table~\ref{tab:scale-response}). On the human side, $d_z$ stays flat or decreases as the scale becomes finer: overall humans, $0.621 \to 0.588 \to 0.512$; male participants, $0.219 \to 0.198 \to 0.167$; female participants, $0.655 \to 0.704 \to 0.590$ (non-monotone, with a 7-point peak). On the LLM side, six of the nine models show monotonic or near-monotonic increases (Claude-Opus-4.5, DeepSeek-R1, DeepSeek-V3.2, GLM-4.6, Qwen-2.5-72B, and Gemma-4-31B, the last with an especially steep climb from $0.408$ to $0.773$ to $1.016$); two peak at the 7-point scale (GPT-5.1, Llama-4-Maverick); and Kimi-K2-Thinking is approximately flat. Rating granularity therefore changes the observed size of $\Delta_{F-M}$ and changes the apparent human--LLM gap: on the 3-point scale, five of nine LLMs sit below the overall-human reference; on the slider scale, five of nine sit at or above it.
+
+Because this comparison combines aggregated human responses and deterministic model outputs, the cross-rater human--LLM scale-response contrast is descriptive in the present analysis. We do not claim a directly tested cross-rater scale-response interaction. The corresponding direction-side pattern, in which the median tie proportion across the nine LLMs is $80.1\%$, $62.0\%$, and $37.7\%$ on 3-point, 7-point, and slider respectively, and the median female-higher proportion is $16.2\%$, $31.0\%$, and $54.7\%$ on the same three scales, is reported as Supplementary Figures~S3 and~S4. Tie rates are computed from aggregated group means on the human side and from deterministic model outputs on the LLM side; consistent with the framing in Section~\ref{sec:r2}, we treat them as descriptive indicators of response resolution and output quantization rather than as a directly comparable psychological signal. The apparent moderation of LLM $d_z$ at 3-point may therefore partly reflect response-scale compression at coarse formats; this is a measurement-level statement, not a cognitive one.
+
+\begin{table}[t]
+  \small
+  \centering
+  \begin{tabular}{lcccl}
+    \toprule
+    Rater & 3pt $d_z$ & 7pt $d_z$ & Slider $d_z$ & Trend across scales \\
+    \midrule
+    Overall humans      & 0.621 & 0.588 & 0.512 & decrease (monotonic) \\
+    Male participants   & 0.219 & 0.198 & 0.167 & decrease (monotonic) \\
+    Female participants & 0.655 & 0.704 & 0.590 & 7pt peak, slider decline \\
+    \midrule
+    Claude-Opus-4.5     & 0.498 & 0.693 & 0.748 & increase (monotonic) \\
+    DeepSeek-R1         & 0.289 & 0.422 & 0.510 & increase (monotonic) \\
+    DeepSeek-V3.2       & 0.289 & 0.371 & 0.460 & increase (monotonic) \\
+    GLM-4.6             & 0.297 & 0.353 & 0.423 & increase (monotonic) \\
+    Gemma-4-31B         & 0.408 & 0.773 & 1.016 & increase (steep) \\
+    GPT-5.1             & 0.653 & 0.840 & 0.714 & 7pt peak \\
+    Kimi-K2-Thinking    & 0.572 & 0.505 & 0.593 & approximately flat \\
+    Llama-4-Maverick    & 0.379 & 0.477 & 0.409 & 7pt peak \\
+    Qwen-2.5-72B        & 0.553 & 0.578 & 0.686 & increase \\
+    \bottomrule
+  \end{tabular}
+  \caption{Cohen's $d_z$ of $\Delta_{F-M}$ as a function of rating granularity. On the human side, $d_z$ stays flat or decreases as the scale becomes finer; on the LLM side, most $d_z$ values increase. The crossover entails that the same human--LLM comparison yields a different verdict on the 3-point scale than on the slider. The cross-rater scale-response contrast is descriptive in the present analysis.}
+  \label{tab:scale-response}
+\end{table}
+
+\paragraph{2$\times$3 repeated-measures ANOVA on the human side.} As a stimulus-as-unit analysis over the 371 paired items, we tested the participant-gender $\times$ scale interaction on the per-item normalized $\Delta_{F-M}$. The participant-gender main effect was substantial: $F(1, 370) = 111.17$, $p < .001$, $\eta^2_G = .044$. The scale main effect was significant but markedly smaller: $F(2, 740) = 9.44$, Greenhouse--Geisser corrected $p < .001$, $\eta^2_G = .007$. The interaction was not significant: $F(2, 740) = 1.79$, $p = .169$. Participant gender therefore accounts for roughly six times as much variance ($\eta^2_G$) as scale on the human side. The ANOVA tests normalized mean $\Delta_{F-M}$, whereas Table~\ref{tab:scale-response} reports standardized paired-effect sizes; these summaries need not move identically across scales because $d_z$ depends on both the mean gap and the item-level variability of the gap. The cross-rater scale-response interaction (humans vs.\ LLMs) is not directly tested by this ANOVA, because the LLMs are deterministic raters and not a participant-level random effect.
+
+\paragraph{Post hoc.} Pairwise simple-effect tests with BH-FDR-adjusted $q$ values confirm that female participants exceed male participants in $\Delta_{F-M}$ within every scale (3pt: $d_z = 0.32$, $t = 6.09$, $q = 4.2 \times 10^{-9}$; 7pt: $d_z = 0.35$, $t = 6.67$, $q = 2.8 \times 10^{-10}$; slider: $d_z = 0.29$, $t = 5.68$, $q = 2.8 \times 10^{-8}$). For the scale main effect on normalized $\Delta_{F-M}$, the 3pt vs.\ 7pt and 3pt vs.\ slider contrasts are significant ($q = 6.7 \times 10^{-3}$ and $1.4 \times 10^{-4}$), while the 7pt vs.\ slider contrast is not ($q = .19$). Stratifying by participant gender, the scale effect on normalized $\Delta_{F-M}$ is driven by female participants: within female participants the 3pt vs.\ 7pt and 3pt vs.\ slider contrasts are significant ($q < .05$), while within male participants no scale comparison reaches significance. Because the female-participant $d_z$ trajectory is non-monotone ($0.655 \to 0.704 \to 0.590$), the post hoc result on normalized $\Delta_{F-M}$ does not imply a monotone $d_z$ decrease for that stratum; this divergence between mean and $d_z$ summaries motivates reporting both in Table~\ref{tab:scale-response}.
+
+Participant gender is therefore the larger determinant of human $\Delta_{F-M}$, but scale still matters on the human side, and where it matters, it matters in the dampening direction. The corresponding human--LLM measurement divergence is descriptive in the present analysis: human $d_z$ values dampen or peak in the middle as the response scale becomes finer, whereas most LLM $d_z$ values increase. The same human--LLM comparison therefore yields different verdicts depending on the rating granularity.
+
+\subsection{Item-level localization remains weak}
+\label{sec:r6}
+
+The fifth layer asks whether population-level alignment transfers to item-by-item localization. Item-level Spearman correlations of normalized $\Delta_{F-M}$ within humans across the three pairwise scale comparisons are low: $\rho \in [0.04, 0.13]$. Within LLMs, the median item-level cross-scale $\rho$ is approximately $0.08$. Aggregating to the 10-domain level recovers stronger agreement, with domain-level $\rho \in [0.57, 0.85]$ on the LLM side and $\in [0.58, 0.86]$ on the human side. The mismatch between item- and domain-level correlations is the level at which the agreement seen in Sections~\ref{sec:r2}--\ref{sec:r5} breaks down.
+
+The same picture emerges for human--LLM agreement. Using ICC(2,1) absolute agreement on item-level normalized $\Delta_{F-M}$ across all nine (human reference $\times$ scale) cells, no single LLM is closest to humans across all combinations: five different LLMs occupy the top-1 slot across the nine cells, and the best ICC(2,1) values stay $\le 0.22$, in the conventionally poor range. The best human--LLM ICC(2,1) is observed for Claude-Opus-4.5 against the overall human aggregate on the slider scale (ICC(2,1) $= 0.222$), with DeepSeek-R1 on the same cell at $0.204$; the corresponding 3-point and 7-point cells lie below $0.16$. ICC(2,1) for human--LLM pairs is therefore low across all cells, and the model that is closest in this metric is not in general the model that is closest in aggregate $d_z$.
+
+The low human cross-scale correlations indicate that item-level localization is itself scale-dependent or noisy within humans. A split-half reliability analysis within each (human stratum $\times$ scale) cell would be needed to estimate an explicit reliability ceiling for human--LLM item-level alignment; we did not perform this analysis in the present study and therefore frame the low ICCs accordingly. Until such a ceiling is established, the low human--LLM ICCs should be read as evidence against fine-grained item-level interchangeability rather than as evidence that LLMs fail to capture the broader population-level or domain-level effect.
+
+The substantive implication is the \emph{aggregate--item dissociation}: humans and LLMs share the population-level direction and broad content structure of $\Delta_{F-M}$, but not the fine-grained item-by-item localization of the gap. Aggregate alignment and item-level alignment dissociate, and matching human $d_z$ does not imply reproducing the item-by-item pattern of human $\Delta_{F-M}$. The methodological implication is that no single alignment metric tells the whole story. ICC alone is insufficient: it can miss aggregate alignment when item-level agreement is weak, just as aggregate $d_z$ alone can miss item-level divergence. A psychometrically responsible report of human--LLM alignment in this task therefore requires multiple analytic levels and, ideally, an explicit reliability ceiling on the item-level metric.
+
+\subsection{Alignment is conditional on reference group, scale, and analytic level}
+\label{sec:r7}
+
+The five layers above can be summarized as a single structured profile (Table~\ref{tab:alignment-summary}). Direction-level alignment holds: 36/36 (rater $\times$ scale) cells are positive. Broad-domain structure broadly holds: sexualization and appearance are the two leading domains for both humans and LLMs at the 7-point and slider scales, with model-side compression of the broader ordering at 3-point. Magnitude relative to a chosen human reference does not hold as a single statement: every LLM is descriptively more gender-differential than male participants, no LLM exceeds female participants (with GPT-5.1 a near-tie), and the comparison against the pooled human aggregate is mixed across models on the 3-point anchor. Granularity response does not hold descriptively: human $d_z$ values dampen or peak in the middle as the scale becomes finer, whereas most LLM $d_z$ values increase. Item-level localization does not hold: human--LLM ICC(2,1) stays $\le 0.22$ and item-level cross-scale rank correlations are near zero. The item-level metrics should be read relative to a reliability ceiling for item-level $\Delta_{F-M}$, which we did not estimate in the present study (Section~\ref{sec:r6}). The slider-scale per-rater summary, the counterpart of the 3-point Table~\ref{tab:dz-3pt}, is provided in Appendix~\ref{app:slider-summary} (Table~\ref{tab:dz-slider}).
+
+\begin{table}[t]
+  \small
+  \centering
+  \begin{tabular}{p{0.27\linewidth} p{0.18\linewidth} p{0.27\linewidth} p{0.22\linewidth}}
+    \toprule
+    Layer of alignment & Status & Evidence & Qualification \\
+    \midrule
+    Direction (sign of $\Delta_{F-M}$) & Holds & 36/36 cells positive (Section~\ref{sec:r2}) & Sign only; magnitude not addressed at this layer \\
+    Broad-domain hot zones & Broadly holds & Sexualization and appearance shared at 7pt and slider; model-side compression at 3pt (Section~\ref{sec:r4}) & Domain-level only; not item-level \\
+    Magnitude vs.\ overall humans (3pt) & Mixed & 5 LLMs below the aggregate, 3 descriptively comparable, 1 at the upper end (Section~\ref{sec:r3}) & Descriptive categories; formal equivalence not tested \\
+    Magnitude vs.\ male participants (3pt) & Does not hold as equality & All 9 LLMs descriptively larger (Section~\ref{sec:r3}) & Descriptive categories; formal equivalence not tested \\
+    Magnitude vs.\ female participants (3pt) & Does not hold as equality & No LLM exceeds female participants; GPT-5.1 near-tie (Section~\ref{sec:r3}) & Descriptive categories; formal equivalence not tested \\
+    Granularity response & Does not hold descriptively & Humans dampen / peak in middle; most LLMs amplify (Section~\ref{sec:r5}) & Direct cross-rater slope comparison not included \\
+    Item-level localization & Weak & ICC(2,1) $\le 0.22$; item-level cross-scale $\rho \approx 0$ (Section~\ref{sec:r6}) & Reliability ceiling not estimated \\
+    \bottomrule
+  \end{tabular}
+  \caption{Structured alignment profile across the five layers. Status labels are descriptive and are intended to make explicit which layer of human--LLM alignment is asserted, with what evidence, and under what qualification. ``Holds'' / ``broadly holds'' refers to population-level or broad-domain agreement, not to item-by-item interchangeability; ``does not hold as equality'' refers to the descriptive sign of the human--LLM difference. Formal equivalence testing, a direct cross-rater scale-slope test, and a reliability ceiling for item-level $\Delta_{F-M}$ were not performed in the present study and are listed as such in the qualification column.}
+  \label{tab:alignment-summary}
+\end{table}
+
+Human--LLM alignment in gender-differential attack ratings is therefore not a single coefficient. It is conditional on the human reference group, the rating scale, and the analytic level.
+
+\section{Discussion}
+\label{sec:discussion}
+
+The empirical claim of the paper is that human--LLM alignment of gender-differential attack ratings is not a scalar property of a model. It is a structured object whose value depends on three orthogonal choices: which group of humans serves as the reference, which rating scale is used, and at which level (population, domain, item) the comparison is made. We discuss four threads of this result.
+
+\paragraph{Alignment is multidimensional.} Direction-level agreement, which is what most existing model-evaluation work reports, is real and unambiguous in our data: every rater group on every scale produces $\Delta_{F-M} > 0$. But agreement on direction does not imply agreement on magnitude, on scale response, or on item-level localization. Humans and LLMs can simultaneously agree that female-targeted versions of identically-worded attacks are rated more harshly, agree that the gap concentrates on sexualization and appearance, and disagree about how large the gap should be, how it should respond to scale granularity, and which specific items inside a domain carry the largest gap. Treating the direction-level result as a stand-in for ``alignment'' would in our data produce a far more optimistic picture than the magnitude- and item-level results justify.
+
+\paragraph{The human-reference-group problem.} ``Humans'' in our data are not a homogeneous gold standard. Within the same set of 371 minimal pairs, female and male participants produced systematically different $d_z$ values, with the participant-gender main effect roughly six times the scale main effect in $\eta^2_G$, and within-scale female-vs-male $d_z$ near 0.30. Pooling these strata into a single ``human baseline'' obscures heterogeneity that, in this dataset, is the dominant source of variance. The reference-group reversal observed in R3 follows directly: the same nine LLMs are descriptively more gender-differential than male participants, do not exceed the female-participant reference (with GPT-5.1 near-tied), and are heterogeneous against the pooled mean. The practical implication for model evaluation is that a calibration target built from one human stratum yields a different verdict on the same model than a target built from another. This suggests that LLM evaluations of gender-differential attack ratings should report against multiple disaggregated human references, not a single pooled mean.
+
+\paragraph{Measurement-conditional alignment.} The 3-point, 7-point, and slider response formats are not interchangeable. In our data the same comparison (LLM $d_z$ minus overall-human $d_z$) has different sign for many models depending on which scale is used: on 3-point most LLMs sit below the overall human, on slider many sit above. The descriptive cross-rater pattern is that humans dampen with finer scales while most LLMs amplify. Because coarse 3-point categories are the response format closest to standard hate-speech annotation and finer formats are typical of psychophysical work, the choice of scale silently inserts a position into the human--LLM comparison. Coarse annotation scales may produce one picture of human--LLM similarity, while fine-grained psychophysical scales produce another. We do not claim that any one scale is ``correct''; we claim that an alignment number should be reported with the scale on which it was obtained.
+
+\paragraph{The aggregate--item dissociation.} Aggregate $d_z$ and item-level ICC answer different questions. Aggregate $d_z$ captures population-level gender-differential sensitivity; item-level ICC captures the item-by-item localization of the gap. A model can match one and fail the other, and in our data this is precisely what happens: aggregate alignment can be close at the population level while item-level ICC stays in the conventionally poor range. ICC is the metric most commonly reported in LLM-evaluation work; reported on its own it would suggest that the models in our panel are far from human even where the population-level effect, which is the substantive scientific quantity, is well shared. Aggregate $d_z$ reported on its own would mislead in the opposite direction. The two are complements, not substitutes, and a single-coefficient summary of alignment is not adequate for either purpose.
+
+\section{Limitations and Future Work}
+
+The minimal-pair items are Chinese; whether the same pattern of measurement-conditional alignment holds in a parallel English corpus, where the gender-marking morphology and pronoun system differ, is an open question that we are pursuing in follow-up work. The participant pool is a Chinese online sample with a young, urban skew and is not nationally representative; the human reference values reported here should be read as the values of \emph{this} pool rather than as universal human baselines. The LLM panel is a snapshot of November 2025 production models; reproducibility under later versions and under fine-tuned annotation prompts will require re-evaluation. We used zero-shot prompting as the main setting; whether chain-of-thought, system-prompt scaffolding, or task-specific fine-tuning attenuate the granularity inversion is open. The minimal-pair design isolates the gender referent but may not capture all pragmatic and contextual features of real hate speech, including multimodal cues, reply context, and audience-targeted dog-whistle language. Participant gender is treated as binary in the present analysis because the data permit only that contrast at sample sizes large enough for stable per-cell $d_z$; future work with larger non-binary samples should examine more nuanced identity variables. Finally, the three rating formats may differ not only in granularity but also in cognitive demand, time on task, and anchor availability; disentangling those mechanisms will require dedicated psychophysical follow-up.
+
+\section{Conclusion}
+
+Humans and LLMs agree on the direction of gender-differential attack ratings: female-targeted versions of identically-worded attack sentences receive higher attack ratings, and the gap concentrates on sexualization and appearance. They disagree on magnitude in ways that depend on which humans serve as the reference: every model in our panel is descriptively more gender-differential than male participants, and no model exceeds the female-participant reference (with GPT-5.1 a near-tie). Descriptively, they also disagree on how the gap responds to finer rating scales: humans dampen, most LLMs amplify. They disagree at the item level: ICC(2,1) is in the conventionally poor range even where aggregate $d_z$ matches. Taken together, human--LLM alignment of gender bias in attack ratings should therefore be reported as a structured profile across reference groups, scales, and analytic levels, not a single scalar score. The question is not whether LLMs are simply more or less biased than humans, but relative to which humans, under which scale, and at which analytic level.
+
+\appendix
+
+\section{Slider per-rater summary (counterpart of Table~\ref{tab:dz-3pt})}
+\label{app:slider-summary}
+
+\begin{table}[h]
+  \small
+  \centering
+  \begin{tabular}{lcccc}
+    \toprule
+    Rater & Mean (M) & Mean (F) & $\overline{\Delta}/\text{max}$ & $d_z$ \\
+    \midrule
+    Male participants    & 0.631 & 0.648 & 0.017 & 0.167 \\
+    Overall humans       & 0.626 & 0.662 & 0.036 & 0.512 \\
+    Female participants  & 0.621 & 0.677 & 0.056 & 0.590 \\
+    \midrule
+    Llama-4-Maverick     & 0.704 & 0.733 & 0.029 & 0.409 \\
+    GLM-4.6              & 0.785 & 0.817 & 0.031 & 0.423 \\
+    DeepSeek-V3.2        & 0.748 & 0.787 & 0.039 & 0.460 \\
+    DeepSeek-R1          & 0.770 & 0.814 & 0.043 & 0.510 \\
+    Kimi-K2-Thinking     & 0.700 & 0.764 & 0.064 & 0.593 \\
+    Qwen-2.5-72B         & 0.681 & 0.741 & 0.060 & 0.686 \\
+    GPT-5.1              & 0.728 & 0.784 & 0.056 & 0.714 \\
+    Claude-Opus-4.5      & 0.719 & 0.754 & 0.036 & 0.748 \\
+    Gemma-4-31B          & 0.727 & 0.794 & 0.067 & 1.016 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Per-rater slider-scale summary, sorted within each block by $d_z$. Means are normalized to scale max. On the slider scale, five LLMs (Kimi, Qwen, GPT-5.1, Claude, Gemma) sit at or above the overall-human reference, the inversion of the 3-point pattern in Table~\ref{tab:dz-3pt}.}
+  \label{tab:dz-slider}
+\end{table}
+
+\section*{Data and Code}
+All artifacts referenced here, including the 12-rater $d_z$ descriptive heatmap, the directionality grids, the per-domain heatmaps, the 2$\times$3 ANOVA post-hoc table, and the source code, are available in the project repository.
+
+\section*{Author Contributions}
+[placeholder]
+
+\section*{Funding}
+[placeholder]
+
+\bibliographystyle{plainnat}
+% \bibliography{references}
+
+\end{document}
