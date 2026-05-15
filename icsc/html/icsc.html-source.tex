@@ -1,0 +1,236 @@
+% !TEX program = pdflatex
+% Compile from this directory with:
+%   latexmk -pdf -interaction=nonstopmode -halt-on-error icsc.tex
+
+\documentclass[runningheads]{llncs}
+
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{url}
+
+\graphicspath{{}}
+
+\title{Do Large Language Models Judge Gendered Attacks Like Humans?\\
+Evidence from Chinese Gender-Reversal Minimal Pairs}
+\titlerunning{Human--LLM Judgement of Gendered Attacks}
+
+\author{Xuan Bao}
+\authorrunning{X. Bao}
+\institute{Author affiliation omitted for review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Large language models (LLMs) are increasingly used for subjective social-judgement tasks, including offensive-speech evaluation. Gendered attack evaluation offers a sharp test of this use case: the same hostile expression may be judged differently when it targets women rather than men. We constructed 371 Chinese gender-reversal minimal pairs and collected ratings from nine contemporary LLMs and 779 valid Chinese participant sessions under three response formats: a 3-point category scale, a 7-point Likert scale, and a 0--100 slider. The primary estimand is the paired female-minus-male perceived attack-rating gap, $\Delta_{F-M}$, summarized by Cohen's $d_z$ across items. All 36 rater-by-scale cells produced positive $\Delta_{F-M}$, and both humans and LLMs located the largest gender-differential effects in sexualization and appearance. However, alignment was conditional rather than global. On the 3-point scale, most LLMs showed smaller $d_z$ than the overall-human and female-participant references, although they exceeded the male-participant reference. Across scales, finer rating formats dampened or flattened human $d_z$ while amplifying most LLM $d_z$ values. Item-level correspondence remained weak even when aggregate effects were close. These findings show that human--LLM alignment in gendered attack ratings depends on the human reference group, response format, and analytic level.
+
+\keywords{Large language models \and Gendered attacks \and Hate speech \and Minimal pairs \and Social computing}
+\end{abstract}
+
+\section{Introduction}
+
+LLMs are now routinely used to label, score, and interpret social text. In content moderation and computational social science, they are often treated as scalable substitutes for human annotators, but subjective social judgements are not simple ground-truth recovery tasks. Offensive-speech ratings can depend on hostile wording, context, target identity, and annotator perspective. Gendered attacks therefore provide a useful measurement case: if an otherwise identical hostile sentence is directed at a woman rather than a man, do LLMs shift their perceived attack ratings in the same way as human raters?
+
+Chinese online discourse makes this question especially salient. Gender has become a visible axis of digital conflict on major Chinese platforms, with documented sexist language, misogynistic framing, and disputes around feminism and gender roles \cite{jiang2021,jingschmidt2018,liao2024}. Yet Chinese gendered attack evaluation remains less developed than English hate-speech benchmarking, and natural corpora are poorly suited to isolating the target-gender effect. In naturally occurring data, target identity co-occurs with topic, lexical extremity, discourse context, and other social-category cues \cite{mathew2021}. A raw female-versus-male comparison can describe observed posts but cannot identify whether a rating difference is caused by target gender itself.
+
+This paper uses a controlled minimal-pair design to move from benchmark accuracy to measurement alignment. Each item has a female-targeted and male-targeted version with the same attack content. We compare nine LLMs with three human references: the pooled human aggregate, female participants, and male participants. We also vary response format, because rating scales are part of the measurement instrument rather than neutral containers \cite{lozano2008,preston2000}. The analysis asks whether humans and LLMs agree in direction, magnitude, domain structure, scale response, and item-level correspondence.
+
+\section{Design and Measures}
+
+\subsection{Materials}
+
+A native Chinese-speaking research team constructed 371 minimal pairs of attack-laden sentences, yielding 742 gender-targeted sentence versions. The item pool was built from a three-level coding framework derived from prior work on gendered derogation, inductive review of hostile expressions in Chinese social-media contexts, and iterative team coding. The framework was designed to cover common forms of interpersonal attack and comprised 10 first-level attack domains, 71 second-level categories, and more than 180 third-level categories. The main analyses use only the first level: sexualization, appearance, gender role or expression, interpersonal relations, moral character, economic resources, social status, emotional stability, capability or competence, and intellectual rationality.
+
+Stimulus construction followed an integrative qualitative coding procedure. We first reviewed prior literature on interpersonal derogation, gendered hostility, online sexism, and person evaluation to identify broad dimensions along which people are commonly attacked or negatively evaluated. We then refined the framework through qualitative coding of Chinese online hostile discourse. This coding integrated prior conceptual categories with inductive review of attack expressions observed on major Chinese social-media and forum platforms, including Weibo, Tieba, Xiaohongshu, Douban, and Hupu. The first level captured broad attack domains, the second level specified the attribute being attacked, and the third level described common rhetorical or expressive strategies used to realize that attack.
+
+Sentence templates were generated under this coding framework. Candidate expressions were adapted from naturally occurring online attack language and supplemented with AI-assisted drafting. AI was used only as a drafting aid; all candidate items were manually reviewed, revised, or discarded by the research team. The initial pool contained approximately 400 candidate templates. Items were removed or rewritten if they sounded unnatural, overly rigid, relied on attack meanings specific to only one gender target, depended on platform-specific context, or could not be reversed without changing the attack content or perceived pragmatic force. The final stimulus set contained 371 templates.
+
+All items were reviewed by three native Chinese-speaking coders with psychology training for naturalness, attack presence, domain fit, and minimal-pair equivalence. Disagreements were resolved through discussion, and items that could not be revised to satisfy these criteria were excluded. Within each pair, the two versions are identical except for a gender-referent substitution, such as female versus male pronouns, gendered nouns, names, or relational kin terms. This design lets us attribute residual paired rating gaps to the gender manipulation rather than to selection on content extremity, a confound that is endemic to natural-language gender comparisons.
+
+\subsection{Raters and Response Formats}
+
+Nine production LLMs were queried in November 2025: Claude-Opus-4.5, DeepSeek-R1, DeepSeek-V3.2, Gemma-4-31B, Llama-4-Maverick, Kimi-K2-Thinking, GPT-5.1, Qwen-2.5-72B-Instruct, and GLM-4.6. Each model rated both versions of every pair under each response format.
+
+The human sample contained 779 valid Chinese rating sessions from 712 unique participants. Participants were randomly assigned to one response format and rated a pseudo-random subset of about 75 sentence versions. The design avoided showing both versions of the same minimal pair to the same participant. Human item means were therefore estimated across participants and then paired at the template level. Because later analyses compare female- and male-participant references, Table~\ref{tab:human-balance} reports the participant-gender balance within each response format.
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Valid human rating sessions by participant gender and assigned response format.}
+  \label{tab:human-balance}
+  \begin{tabular}{lrrr}
+    \toprule
+    Response format & Female participants & Male participants & Total \\
+    \midrule
+    3-point category & 134 & 134 & 268 \\
+    7-point Likert & 128 & 116 & 244 \\
+    0--100 slider & 130 & 137 & 267 \\
+    \midrule
+    Total & 392 & 387 & 779 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The three formats were: a 3-point category scale (0 = not attacking, 1 = mildly attacking, 2 = strongly attacking), a 7-point scale from 0 to 6, and a 0--100 slider. These formats represent coarse annotation, conventional graded judgement, and high-granularity perceived intensity.
+
+\subsection{Estimand}
+
+For item $i$, rater group $r$, and scale $c$, the paired target-gender gap is
+\[
+  \Delta^{(i)}_{F-M}(r,c)=s^{(i)}_F(r,c)-s^{(i)}_M(r,c),
+\]
+where $s_F$ and $s_M$ are the female- and male-targeted item means. The summary effect size is Cohen's paired $d_z$,
+\[
+  d_z(r,c)=
+  \frac{\overline{\Delta^{(i)}_{F-M}(r,c)}_i}
+  {\widehat{\mathrm{SD}}\left(\Delta^{(i)}_{F-M}(r,c)\right)_i},
+\]
+computed over the 371 item pairs. This makes items, rather than individual ratings, the common unit for human and LLM comparisons.
+
+\section{Results}
+
+\subsection{Direction-Level Agreement}
+
+Humans and LLMs agreed on the direction of the target-gender effect. All 36 rater-by-scale cells had positive mean $\Delta_{F-M}$, meaning that the female-targeted version was rated as more attacking on average. Among human raters, female-targeted versions received higher aggregated item ratings for 58.2\%--74.7\% of items, depending on participant group and scale. Among LLMs, exact ties were common on the 3-point scale, but all 27 model-by-scale cells remained positive and reached BH-FDR adjusted $q<10^{-7}$ for $\Delta_{F-M}>0$.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig_r2_direction_agreement_forest.png}
+  \caption{Direction-level agreement across human and LLM raters. Points show normalized mean paired female-minus-male rating gaps; intervals are item-level bootstrap 95\% intervals over the 371 pairs.}
+  \label{fig:direction}
+\end{figure}
+
+This result establishes only the weakest form of alignment. It shows that humans and LLMs put the average effect on the same side of zero, but it does not establish agreement in size, domain profile, response-scale behaviour, or item-level ordering.
+
+\subsection{Magnitude Depends on the Human Reference}
+
+The 3-point scale is the closest format to standard content-moderation annotation. On this scale, the human reference values were $d_z=0.219$ for male participants, $d_z=0.621$ for the pooled human aggregate, and $d_z=0.655$ for female participants. The nine LLMs ranged from $d_z=0.289$ to $0.653$. Thus the same model panel appears larger than the male-participant reference, mixed against the pooled-human reference, and no larger than the female-participant reference.
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{3-point summary. Means are normalized by scale maximum and rows are sorted within blocks by $d_z$.}
+  \label{tab:threepoint}
+  \begin{tabular}{lccc}
+    \toprule
+    Rater & Mean M & Mean F & $d_z$ \\
+    \midrule
+    Male participants & 0.573 & 0.602 & 0.219 \\
+    Overall humans & 0.562 & 0.622 & 0.621 \\
+    Female participants & 0.552 & 0.642 & 0.655 \\
+    \midrule
+    DeepSeek-R1 & 0.892 & 0.945 & 0.289 \\
+    DeepSeek-V3.2 & 0.807 & 0.869 & 0.289 \\
+    GLM-4.6 & 0.846 & 0.907 & 0.297 \\
+    Llama-4-Maverick & 0.784 & 0.854 & 0.379 \\
+    Gemma-4-31B & 0.902 & 0.973 & 0.408 \\
+    Claude-Opus-4.5 & 0.834 & 0.934 & 0.498 \\
+    Qwen-2.5-72B & 0.796 & 0.914 & 0.553 \\
+    Kimi-K2-Thinking & 0.709 & 0.853 & 0.572 \\
+    GPT-5.1 & 0.737 & 0.887 & 0.653 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig_r3_reference_group_delta_dz_forest.png}
+  \caption{3-point magnitude comparison. Each point is an LLM's $d_z$ minus the human-reference $d_z$; intervals are item-level bootstrap 95\% intervals.}
+  \label{fig:reference}
+\end{figure}
+
+The question ``Do LLMs show a larger gender-differential perceived attack effect than humans?'' therefore has no reference-free answer. A pooled human baseline hides the subgroup structure that determines the comparison.
+
+\subsection{Shared High-Sensitivity Domains}
+
+Humans and LLMs broadly agreed on where the target-gender effect was concentrated. Sexualization and appearance were the two clearest high-sensitivity domains for human raters and were also prominent in the LLM median. For overall humans, sexualization had $d_z=1.47$, $1.42$, and $1.18$ across the 3-point, 7-point, and slider formats; appearance had $d_z=0.76$, $0.80$, and $0.61$. Female participants showed the same pattern. Male participants showed smaller effects overall, but their largest positive domain effects also fell in sexualization and appearance.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig_r4_domain_alignment_forest.png}
+  \caption{Domain-level Cohen's $d_z$ values for the female-minus-male gap across response formats. Points show the three human strata and the LLM median.}
+  \label{fig:domain}
+\end{figure}
+
+The domain result supports a qualified alignment claim. Humans and LLMs share the broad location of the effect, but not a fully interchangeable domain ranking. Some models flattened or inverted the sexualization-above-appearance ordering on the 3-point scale, whereas the ordering was more stable on finer scales.
+
+\subsection{Response Scale Changes the Comparison}
+
+Scale granularity changed the human--LLM comparison. Human effects stayed flat or declined as the response format became finer: overall humans moved from $d_z=0.621$ to $0.588$ to $0.512$, male participants from $0.219$ to $0.198$ to $0.167$, and female participants from $0.655$ to $0.704$ to $0.590$. Most LLMs moved in the opposite direction. Six of nine models showed monotonic or near-monotonic increases, with Gemma-4-31B rising from $0.408$ to $0.773$ to $1.016$.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=.82\linewidth]{fig_r5_scale_response_trajectory.png}
+  \caption{Cohen's $d_z$ across 3-point, 7-point, and slider formats. Finer scales dampen or flatten human effects while amplifying most LLM effects.}
+  \label{fig:scale}
+\end{figure}
+
+This matters substantively. On the 3-point scale, five of nine LLMs sat below the pooled-human reference. On the slider, five of nine sat at or above it. Rating format is therefore part of the measurement condition, not a harmless implementation detail.
+
+\subsection{Similarity Is Level-Dependent}
+
+The closest model changes with human reference group, scale, and analytic level. Aggregate similarity asks whether a model matches the average $d_z$. Domain similarity asks whether the 10-domain profile is similar. Item-level similarity asks whether the same individual items carry the effect.
+
+\begin{table}[t]
+  \centering
+  \scriptsize
+  \caption{Closest model by analysis level. Aggregate values are absolute $d_z$ gaps; domain values are Spearman correlations over 10 domains; item values are ICC(2,1) over 371 items.}
+  \label{tab:levels}
+  \begin{tabular}{llccc}
+    \toprule
+    Human reference & Scale & Aggregate & Domain & Item \\
+    \midrule
+    Overall & 3-point & GPT-5.1 (.032) & Gemma (.66) & Llama (.089) \\
+    Overall & 7-point & Qwen (.010) & Claude (.66) & Claude (.158) \\
+    Overall & Slider & DeepSeek-R1 (.002) & Kimi (.76) & Claude (.222) \\
+    Female & 3-point & GPT-5.1 (.002) & Gemma (.56) & DeepSeek-R1 (.100) \\
+    Female & 7-point & Claude (.012) & Gemma (.64) & Claude (.116) \\
+    Female & Slider & Kimi (.003) & DeepSeek-V3.2 (.85) & Qwen (.112) \\
+    Male & 3-point & DeepSeek-V3.2 (.070) & Qwen (.72) & Llama (.096) \\
+    Male & 7-point & GLM (.155) & DeepSeek-V3.2 (.81) & GLM (.155) \\
+    Male & Slider & Llama (.242) & Kimi (.73) & DeepSeek-R1 (.174) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The item-level ICC values were low, ranging from 0.089 to 0.222 for the best model in each cell. Thus aggregate and domain similarity do not imply item-level interchangeability.
+
+\section{Discussion}
+
+The findings support a measurement-conditional view of human--LLM alignment. Humans and LLMs agree that, holding attack content fixed, female-targeted versions are rated as more attacking on average. They also share a broad content structure: sexualization and appearance are the main high-sensitivity domains. These agreements are meaningful, but they do not justify treating LLM ratings as generic human substitutes.
+
+Three qualifications are central. First, the human reference group is part of the measurement model. Female and male participants produced different $\Delta_{F-M}$ values, so a pooled human label is a mixture rather than a neutral gold standard. Second, the response scale changes the observed comparison. Coarse annotation categories and slider ratings lead to different model-human conclusions. Third, aggregate similarity and item-level similarity answer different questions. A model can be close in overall $d_z$ while still disagreeing about which specific items drive the effect.
+
+These results also clarify the value of minimal pairs for social computing. Natural corpora remain useful for prevalence and ecological description, but they entangle target identity with content selection. Minimal pairs estimate a narrower quantity: the rating shift caused by changing the gender referent while holding hostile content constant. That narrower estimand is better suited to evaluating whether LLM social judgements resemble those of human groups under specified measurement conditions.
+
+\section{Limitations and Conclusion}
+
+The stimuli are Chinese, and the participant pool is a young online Chinese sample rather than a nationally representative population. The model panel is a November 2025 snapshot; later model versions may differ. The minimal-pair design isolates target gender but does not capture multimodal cues, reply context, or platform-specific pragmatics. Participant gender is treated as binary because the available sample supports only that contrast at stable cell sizes.
+
+Within these limits, the conclusion is clear. LLMs and humans show shared direction and broad domain structure in gender-differential attack ratings, but alignment depends on the human reference group, response scale, and analytic level. Social-computing evaluations should therefore report LLM judgement alignment as a structured profile rather than a single global score.
+
+\begin{thebibliography}{20}
+
+\bibitem{jiang2021}
+Jiang, A., Yang, X., Liu, Y., Zubiaga, A.: SWSR: A Chinese dataset and lexicon for online sexism detection. Online Social Networks and Media 27, 100182 (2021)
+
+\bibitem{jingschmidt2018}
+Jing-Schmidt, Z., Peng, X.: The sluttified sex: Verbal misogyny reflects and reinforces gender order in wireless China. Language in Society 47(3), 385--408 (2018)
+
+\bibitem{liao2024}
+Liao, S.: The platformization of misogyny: Popular media, gender politics, and misogyny in China's state-market nexus. Media, Culture \& Society 46(1), 191--207 (2024)
+
+\bibitem{mathew2021}
+Mathew, B., Saha, P., Yimam, S.M., Biemann, C., Goyal, P., Mukherjee, A.: HateXplain: A benchmark dataset for explainable hate speech detection. In: AAAI, vol. 35, pp. 14867--14875 (2021)
+
+\bibitem{lozano2008}
+Lozano, L.M., Garc\'ia-Cueto, E., Mu\~niz, J.: Effect of the number of response categories on the reliability and validity of rating scales. Methodology 4(2), 73--79 (2008)
+
+\bibitem{preston2000}
+Preston, C.C., Colman, A.M.: Optimal number of response categories in rating scales. Acta Psychologica 104(1), 1--15 (2000)
+
+\end{thebibliography}
+
+\end{document}

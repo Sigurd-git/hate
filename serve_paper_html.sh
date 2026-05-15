@@ -159,7 +159,7 @@ pandoc "${TMP_TEX}" \
   --mathml \
   --resource-path="${PROJECT_ROOT}:${PROJECT_ROOT}/artifacts/paper_revision:${PROJECT_ROOT}/artifacts/paper_followups:${PROJECT_ROOT}/artifacts/human_model_dz_descriptive_comparison:${PROJECT_ROOT}/human/outputs/final_clean_long_gender_difference_analysis/figures" \
   --css=paper.css \
-  --metadata title="Measurement-Conditional Alignment of Human and LLM Gender Bias in Attack Ratings" \
+  --metadata title="Measurement-Conditional Human--LLM Alignment in Gender-Differential Attack Ratings" \
   --output="${OUTPUT_HTML}"
 
 echo "[5/5] Serving ${BUILD_DIR}"

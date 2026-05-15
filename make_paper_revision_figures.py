@@ -33,6 +33,9 @@ HUMAN_DOMAIN_PATH = FOLLOWUP_DIR / "human_by_level1_by_scale_dz.csv"
 MODEL_DOMAIN_PATH = PROJECT_ROOT / "artifacts" / "model_by_level1_by_scale.csv"
 ICC_PATH = PROJECT_ROOT / "artifacts" / "human_model_delta_similarity_by_participant_gender.csv"
 OVERALL_ICC_PATH = PROJECT_ROOT / "artifacts" / "human_model_delta_similarity.csv"
+NATURAL_GENDER_TARGET_PATH = (
+    PROJECT_ROOT / "artifacts" / "placeholder_a_1a_gender_target_mean_score.csv"
+)
 
 BOOTSTRAP_SEED = 20260429
 BOOTSTRAP_ITERATIONS = 10_000
@@ -63,6 +66,17 @@ MODEL_ORDER = [
 DISPLAY_MODEL_LABELS = {
     "Claude-4.5": "Claude-Opus-4.5",
     "Kimi-K2": "Kimi-K2-Thinking",
+}
+MODEL_LABEL_ALIASES = {
+    "Claude Opus 4.5": "Claude-4.5",
+    "DeepSeek R1": "DeepSeek-R1",
+    "DeepSeek V3.2": "DeepSeek-V3.2",
+    "GLM 4.6": "GLM-4.6",
+    "Gemma 4 31B": "Gemma-4-31B",
+    "Kimi K2": "Kimi-K2",
+    "Llama Maverick": "Llama-4-Maverick",
+    "Qwen 2.5 72B": "Qwen-2.5-72B",
+    "GPT-5.1": "GPT-5.1",
 }
 DOMAIN_ORDER = [
     "性化攻击（性羞辱）",
@@ -118,11 +132,262 @@ def display_model_label(label: str) -> str:
     return DISPLAY_MODEL_LABELS.get(label, label)
 
 
+def canonical_model_label(label: str) -> str:
+    return MODEL_LABEL_ALIASES.get(label, label)
+
+
+def icc_2_1_two_raters(first_values: np.ndarray, second_values: np.ndarray) -> float:
+    paired_frame = pd.DataFrame({"first": first_values, "second": second_values}).dropna()
+    if len(paired_frame) < 2:
+        return float("nan")
+    values = paired_frame.to_numpy(dtype=float)
+    n_targets, n_raters = values.shape
+    target_means = values.mean(axis=1, keepdims=True)
+    rater_means = values.mean(axis=0, keepdims=True)
+    grand_mean = values.mean()
+    ss_targets = n_raters * np.sum((target_means - grand_mean) ** 2)
+    ss_raters = n_targets * np.sum((rater_means - grand_mean) ** 2)
+    ss_error = np.sum((values - target_means - rater_means + grand_mean) ** 2)
+    ms_targets = ss_targets / (n_targets - 1)
+    ms_raters = ss_raters / (n_raters - 1)
+    ms_error = ss_error / ((n_targets - 1) * (n_raters - 1))
+    denominator = ms_targets + (n_raters - 1) * ms_error + (
+        n_raters * (ms_raters - ms_error) / n_targets
+    )
+    if np.isclose(denominator, 0.0):
+        return float("nan")
+    return float((ms_targets - ms_error) / denominator)
+
+
 def save_figure(figure: plt.Figure, stem: str) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     figure.savefig(OUTPUT_DIR / f"{stem}.pdf", bbox_inches="tight")
     figure.savefig(OUTPUT_DIR / f"{stem}.png", bbox_inches="tight")
     plt.close(figure)
+
+
+def make_natural_gender_target_confound_figure() -> None:
+    natural_frame = pd.read_csv(NATURAL_GENDER_TARGET_PATH)
+    english_frame = natural_frame.loc[natural_frame["language"] == "en"].copy()
+    english_frame["model_id"] = english_frame["model_label"].map(canonical_model_label)
+    english_frame["model_display"] = english_frame["model_id"].map(display_model_label)
+    english_frame["model_order"] = english_frame["model_id"].map(
+        {model_id: index for index, model_id in enumerate(MODEL_ORDER)}
+    )
+    english_frame["setting_label"] = english_frame["setting"].map(
+        {"zeroshot": "Zero-shot", "cot": "Chain-of-thought"}
+    )
+    english_frame["target_label"] = english_frame["gender_target"].map(
+        {"female": "Female-targeted", "male": "Male-targeted"}
+    )
+    english_frame = english_frame.sort_values(["setting", "model_order", "gender_target"])
+
+    summary_rows = []
+    for setting, setting_frame in english_frame.groupby("setting", sort=False):
+        pivot_frame = setting_frame.pivot_table(
+            index="model_id", columns="gender_target", values="mean_score"
+        )
+        difference = pivot_frame["male"] - pivot_frame["female"]
+        summary_rows.append(
+            {
+                "setting": setting,
+                "female_targeted_n": int(
+                    setting_frame.loc[setting_frame["gender_target"] == "female", "n"].iloc[0]
+                ),
+                "male_targeted_n": int(
+                    setting_frame.loc[setting_frame["gender_target"] == "male", "n"].iloc[0]
+                ),
+                "female_targeted_model_mean": float(pivot_frame["female"].mean()),
+                "male_targeted_model_mean": float(pivot_frame["male"].mean()),
+                "mean_male_minus_female": float(difference.mean()),
+                "models_with_male_higher": int((difference > 0).sum()),
+                "model_count": int(difference.shape[0]),
+            }
+        )
+    pd.DataFrame(summary_rows).to_csv(
+        OUTPUT_DIR / "natural_gender_target_descriptive_summary.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+
+    palette = {"Female-targeted": "#4C78A8", "Male-targeted": "#E45756"}
+    figure, axes = plt.subplots(1, 2, figsize=(13.4, 5.2), sharey=True)
+    for axis, setting in zip(axes, ["zeroshot", "cot"], strict=True):
+        panel_frame = english_frame.loc[english_frame["setting"] == setting].copy()
+        model_labels = [
+            display_model_label(model_id)
+            for model_id in MODEL_ORDER
+            if model_id in set(panel_frame["model_id"])
+        ]
+        x_positions = np.arange(len(model_labels))
+        bar_width = 0.36
+        for offset, target_label in [(-bar_width / 2, "Female-targeted"), (bar_width / 2, "Male-targeted")]:
+            target_frame = (
+                panel_frame.loc[panel_frame["target_label"] == target_label]
+                .set_index("model_display")
+                .reindex(model_labels)
+            )
+            axis.bar(
+                x_positions + offset,
+                target_frame["mean_score"],
+                width=bar_width,
+                color=palette[target_label],
+                label=target_label,
+                edgecolor="white",
+                linewidth=0.5,
+            )
+            axis.errorbar(
+                x_positions + offset,
+                target_frame["mean_score"],
+                yerr=target_frame["sem_score"],
+                fmt="none",
+                ecolor="#2B2B2B",
+                elinewidth=0.8,
+                capsize=2.2,
+                capthick=0.8,
+            )
+        sample_sizes = (
+            panel_frame[["target_label", "n"]]
+            .drop_duplicates()
+            .set_index("target_label")["n"]
+            .to_dict()
+        )
+        axis.set_title(
+            f"{panel_frame['setting_label'].iloc[0]} "
+            f"(female n={sample_sizes['Female-targeted']}, male n={sample_sizes['Male-targeted']})",
+            fontsize=11.0,
+        )
+        axis.set_xticks(x_positions)
+        axis.set_xticklabels(model_labels, rotation=42, ha="right")
+        axis.set_ylim(0, 5)
+        axis.set_xlabel("")
+        axis.grid(axis="y", color="#E6EAF0")
+        axis.grid(axis="x", visible=False)
+    axes[0].set_ylabel("Mean attack rating in HateXplain (0-5)")
+    axes[1].legend(frameon=False, loc="upper left")
+    figure.suptitle(
+        "Natural gender-target contrasts reverse direction because target and content are confounded",
+        fontsize=13.0,
+        y=1.02,
+    )
+    figure.subplots_adjust(wspace=0.08)
+    save_figure(figure, "fig_r1_natural_gender_target_confound")
+
+
+def make_direction_agreement_forest(item_frame: pd.DataFrame) -> None:
+    relevant_frame = item_frame.loc[item_frame["condition"].isin(SCALE_ORDER)].copy()
+    rater_label_frame = (
+        relevant_frame[["rater_id", "rater_label", "rater_kind"]]
+        .drop_duplicates()
+        .copy()
+    )
+    rater_label_frame["rater_sort_label"] = rater_label_frame["rater_label"].map(
+        canonical_model_label
+    )
+    rater_label_frame["display_label"] = rater_label_frame["rater_sort_label"].map(
+        display_model_label
+    )
+    human_display_labels = {
+        "human_all": "Overall humans",
+        "human_female": "Female participants",
+        "human_male": "Male participants",
+    }
+    rater_label_frame.loc[
+        rater_label_frame["rater_id"].isin(human_display_labels), "display_label"
+    ] = rater_label_frame["rater_id"].map(human_display_labels)
+
+    rater_order = HUMAN_REFERENCE_ORDER + [
+        rater_id
+        for rater_id, sort_label in (
+            rater_label_frame.set_index("rater_id")["rater_sort_label"].to_dict()
+        ).items()
+        if sort_label in MODEL_ORDER
+    ]
+    rater_order = HUMAN_REFERENCE_ORDER + sorted(
+        [rater_id for rater_id in rater_order if rater_id not in HUMAN_REFERENCE_ORDER],
+        key=lambda rater_id: MODEL_ORDER.index(
+            rater_label_frame.set_index("rater_id").loc[rater_id, "rater_sort_label"]
+        ),
+    )
+    label_lookup = rater_label_frame.set_index("rater_id")["display_label"].to_dict()
+    kind_lookup = rater_label_frame.set_index("rater_id")["rater_kind"].to_dict()
+
+    rng = np.random.default_rng(BOOTSTRAP_SEED + 31)
+    summary_rows: list[dict[str, object]] = []
+    for (condition, rater_id), group in relevant_frame.groupby(["condition", "rater_id"]):
+        values = group["delta_female_minus_male_norm"].dropna().to_numpy(dtype=float)
+        bootstrap_means = np.empty(BOOTSTRAP_ITERATIONS, dtype=float)
+        for iteration_index in range(BOOTSTRAP_ITERATIONS):
+            bootstrap_sample = rng.choice(values, size=values.size, replace=True)
+            bootstrap_means[iteration_index] = float(np.mean(bootstrap_sample))
+        summary_rows.append(
+            {
+                "condition": condition,
+                "scale_label": SCALE_LABELS[condition],
+                "rater_id": rater_id,
+                "rater_label": label_lookup[rater_id],
+                "rater_kind": kind_lookup[rater_id],
+                "mean_delta_norm": float(np.mean(values)),
+                "ci_low": float(np.quantile(bootstrap_means, 0.025)),
+                "ci_high": float(np.quantile(bootstrap_means, 0.975)),
+                "female_higher_items": int((values > 0).sum()),
+                "male_higher_items": int((values < 0).sum()),
+                "tied_items": int(np.isclose(values, 0.0).sum()),
+                "n_items": int(values.size),
+            }
+        )
+    summary_frame = pd.DataFrame(summary_rows)
+    summary_frame.to_csv(
+        OUTPUT_DIR / "direction_agreement_summary.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+
+    y_labels = [label_lookup[rater_id] for rater_id in rater_order]
+    y_positions = np.arange(len(rater_order))
+    y_lookup = {rater_id: position for position, rater_id in enumerate(rater_order)}
+    color_lookup = {"human": "#1F77B4", "model": "#E45756"}
+    figure, axes = plt.subplots(1, 3, figsize=(13.8, 7.2), sharey=True, sharex=True)
+    for axis, condition in zip(axes, SCALE_ORDER, strict=True):
+        panel_frame = summary_frame.loc[summary_frame["condition"] == condition].copy()
+        for _, row in panel_frame.iterrows():
+            y_position = y_lookup[row["rater_id"]]
+            axis.errorbar(
+                row["mean_delta_norm"],
+                y_position,
+                xerr=[
+                    [row["mean_delta_norm"] - row["ci_low"]],
+                    [row["ci_high"] - row["mean_delta_norm"]],
+                ],
+                fmt="o",
+                markersize=4.8,
+                color=color_lookup[row["rater_kind"]],
+                ecolor=color_lookup[row["rater_kind"]],
+                elinewidth=1.0,
+                capsize=2.4,
+                zorder=3,
+            )
+        axis.axvline(0, color="#333333", linewidth=0.9)
+        axis.set_title(SCALE_LABELS[condition], fontsize=11.0)
+        axis.set_xlabel(r"Mean $\Delta_{F-M}$ / scale maximum")
+        axis.set_xlim(-0.01, 0.17)
+        axis.grid(axis="x", color="#E6EAF0")
+        axis.grid(axis="y", visible=False)
+    axes[0].set_yticks(y_positions)
+    axes[0].set_yticklabels(y_labels)
+    axes[0].invert_yaxis()
+    handles = [
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="#1F77B4", label="Humans", markersize=6),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="#E45756", label="LLMs", markersize=6),
+    ]
+    axes[2].legend(handles=handles, frameon=False, loc="lower right")
+    figure.suptitle(
+        "All human and LLM cells rate female-targeted paired items as more attacking on average",
+        fontsize=13.0,
+        y=1.02,
+    )
+    figure.subplots_adjust(wspace=0.08)
+    save_figure(figure, "fig_r2_direction_agreement_forest")
 
 
 def make_reference_group_bootstrap_forest(item_frame: pd.DataFrame) -> pd.DataFrame:
@@ -329,6 +594,137 @@ def make_domain_alignment_forest() -> None:
     save_figure(figure, "fig_r4_domain_alignment_forest")
 
 
+def make_domain_alignment_errorbar_forest(item_frame: pd.DataFrame) -> None:
+    # Project convention: ten-domain comparisons must be shown as forest plots,
+    # not heatmaps. This variant follows the original R4 style by adding 95% CIs.
+    relevant_frame = item_frame.loc[
+        item_frame["condition"].isin(SCALE_ORDER)
+        & item_frame["dimension_1"].isin(DOMAIN_ORDER)
+    ].copy()
+
+    human_frame = relevant_frame.loc[
+        relevant_frame["rater_id"].isin(["human_all", "human_female", "human_male"])
+    ].copy()
+    human_frame["rater_group"] = human_frame["rater_id"].map(
+        {
+            "human_all": "Overall humans",
+            "human_female": "Female participants",
+            "human_male": "Male participants",
+        }
+    )
+
+    model_item_median = (
+        relevant_frame.loc[relevant_frame["rater_kind"] == "model"]
+        .groupby(["condition", "item_id", "dimension_1"], as_index=False)
+        .agg(delta_female_minus_male_norm=("delta_female_minus_male_norm", "median"))
+        .assign(rater_group="LLM median")
+    )
+    bootstrap_source = pd.concat(
+        [
+            human_frame[
+                ["condition", "item_id", "dimension_1", "delta_female_minus_male_norm", "rater_group"]
+            ],
+            model_item_median[
+                ["condition", "item_id", "dimension_1", "delta_female_minus_male_norm", "rater_group"]
+            ],
+        ],
+        ignore_index=True,
+    )
+
+    rng = np.random.default_rng(BOOTSTRAP_SEED + 17)
+    summary_rows: list[dict[str, object]] = []
+    for (condition, dimension, rater_group), group in bootstrap_source.groupby(
+        ["condition", "dimension_1", "rater_group"], sort=False
+    ):
+        values = group["delta_female_minus_male_norm"].dropna().to_numpy(dtype=float)
+        if values.size == 0:
+            continue
+        bootstrap_means = np.empty(BOOTSTRAP_ITERATIONS, dtype=float)
+        for iteration_index in range(BOOTSTRAP_ITERATIONS):
+            bootstrap_sample = rng.choice(values, size=values.size, replace=True)
+            bootstrap_means[iteration_index] = float(np.mean(bootstrap_sample))
+        summary_rows.append(
+            {
+                "condition": condition,
+                "dimension_1": dimension,
+                "rater_group": rater_group,
+                "mean_delta_norm": float(np.mean(values)),
+                "ci_low": float(np.quantile(bootstrap_means, 0.025)),
+                "ci_high": float(np.quantile(bootstrap_means, 0.975)),
+                "n_items": int(values.size),
+            }
+        )
+    summary_frame = pd.DataFrame(summary_rows)
+    summary_frame.to_csv(OUTPUT_DIR / "domain_alignment_errorbar_summary.csv", index=False)
+
+    figure, axes = plt.subplots(1, 3, figsize=(13.8, 7.0), sharey=True)
+    palette = {
+        "Overall humans": "#1f77b4",
+        "Female participants": "#d62728",
+        "Male participants": "#2ca02c",
+        "LLM median": "#4c4c4c",
+    }
+    marker_map = {
+        "Overall humans": "o",
+        "Female participants": "D",
+        "Male participants": "s",
+        "LLM median": "^",
+    }
+    y_positions = {domain: len(DOMAIN_ORDER) - 1 - index for index, domain in enumerate(DOMAIN_ORDER)}
+    vertical_offsets = {
+        "Overall humans": 0.24,
+        "Female participants": 0.08,
+        "Male participants": -0.08,
+        "LLM median": -0.24,
+    }
+    x_limit = max(0.45, float(summary_frame["ci_high"].max()) * 1.12)
+    for axis, scale_key in zip(axes, SCALE_ORDER, strict=True):
+        panel_frame = summary_frame.loc[summary_frame["condition"] == scale_key].copy()
+        for domain in DOMAIN_ORDER:
+            axis.axhline(y_positions[domain], color="#e5e7eb", linewidth=0.7, zorder=0)
+        axis.axvline(0, color="#6b7280", linestyle="--", linewidth=0.9, zorder=1)
+        for rater_group in ["Overall humans", "Female participants", "Male participants", "LLM median"]:
+            rater_frame = panel_frame.loc[panel_frame["rater_group"] == rater_group].copy()
+            rater_frame["y"] = (
+                rater_frame["dimension_1"].map(y_positions) + vertical_offsets[rater_group]
+            )
+            lower_error = rater_frame["mean_delta_norm"] - rater_frame["ci_low"]
+            upper_error = rater_frame["ci_high"] - rater_frame["mean_delta_norm"]
+            axis.errorbar(
+                rater_frame["mean_delta_norm"],
+                rater_frame["y"],
+                xerr=np.vstack([lower_error, upper_error]),
+                fmt=marker_map[rater_group],
+                markersize=5.0,
+                color=palette[rater_group],
+                ecolor=palette[rater_group],
+                elinewidth=1.0,
+                capsize=2.2,
+                markeredgecolor="white",
+                markeredgewidth=0.5,
+                label=rater_group,
+                zorder=3,
+            )
+        axis.set_title(SCALE_LABELS[scale_key], fontsize=11.5)
+        axis.set_xlabel(r"Mean $\Delta_{F-M}$ / scale max")
+        axis.set_xlim(-0.08, x_limit)
+        axis.set_ylim(-0.8, len(DOMAIN_ORDER) - 0.2)
+        axis.set_yticks([y_positions[domain] for domain in DOMAIN_ORDER])
+        axis.set_yticklabels([DOMAIN_SHORT_LABELS[domain] for domain in DOMAIN_ORDER], fontsize=9.1)
+        axis.tick_params(axis="x", labelsize=8.8)
+        axis.tick_params(axis="y", labelsize=9.1)
+        axis.grid(axis="x", color="#e5e7eb", linewidth=0.7)
+        axis.grid(axis="y", visible=False)
+    axes[0].set_ylabel("First-level attack domain")
+    for tick_label in axes[0].get_yticklabels()[:2]:
+        tick_label.set_fontweight("bold")
+    handles, labels = axes[0].get_legend_handles_labels()
+    figure.legend(handles, labels, loc="lower center", ncol=4, frameon=False, bbox_to_anchor=(0.5, -0.01))
+    figure.suptitle(r"Per-domain mean $\Delta_{F-M}$ with 95% CI", fontsize=13.0, y=0.99)
+    figure.subplots_adjust(bottom=0.13, top=0.91, wspace=0.18)
+    save_figure(figure, "fig_r4_domain_alignment_errorbar_forest")
+
+
 def make_scale_response_trajectory(dz_stats: pd.DataFrame) -> None:
     plot_frame = dz_stats.copy()
     plot_frame["scale_short"] = plot_frame["condition"].map(SCALE_LABELS)
@@ -529,6 +925,286 @@ def make_aggregate_item_dissociation(
     save_figure(figure, "fig_r6_aggregate_item_dissociation")
 
 
+def make_multilevel_similarity_profile(
+    dz_stats: pd.DataFrame,
+    participant_gender_icc_frame: pd.DataFrame,
+    overall_icc_frame: pd.DataFrame,
+) -> None:
+    human_dz = dz_stats.loc[
+        dz_stats["rater_id"].isin(HUMAN_REFERENCE_ORDER),
+        ["rater_id", "condition", "cohens_dz"],
+    ].rename(columns={"cohens_dz": "human_dz"})
+    human_dz["human_reference"] = human_dz["rater_id"].map(HUMAN_REFERENCE_LABELS)
+
+    model_dz = dz_stats.loc[
+        dz_stats["rater_kind"] == "model",
+        ["rater_label", "condition", "cohens_dz"],
+    ].rename(columns={"rater_label": "model", "cohens_dz": "model_dz"})
+    model_dz["model"] = model_dz["model"].map(canonical_model_label)
+    aggregate_closeness = human_dz.merge(model_dz, on="condition", how="inner")
+    aggregate_closeness["scale_label"] = aggregate_closeness["condition"].map(SCALE_LABELS)
+    aggregate_closeness["signed_dz_gap"] = aggregate_closeness["model_dz"] - aggregate_closeness["human_dz"]
+    aggregate_closeness["abs_dz_gap"] = aggregate_closeness["signed_dz_gap"].abs()
+    aggregate_closeness["aggregate_similarity"] = 1 / (1 + aggregate_closeness["abs_dz_gap"])
+    aggregate_closeness["model_display"] = aggregate_closeness["model"].map(display_model_label)
+    aggregate_closeness.to_csv(
+        OUTPUT_DIR / "aggregate_level_human_model_closeness.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+
+    human_domain = pd.read_csv(HUMAN_DOMAIN_PATH)
+    model_domain = pd.read_csv(MODEL_DOMAIN_PATH)
+    model_domain["model"] = model_domain["model_label"].map(canonical_model_label)
+    domain_rows: list[dict[str, object]] = []
+    for human_id in HUMAN_REFERENCE_ORDER:
+        for scale_key in SCALE_ORDER:
+            human_vector = (
+                human_domain.loc[
+                    (human_domain["rater_id"] == human_id)
+                    & (human_domain["condition"] == scale_key),
+                    ["dimension_1", "dz"],
+                ]
+                .set_index("dimension_1")
+                .reindex(DOMAIN_ORDER)["dz"]
+            )
+            for model in MODEL_ORDER:
+                model_vector = (
+                    model_domain.loc[
+                        (model_domain["model"] == model)
+                        & (model_domain["scale_key"] == scale_key),
+                        ["一级-攻击领域", "cohens_dz"],
+                    ]
+                    .rename(columns={"一级-攻击领域": "dimension_1"})
+                    .set_index("dimension_1")
+                    .reindex(DOMAIN_ORDER)["cohens_dz"]
+                )
+                paired_domain = pd.DataFrame({"human": human_vector, "model": model_vector}).dropna()
+                domain_rows.append(
+                    {
+                        "human_reference_id": human_id,
+                        "human_reference": HUMAN_REFERENCE_LABELS[human_id],
+                        "scale": scale_key,
+                        "scale_label": SCALE_LABELS[scale_key],
+                        "model": model,
+                        "model_display": display_model_label(model),
+                        "n_domains": len(paired_domain),
+                        "spearman_rho": paired_domain["human"].corr(
+                            paired_domain["model"], method="spearman"
+                        ),
+                        "pearson_r": paired_domain["human"].corr(paired_domain["model"]),
+                        "icc_2_1": icc_2_1_two_raters(
+                            paired_domain["human"].to_numpy(dtype=float),
+                            paired_domain["model"].to_numpy(dtype=float),
+                        ),
+                    }
+                )
+    domain_similarity = pd.DataFrame(domain_rows)
+    domain_similarity.to_csv(
+        OUTPUT_DIR / "domain_level_human_model_similarity.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+
+    overall_icc = overall_icc_frame.copy()
+    overall_icc["human_reference"] = "Overall humans"
+    overall_icc["human_reference_id"] = "human_all"
+    participant_icc = participant_gender_icc_frame.copy()
+    participant_icc["human_reference"] = participant_icc["participant_gender_label"].replace(
+        {"男性被试": "Male participants", "女性被试": "Female participants"}
+    )
+    participant_icc["human_reference_id"] = participant_icc["human_reference"].map(
+        {
+            "Male participants": "human_male",
+            "Female participants": "human_female",
+        }
+    )
+    item_similarity = pd.concat(
+        [
+            overall_icc[["human_reference_id", "human_reference", "scale", "scale_label", "model", "icc_2_1", "spearman_rho"]],
+            participant_icc[["human_reference_id", "human_reference", "scale", "scale_label", "model", "icc_2_1", "spearman_rho"]],
+        ],
+        ignore_index=True,
+    )
+    item_similarity["scale_label"] = item_similarity["scale"].map(SCALE_LABELS)
+    item_similarity["model"] = item_similarity["model"].map(canonical_model_label)
+    item_similarity["model_display"] = item_similarity["model"].map(display_model_label)
+    item_similarity.to_csv(
+        OUTPUT_DIR / "item_level_human_model_similarity.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+
+    top_aggregate = (
+        aggregate_closeness.sort_values("abs_dz_gap")
+        .groupby(["human_reference", "condition"], as_index=False)
+        .first()
+        .rename(columns={"model_display": "aggregate_closest_model"})
+    )
+    top_domain = (
+        domain_similarity.sort_values("spearman_rho", ascending=False)
+        .groupby(["human_reference", "scale"], as_index=False)
+        .first()
+        .rename(
+            columns={
+                "model_display": "domain_closest_model",
+                "spearman_rho": "domain_spearman_rho",
+            }
+        )
+    )
+    top_item = (
+        item_similarity.sort_values("icc_2_1", ascending=False)
+        .groupby(["human_reference", "scale"], as_index=False)
+        .first()
+        .rename(columns={"model_display": "item_closest_model", "icc_2_1": "item_icc_2_1"})
+    )
+    top_model_profile = (
+        top_aggregate.merge(
+            top_domain,
+            left_on=["human_reference", "condition"],
+            right_on=["human_reference", "scale"],
+            how="inner",
+            suffixes=("", "_domain"),
+        )
+        .merge(
+            top_item,
+            left_on=["human_reference", "condition"],
+            right_on=["human_reference", "scale"],
+            how="inner",
+            suffixes=("", "_item"),
+        )
+    )
+    top_model_profile = top_model_profile[
+        [
+            "human_reference",
+            "scale_label",
+            "aggregate_closest_model",
+            "abs_dz_gap",
+            "domain_closest_model",
+            "domain_spearman_rho",
+            "item_closest_model",
+            "item_icc_2_1",
+        ]
+    ]
+    top_model_profile.to_csv(
+        OUTPUT_DIR / "multilevel_top_model_profile.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+
+    summary_rows: list[dict[str, object]] = []
+    for human_reference in HUMAN_REFERENCE_LABELS.values():
+        for scale_key in SCALE_ORDER:
+            scale_label = SCALE_LABELS[scale_key]
+            aggregate_panel = aggregate_closeness.loc[
+                (aggregate_closeness["human_reference"] == human_reference)
+                & (aggregate_closeness["condition"] == scale_key)
+            ]
+            domain_panel = domain_similarity.loc[
+                (domain_similarity["human_reference"] == human_reference)
+                & (domain_similarity["scale"] == scale_key)
+            ]
+            item_panel = item_similarity.loc[
+                (item_similarity["human_reference"] == human_reference)
+                & (item_similarity["scale"] == scale_key)
+            ]
+            summary_rows.extend(
+                [
+                    {
+                        "human_reference": human_reference,
+                        "scale": scale_key,
+                        "scale_label": scale_label,
+                        "analysis_level": "Aggregate |dz gap|",
+                        "median_value": aggregate_panel["abs_dz_gap"].median(),
+                        "best_value": aggregate_panel["abs_dz_gap"].min(),
+                        "best_model": aggregate_panel.sort_values("abs_dz_gap")["model_display"].iloc[0],
+                        "direction": "lower is closer",
+                    },
+                    {
+                        "human_reference": human_reference,
+                        "scale": scale_key,
+                        "scale_label": scale_label,
+                        "analysis_level": "Domain Spearman rho",
+                        "median_value": domain_panel["spearman_rho"].median(),
+                        "best_value": domain_panel["spearman_rho"].max(),
+                        "best_model": domain_panel.sort_values("spearman_rho", ascending=False)["model_display"].iloc[0],
+                        "direction": "higher is closer",
+                    },
+                    {
+                        "human_reference": human_reference,
+                        "scale": scale_key,
+                        "scale_label": scale_label,
+                        "analysis_level": "Item ICC(2,1)",
+                        "median_value": item_panel["icc_2_1"].median(),
+                        "best_value": item_panel["icc_2_1"].max(),
+                        "best_model": item_panel.sort_values("icc_2_1", ascending=False)["model_display"].iloc[0],
+                        "direction": "higher is closer",
+                    },
+                ]
+            )
+    multilevel_summary = pd.DataFrame(summary_rows)
+    multilevel_summary.to_csv(
+        OUTPUT_DIR / "multilevel_similarity_descriptive_summary.csv",
+        index=False,
+        encoding="utf-8-sig",
+    )
+
+    plot_frame = multilevel_summary.copy()
+    plot_frame["cell"] = plot_frame["human_reference"] + "\n" + plot_frame["scale_label"]
+    cell_order = [
+        f"{reference}\n{scale}"
+        for reference in ["Overall humans", "Female participants", "Male participants"]
+        for scale in ["3-point", "7-point", "Slider"]
+    ]
+    plot_frame["cell"] = pd.Categorical(plot_frame["cell"], categories=cell_order, ordered=True)
+
+    figure, axes = plt.subplots(
+        1,
+        2,
+        figsize=(11.4, 6.2),
+        sharey=True,
+        gridspec_kw={"width_ratios": [1.0, 1.1]},
+    )
+    panel_specs = [
+        ("Aggregate |dz gap|", r"Closest aggregate $|d_z|$ gap", "best_value", "#4C78A8", (0.0, 0.30), True),
+        ("Domain Spearman rho", r"Best 10-domain Spearman $\rho$", "best_value", "#F58518", (0.0, 1.0), False),
+    ]
+    for axis, (level, title, x_column, color, x_limits, lower_is_better) in zip(
+        axes, panel_specs, strict=True
+    ):
+        panel_frame = plot_frame.loc[plot_frame["analysis_level"] == level].copy()
+        axis.scatter(
+            panel_frame[x_column],
+            panel_frame["cell"],
+            s=62,
+            color=color,
+            edgecolor="white",
+            linewidth=0.6,
+            zorder=3,
+        )
+        for _, row in panel_frame.iterrows():
+            text_offset = 0.012
+            horizontal_alignment = "left"
+            axis.text(
+                row[x_column] + text_offset,
+                row["cell"],
+                row["best_model"],
+                va="center",
+                ha=horizontal_alignment,
+                fontsize=7.4,
+            )
+        axis.set_title(title, fontsize=10.8)
+        axis.set_xlabel("Lower is closer" if lower_is_better else "Higher is closer")
+        axis.set_xlim(*x_limits)
+        axis.grid(axis="x", color="#E6EAF0")
+        axis.grid(axis="y", visible=False)
+        axis.tick_params(axis="y", labelsize=9.0)
+    axes[0].set_ylabel("")
+    figure.suptitle("The most human-like model depends on reference group, scale, and analysis level", fontsize=13.0, y=1.02)
+    figure.subplots_adjust(wspace=0.12)
+    save_figure(figure, "fig_r6_similarity_by_analysis_level_forest")
+
+
 def main() -> None:
     configure_plotting()
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -538,11 +1214,17 @@ def main() -> None:
     participant_gender_icc_frame = pd.read_csv(ICC_PATH)
     overall_icc_frame = pd.read_csv(OVERALL_ICC_PATH)
 
+    make_natural_gender_target_confound_figure()
+    make_direction_agreement_forest(item_frame)
     make_reference_group_bootstrap_forest(item_frame)
     make_domain_alignment_forest()
+    make_domain_alignment_errorbar_forest(item_frame)
     make_scale_response_trajectory(dz_stats)
     make_aggregate_item_dissociation(
         participant_gender_icc_frame, overall_icc_frame, dz_stats
+    )
+    make_multilevel_similarity_profile(
+        dz_stats, participant_gender_icc_frame, overall_icc_frame
     )
     print(f"Wrote revised paper figures to {OUTPUT_DIR}")
 
