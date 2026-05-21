@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Anonymous Submission — author affiliations withheld for double-blind review" />
+  <title>When the Same Insult Targets a Woman or a Man (Extended Abstract / Poster)</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="icsc.css" />
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="/usr/share/javascript/mathjax/MathJax.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">When the Same Insult Targets a Woman or a Man
+(Extended Abstract / Poster)</h1>
+<p class="author">Anonymous Submission — author affiliations withheld
+for double-blind review</p>
+</header>
+<h4 id="introduction.">Introduction.</h4>
+<p>Online gendered hostility against women is a salient form of harm in
+Chinese digital spaces, where misogynistic language, the stigmatization
+of feminism, and platform dynamics jointly amplify gender
+antagonism [1,2]. Large language models (LLMs) are now used to rate,
+flag, and code such hostile content, yet whether they perceive gendered
+attacks the way human raters do remains an open question [3,4]. Most
+existing evidence comes from English-language corpora, but Chinese
+gendered attacks differ in vocabulary, platform norms, and morphological
+gender marking, so agreement established on English data does not
+automatically transfer [1]. The comparison is also sensitive to
+measurement: the rating scale and the human reference group can move it
+without the underlying judgments changing [5,6]. Naturally occurring
+corpora compound this by confounding target gender with content
+extremity and context, so a raw cross-target rating contrast cannot
+identify a target-gender effect [7]. We therefore use manually
+constructed gender-reversal minimal pairs to ask where humans and LLMs
+perceive the same Chinese sentence as similarly or differently attacking
+when only the target gender is switched.</p>
+<h4 id="methods.">Methods.</h4>
+<p>We hand-constructed and iteratively refined 371 Chinese attack-laden
+sentences drawn from real expressions on five Chinese social-media
+platforms, spanning 10 first-level attack domains. Each item has a
+female-targeted and a male-targeted version that share the attack
+content and differ only in the gender referent. We then collected <span
+class="math inline">\(\approx 20{,}000\)</span> LLM ratings (nine
+production models <span class="math inline">\(\times\)</span> three
+response formats <span class="math inline">\(\times\)</span> 742
+sentence versions) and 779 valid Chinese participant sessions, randomly
+assigned to a 3-point, 7-point, or 0–100 slider format. The outcome is
+the paired female-minus-male gap <span
+class="math inline">\(\Delta_{F-M}\)</span>, summarized by Cohen’s <span
+class="math inline">\(d_z\)</span>.</p>
+<h4 id="results.">Results.</h4>
+<p><strong>Direction.</strong> All 36 rater-by-scale cells yielded a
+positive <span class="math inline">\(\Delta_{F-M}\)</span>: humans and
+LLMs agree that the female-targeted version is rated as more attacking
+on average. <strong>Magnitude</strong> (Fig. <a href="#fig:combined"
+data-reference-type="ref"
+data-reference="fig:combined">[fig:combined]</a>a). On the 3-point
+scale, the normalized mean gap <span
+class="math inline">\(\overline{\Delta_{F-M}}\)</span>/scale-max spans
+<span class="math inline">\(0.03\)</span> (male participants) to <span
+class="math inline">\(0.15\)</span> (GPT-5.1) across the 12 raters; the
+paired effect size <span class="math inline">\(d_z\)</span> yields a
+similar ordering, with several LLMs nearly matching a chosen human
+reference (smallest <span
+class="math inline">\(|d_z^{\text{LLM}}-d_z^{\text{human}}|\)</span>
+gaps <span class="math inline">\(0.002\)</span>–<span
+class="math inline">\(0.032\)</span> against overall humans). Aggregate
+match does not transfer downward, however: best item-level <span
+class="math inline">\(\mathrm{ICC}(2,1)\)</span> stays in <span
+class="math inline">\(0.089\)</span>–<span
+class="math inline">\(0.222\)</span>, and the closest LLM changes with
+the analytic level (aggregate: GPT-5.1; 10-domain profile: Gemma-4-31B /
+Kimi-K2-Thinking; item-level: Claude-Opus-4.5), so no single model is
+closest on every layer. Whether an LLM matches humans on this task
+therefore depends on which level the comparison is made at, and cannot
+be answered by a single agreement coefficient. <strong>Domain
+profile</strong> (Fig. <a href="#fig:combined" data-reference-type="ref"
+data-reference="fig:combined">[fig:combined]</a>b). Sexualization and
+appearance are the two largest-<span class="math inline">\(d_z\)</span>
+domains for humans (overall-human <span
+class="math inline">\(d_z=1.47\)</span> and <span
+class="math inline">\(0.76\)</span> on the 3-point scale) and for most
+LLMs in the panel, and best-model Spearman <span
+class="math inline">\(\rho\)</span> over the 10 domains is <span
+class="math inline">\(0.56\)</span>–<span
+class="math inline">\(0.85\)</span>, exceeding the <span
+class="math inline">\(\approx 0.65\)</span> permutation-null cutoff in
+seven of nine reference-by-scale cells. <strong>Scale response</strong>
+(Fig. <a href="#fig:combined" data-reference-type="ref"
+data-reference="fig:combined">[fig:combined]</a>c). Humans and LLMs move
+in opposite directions as the scale becomes finer: human <span
+class="math inline">\(d_z\)</span> stays flat or declines (overall
+humans <span class="math inline">\(0.621 \rightarrow 0.588 \rightarrow
+0.512\)</span>) while six of nine LLMs rise monotonically or
+near-monotonically (Gemma-4-31B from <span
+class="math inline">\(0.408\)</span> to <span
+class="math inline">\(1.016\)</span>), so five of nine LLMs sit below
+the pooled-human reference on the 3-point scale but at or above it on
+the slider.</p>
+<figure>
+
+</figure>
+<h4 id="discussion.">Discussion.</h4>
+<p>LLM evaluation on subjective social-judgement tasks needs a layered
+alignment profile rather than a single agreement score, and needs a
+stated normative target: matching the human aggregate, being more
+demographically fair than humans, or tracking human group-level
+tendencies more sharply than humans themselves. Which target an LLM
+should approximate is a design choice, not an empirical finding, and
+should be declared before any alignment claim is interpreted.</p>
+<p><strong>References.</strong></p>
+<p>[1] Jiang, A., Yang, X., Liu, Y., Zubiaga, A.: SWSR: A Chinese
+dataset and lexicon for online sexism detection. Online Soc. Netw. Media
+<strong>27</strong>, 100182 (2021). [2] Liao, S.: The platformization of
+misogyny. Media Cult. Soc. <strong>46</strong>(1), 191–207 (2024).
+[3] Davidson, T.: Multimodal LLMs can make context-sensitive hate-speech
+evaluations aligned with human judgement. Nat. Hum. Behav.
+<strong>10</strong>, 514–530 (2026). [4] Giorgi, T., Cima, L., Fagni,
+T., Avvenuti, M., Cresci, S.: Human and LLM biases in hate-speech
+annotations. ICWSM <strong>19</strong> (2025). [5] Preston, C.C.,
+Colman, A.M.: Optimal number of response categories. Acta Psychol.
+<strong>104</strong>(1), 1–15 (2000). [6] Davani, A.M., Dı́az, M.,
+Prabhakaran, V.: Dealing with disagreements. TACL <strong>10</strong>,
+92–110 (2022). [7] Mathew, B., Saha, P., Yimam, S.M., Biemann, C.,
+Goyal, P., Mukherjee, A.: HateXplain. AAAI <strong>35</strong>,
+14867–14875 (2021).</p>
+</body>
+</html>
