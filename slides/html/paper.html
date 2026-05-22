@@ -273,14 +273,17 @@ level is used in the main analyses.</p>
 procedure. First, we reviewed prior literature on interpersonal
 derogation, gendered hostility, online sexism, and person evaluation to
 identify broad dimensions along which people are commonly attacked or
-negatively evaluated. Second, we refined this framework through
-qualitative coding of Chinese online hostile discourse. The coding
-integrated prior conceptual categories with inductive review of attack
-expressions observed on major Chinese social-media and forum platforms,
-including Weibo, Tieba, Xiaohongshu, Douban, and Hupu. The first level
-captured broad attack domains, the second level specified the attribute
-being attacked, and the third level described common rhetorical or
-expressive strategies used to realize that attack.</p>
+negatively evaluated (Cowan &amp; Hodge, 1996; Abele &amp; Wojciszke,
+2007; Fiske et al., 2007; Jing-Schmidt &amp; Peng, 2018; Jiang et al.,
+2021; Dutta et al., 2025; Fontanella et al., 2024). Second, we refined
+this framework through qualitative coding of Chinese online hostile
+discourse. The coding integrated prior conceptual categories with
+inductive review of attack expressions observed on major Chinese
+social-media and forum platforms, including Weibo, Tieba, Xiaohongshu,
+Douban, and Hupu. The first level captured broad attack domains, the
+second level specified the attribute being attacked, and the third level
+described common rhetorical or expressive strategies used to realize
+that attack.</p>
 <p>Sentence templates were then generated under this coding framework.
 Candidate expressions were adapted from naturally occurring online
 attack language and supplemented with AI-assisted drafting. AI was used
@@ -323,12 +326,12 @@ continuous numeric response and represents a high-granularity format for
 expressing perceived intensity. All three formats were used for both
 human and LLM ratings.</p>
 <h2 id="llm-panel">LLM panel</h2>
-<p>Nine contemporary LLMs were queried in November 2025 via their
-respective APIs: Anthropic Claude-Opus-4.5, DeepSeek-R1, DeepSeek-V3.2,
-Google Gemma-4-31B, Meta Llama-4-Maverick, Moonshot Kimi-K2-Thinking,
-OpenAI GPT-5.1, Qwen-2.5-72B-Instruct, and Z-AI GLM-4.6. Each model
-rated both the female-targeted and the male-targeted version of every
-minimal pair under all three rating formats.</p>
+<p>Nine contemporary LLMs were queried in November 2025 via the OpenAI
+API: Anthropic Claude-Opus-4.5, DeepSeek-R1, DeepSeek-V3.2, Google
+Gemma-4-31B, Meta Llama-4-Maverick, Moonshot Kimi-K2-Thinking, OpenAI
+GPT-5.1, Qwen-2.5-72B-Instruct, and Z-AI GLM-4.6. Each model rated both
+the female-targeted and the male-targeted version of every minimal pair
+under all three rating formats.</p>
 <p>The main analyses use zero-shot responses; chain-of-thought variants
 were collected for the calibration check in Section <a href="#sec:r1"
 data-reference-type="ref" data-reference="sec:r1">4.1</a> but are not
@@ -680,11 +683,13 @@ content constant and estimates whether the target’s gender changes
 perceived attack severity. The estimand is the paired female-minus-male
 gap,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.</p>
-<h2 id="sec:r2">Humans and LLMs agree on the direction of the gap</h2>
+<h2 id="sec:r2">Direction-level agreement: female-targeted versions
+receive higher ratings</h2>
 <p>Directional agreement is the minimal but necessary form of alignment:
 before asking whether models match humans in magnitude or fine-grained
 structure, they must at least place the average gender effect on the
-same side of zero. They do. Every one of the 36 rater-by-scale cells had
+same side of zero. This minimal condition was met: all human and LLM
+estimates were positive. Every one of the 36 rater-by-scale cells had
 positive mean
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
 (Figure <a href="#fig:direction-agreement" data-reference-type="ref"
@@ -710,25 +715,21 @@ on the direction of the perceived-rating effect before any claim about
 magnitude, domain structure, scale response, or item-level agreement is
 made.</figcaption>
 </figure>
-<p>This is the most basic and robust form of alignment in the paper.
-Humans and LLMs both rate female-targeted versions of the same attack
-sentence as more attacking on average. The result is also limited: it
-establishes direction only. It does not show that humans and LLMs agree
-on the size of the perceived-rating gap, the domains in which it is
-largest, the way it changes with scale, or the specific items that drive
-it.</p>
+<p>This result establishes direction-level agreement only. Subsequent
+analyses therefore ask whether the shared positive direction also holds
+in magnitude, domain profile, response-scale behaviour, and item-level
+ordering.</p>
 <h2 id="sec:r3">On the 3-point scale, magnitude alignment depends on the
 human reference group</h2>
 <p>Shared direction does not imply shared magnitude. The next test asks
 whether the size of the female-minus-male perceived-rating gap is close
 to a specified human reference, and that question has no answer until
-the reference group is specified. Among our three formats, we anchor
-this section on the 3-point scale because, among the three formats
-studied here, it is the most categorical and closest in label-set
-granularity to the small label sets commonly used in hate-speech
-annotation, such as the three-label schemes of HateXplain (Mathew et
-al., 2021) and SWSR (Jiang et al., 2021). Throughout, “larger
-gender-differential effect” refers to a larger positive
+the reference group is specified. Because the 3-point format most
+closely resembles applied annotation labels, we use it as the primary
+magnitude benchmark before examining scale dependence in Section <a
+href="#sec:r5" data-reference-type="ref"
+data-reference="sec:r5">4.5</a>. Throughout, “larger gender-differential
+effect” refers to a larger positive
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 in perceived attack ratings and is not a normative claim. The three
 human reference values on the 3-point scale are
@@ -885,9 +886,12 @@ pooled human baseline is a weighted mixture of subgroups that differ in
 the outcome being evaluated.</p>
 <h2 id="sec:r4">Humans and LLMs locate the largest effects in
 sexualization and appearance</h2>
-<p>Magnitude comparisons still collapse over what the attacks are about,
-so the next layer describes where the gender-differential
-perceived-rating effect is largest. Figure <a
+<p>At the domain level, both human ratings and the LLM median profile
+locate the largest female-minus-male perceived-rating gaps in
+sexualization and appearance. This section provides a descriptive
+domain-level view; the chance-ranking baseline for domain-profile
+similarity is evaluated later in Section <a href="#sec:r6"
+data-reference-type="ref" data-reference="sec:r6">4.6</a>. Figure <a
 href="#fig:domain-alignment" data-reference-type="ref"
 data-reference="fig:domain-alignment">4</a> shows first-level domain
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
@@ -903,20 +907,6 @@ slider scales. Points show the three human strata and the LLM median
 within each response format. Domains are kept in a fixed order;
 sexualization and appearance are listed first because they are the
 shared high-sensitivity domains across humans and LLMs.</figcaption>
-</figure>
-<figure id="fig:domain-alignment-ci">
-<img src="fig_r4_domain_alignment_errorbar_forest.png" />
-<figcaption>Alternative R4 visualization in the original forest-plot
-style, shown across the 3-point, 7-point, and slider scales. Points show
-normalized mean
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
-within each first-level attack domain, and horizontal bars show
-bootstrap 95% confidence intervals. This version emphasizes uncertainty
-around domain-level mean gaps; Figure <a href="#fig:domain-alignment"
-data-reference-type="ref" data-reference="fig:domain-alignment">4</a>
-emphasizes the scale-free
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-comparison.</figcaption>
 </figure>
 <p>On the human side, sexualization and appearance are the two
 highest-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
@@ -1044,7 +1034,7 @@ style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998
 <p>Even if direction and broad domain structure align, the magnitude
 comparison changes with response format. Figure <a
 href="#fig:scale-response" data-reference-type="ref"
-data-reference="fig:scale-response">6</a> shows the cross-scale
+data-reference="fig:scale-response">5</a> shows the cross-scale
 trajectory of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
 Human effects stay flat or decline as the scale becomes finer: overall
@@ -1078,19 +1068,20 @@ to
 <figcaption>Cohen’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 across the 3-point, 7-point, and slider rating formats. Thin lines show
-individual human references and LLMs; thick lines show the mean
-trajectory within each rater type. Human effects flatten or decline as
-the response format becomes finer, while the LLM mean rises, changing
-the descriptive model–human comparison.</figcaption>
+the three human references and nine individual LLMs; thick lines show
+descriptive means within each rater type. Human effects flatten or
+decline as the response format becomes finer, while the LLM mean rises.
+These means summarize the scale-response pattern but do not imply
+inferential sampling from a broader population of LLMs.</figcaption>
 </figure>
 <p>This scale dependence changes the descriptive comparison. On the
 3-point scale, five of nine LLMs sit below the overall-human reference.
 On the slider, five of nine sit at or above it. Coarse annotation
 categories place more models below the overall-human reference than the
-slider does. This is a measurement-level result: the scale changes the
-observed
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
-pattern, and therefore the apparent alignment.</p>
+slider does. Thus, response format changes the descriptive model–human
+comparison. This scale-response contrast is treated as a
+measurement-level pattern rather than as an inferential test over a
+population of models.</p>
 <div id="tab:scale-response">
 <table>
 <caption>Cohen’s
@@ -1258,7 +1249,7 @@ attack ratings.</figcaption>
 </figure>
 <p>The levels produce different closest-model rankings (Figure <a
 href="#fig:multilevel-similarity" data-reference-type="ref"
-data-reference="fig:multilevel-similarity">7</a>; Table <a
+data-reference="fig:multilevel-similarity">6</a>; Table <a
 href="#tab:multilevel-top-models" data-reference-type="ref"
 data-reference="tab:multilevel-top-models">6</a>). At the aggregate
 level, several models nearly match a chosen human reference: the
@@ -1298,7 +1289,10 @@ and 0.64 (7-point,
 The female-participant slider cell does exceed chance
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.85</mn></mrow><annotation encoding="application/x-tex">\rho=0.85</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>0.003</mn></mrow><annotation encoding="application/x-tex">p=0.003</annotation></semantics></math>).
-The domain-level result echoes the shared sexualization and appearance
+These permutation values provide a chance-ranking baseline for each
+observed domain-profile correlation; they are not intended as
+model-selection-adjusted tests across the nine-model panel. The
+domain-level result echoes the shared sexualization and appearance
 pattern in Section <a href="#sec:r4" data-reference-type="ref"
 data-reference="sec:r4">4.4</a> for most reference-by-scale cells, but
 it should not be read as universal: the female-anchored coarse-scale
@@ -1424,10 +1418,10 @@ analytic level</h2>
 than a single alignment score (Table <a href="#tab:alignment-summary"
 data-reference-type="ref" data-reference="tab:alignment-summary">7</a>).
 Direction-level agreement is strong. Magnitude agreement depends on the
-human reference group. Domain-level agreement is present for
-sexualization and appearance, but not perfectly for their ordering.
-Scale changes the model-human comparison. Item-level agreement remains
-weak.</p>
+human reference group. Domain-level agreement is partial: sexualization
+and appearance form a shared hot zone, but some reference-by-scale cells
+are not separable from a chance-ranking baseline. Scale changes the
+model-human comparison. Item-level agreement remains weak.</p>
 <div id="tab:alignment-summary">
 <table style="width:87%;">
 <caption>Structured alignment profile. The table separates the questions
@@ -1467,10 +1461,12 @@ below female participants, and mixed against overall humans</td>
 <tr class="odd">
 <td style="text-align: left;">Do they locate the effect in the same
 domains?</td>
-<td style="text-align: left;">Broadly yes</td>
+<td style="text-align: left;">Partially</td>
 <td style="text-align: left;">Sexualization and appearance are the
-shared high-sensitivity domains</td>
-<td style="text-align: left;">Shared domain hot zone</td>
+shared high-sensitivity domains, but some profile correlations do not
+exceed the chance-ranking baseline</td>
+<td style="text-align: left;">Shared hot zone, chance-limited profile
+agreement</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Does scale preserve the human–LLM
@@ -1499,39 +1495,35 @@ the human reference group, the rating scale, and the level of analysis,
 and cannot be summarized by a single agreement coefficient.</p>
 <h1 id="sec:discussion">Discussion</h1>
 <h2 id="theoretical-implications">Theoretical implications</h2>
-<p>These findings rule out a view of LLM gendered-attack ratings as a
-smoothed group-average human signal. The closest human reference varied
-across response formats: it lay in the segment between the
-male-participant and pooled-human references on the 3-point scale, and
-shifted toward and above the female-participant reference on the slider.
-Item-level
+<p>These findings are not well described by a simple aggregate-reference
+interpretation of LLM gendered-attack ratings. The closest human
+reference varied across response formats: it lay in the segment between
+the male-participant and pooled-human references on the 3-point scale,
+and shifted toward and above the female-participant reference on the
+slider. Item-level
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">I</mi><mi mathvariant="normal">C</mi><mi mathvariant="normal">C</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathrm{ICC}(2,1)</annotation></semantics></math>
 values remained in the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.089</mn><annotation encoding="application/x-tex">0.089</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.222</mn><annotation encoding="application/x-tex">0.222</annotation></semantics></math>
 range even when aggregate
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-values nearly coincided. Both observations are inconsistent with an
-aggregate-mean account of LLM social judgement, under which an LLM would
-behave like a single fixed human group, and consistent with a
-coarse-classifier account, under which LLM social judgements are
-dominated by category-level decisions about whether content is offensive
-at all. The shared direction-of-effect (Section <a href="#sec:r2"
-data-reference-type="ref" data-reference="sec:r2">4.2</a>) and partially
-shared domain profiles (Section <a href="#sec:r4"
-data-reference-type="ref" data-reference="sec:r4">4.4</a>) constrain
-this conclusion: LLMs encoded the average gender-differential effect and
-located it in the same content regions as humans whenever the
+values nearly coincided. A cue-based similarity interpretation fits the
+pattern more closely: LLMs preserve broad, high-salience structure,
+including the positive direction of the target-gender effect and the
+sexualization/appearance hot zone, while diverging from humans in effect
+magnitude, response-scale behaviour, and item-level ordering. The
+domain-profile results constrain this interpretation: LLMs located the
+effect in the same content regions as humans only when the
 domain-profile alignment exceeded chance (a permutation null for
 Spearman over 10 domains has a
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>95</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">95\%</annotation></semantics></math>
 two-sided interval of approximately
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">[</mo><mo>−</mo><mn>0.65</mn><mo>,</mo><mo>+</mo><mn>0.65</mn><mo stretchy="true" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[-0.65, +0.65]</annotation></semantics></math>,
 so domain similarities below that band cannot be distinguished from
-random ranking). The coarse-classifier reading therefore concerns the
+random ranking). The cue-based reading therefore concerns the
 <em>granularity</em> of LLM social judgement at the item level, with
 content sensitivity at the aggregate and domain level preserved.</p>
-<p>Cross-model variability is large and is not adjudicated by the two
-accounts above. Within the present panel,
+<p>Cross-model variability is large and is not adjudicated by the
+cue-based interpretation above. Within the present panel,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 on the 3-point scale ranges from
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.289</mn><annotation encoding="application/x-tex">0.289</annotation></semantics></math>
@@ -1546,7 +1538,7 @@ predict that safety- or instruction-tuning makes some models
 systematically more responsive on protected-attribute content as the
 scale gives them more numerical room to express that response, and
 Figure <a href="#fig:scatter-q5" data-reference-type="ref"
-data-reference="fig:scatter-q5">8</a> reports an exploratory descriptive
+data-reference="fig:scatter-q5">7</a> reports an exploratory descriptive
 view of 3-point
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 against approximate parameter count and tuning regime. The figure is
@@ -1576,10 +1568,9 @@ made.</figcaption>
 </figure>
 <h2 id="methodological-implications">Methodological implications</h2>
 <p>Reporting a single agreement metric against a pooled human reference
-under one response format cannot distinguish an aggregate-mean LLM from
-a coarse-classifier LLM, because the two accounts diverge only across
-human reference groups, response formats, and analytic levels. The same
-panel of nine LLMs that looks above the pooled-human
+under one response format can support an aggregate-reference reading in
+one slice of the data while other slices undermine it. The same panel of
+nine LLMs that looks above the pooled-human
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 on the slider sits below it on the 3-point scale (Section <a
 href="#sec:r5" data-reference-type="ref"
@@ -1589,10 +1580,9 @@ humans in aggregate
 shows item-level ICCs of at most
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.222</mn><annotation encoding="application/x-tex">0.222</annotation></semantics></math>
 (Section <a href="#sec:r6" data-reference-type="ref"
-data-reference="sec:r6">4.6</a>); either of these comparisons in
-isolation supports an aggregate-mean reading that the other refutes. A
-pooled-human gold label also hides subgroup structure, since female and
-male participants produced systematically different
+data-reference="sec:r6">4.6</a>). A pooled-human gold label also hides
+subgroup structure, since female and male participants produced
+systematically different
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
 values, so an aggregate similarity claim is not interpretable without
 naming the human reference group. Domain-level Spearman correlations
@@ -1684,6 +1674,22 @@ across reference groups, response formats, and analytic levels.
 Evaluations should specify which human reference, which response scale,
 and which analytic level the alignment claim applies to before asking
 whether LLM ratings are more or less biased than human ratings.</p>
+<h1 id="app:domain-mean-gap">Alternative domain-level mean-gap
+visualization</h1>
+<figure id="fig:domain-alignment-ci">
+<img src="fig_r4_domain_alignment_errorbar_forest.png" />
+<figcaption>Alternative domain-level visualization in the original
+forest-plot style, shown across the 3-point, 7-point, and slider scales.
+Points show normalized mean
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+within each first-level attack domain, and horizontal bars show
+bootstrap 95% confidence intervals. This version emphasizes uncertainty
+around domain-level mean gaps; Figure <a href="#fig:domain-alignment"
+data-reference-type="ref" data-reference="fig:domain-alignment">4</a>
+emphasizes the scale-free
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+comparison.</figcaption>
+</figure>
 <h1 id="app:slider-summary">Slider per-rater summary (counterpart of
 Table <a href="#tab:dz-3pt" data-reference-type="ref"
 data-reference="tab:dz-3pt">3</a>)</h1>
@@ -1801,7 +1807,12 @@ bootstrap plot, domain forest plot, scale-response trajectory,
 item-level dissociation figure, analysis tables, and source code, are
 available in the project repository.</p>
 <div class="thebibliography">
-<p><span>30</span></p>
+<p><span>32</span></p>
+<p>Abele, A. E., and Wojciszke, B. (2007). Agency and communion from the
+perspective of self versus others. <em>Journal of Personality and Social
+Psychology</em>, 93(5), 751–763. <a
+href="https://doi.org/10.1037/0022-3514.93.5.751"
+class="uri">https://doi.org/10.1037/0022-3514.93.5.751</a></p>
 <p>Abulela, M. A. A., and Khalaf, M. A. (2024). Does the number of
 response categories impact validity evidence in self-report measures? A
 scoping review. <em>SAGE Open</em>, 14(1). <a
@@ -1841,6 +1852,11 @@ literature review using a computational linguistic approach.
 <em>Humanities and Social Sciences Communications</em>, 11, Article 478.
 <a href="https://doi.org/10.1057/s41599-024-02978-7"
 class="uri">https://doi.org/10.1057/s41599-024-02978-7</a></p>
+<p>Fiske, S. T., Cuddy, A. J. C., and Glick, P. (2007). Universal
+dimensions of social cognition: Warmth and competence. <em>Trends in
+Cognitive Sciences</em>, 11(2), 77–83. <a
+href="https://doi.org/10.1016/j.tics.2006.11.005"
+class="uri">https://doi.org/10.1016/j.tics.2006.11.005</a></p>
 <p>Giorgi, T., Cima, L., Fagni, T., Avvenuti, M., and Cresci, S. (2025).
 Human and LLM biases in hate speech annotations: A socio-demographic
 analysis of annotators and targets. <em>Proceedings of the International
