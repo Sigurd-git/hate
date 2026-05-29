@@ -5,7 +5,6 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Xuan Bao" />
-  <meta name="dcterms.date" content="2026-05-21" />
   <title>Measurement-Conditional Human--LLM Alignment in Gender-Differential Attack Ratings</title>
   <style>
     code{white-space: pre-wrap;}
@@ -30,343 +29,229 @@
 <h1 class="title">Measurement-Conditional Human--LLM Alignment in
 Gender-Differential Attack Ratings</h1>
 <p class="author">Xuan Bao</p>
-<p class="date">2026-05-21</p>
 <div class="abstract">
 <div class="abstract-title">Abstract</div>
-<p>Large language models (LLMs) are increasingly used for subjective
-social-judgement tasks, including offensive-speech evaluation, where
-ratings may depend on both hostile content and social-category cues.
-Gendered attack evaluation provides a direct test of this issue: the
-same hostile expression may be judged differently when it targets women
-rather than men, an effect documented both in early experimental work on
-hate-speech judgements that manipulated the target group (Cowan &amp;
-Hodge, 1996) and in recent large-scale studies of human and LLM
-annotators showing that perceived severity varies with target attributes
-(Giorgi et al., 2025), but it remains unclear whether LLMs show the same
-target-gender sensitivity as human raters. We constructed 371 Chinese
-gender-reversal minimal pairs and collected ratings from nine
-contemporary LLMs and 779 valid Chinese participant sessions under three
-response formats: 3-point category, 7-point Likert, and 0–100 slider.
-The primary outcome was the female-minus-male perceived attack-rating
-gap,
+<p>Large language models (LLMs) are increasingly used to rate hostile
+content. Human–LLM agreement in Chinese gendered attack ratings remains
+unclear because naturally occurring text entangles target gender with
+attack content and context. This study tested whether LLMs and Chinese
+human raters assign equal perceived-aggressiveness ratings to
+female-targeted and male-targeted versions of the same hostile content,
+and whether any target-gender gap depends on attack domain and response
+scale. We constructed 371 Chinese gender-reversal minimal pairs of
+attack-laden sentences and collected ratings from nine contemporary LLMs
+and 779 valid Chinese participant sessions under 3-point category,
+7-point Likert, and 0–100 slider formats. The primary outcome was the
+paired female-minus-male perceived attack-rating gap,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
-summarized by Cohen’s
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-across paired items. A preliminary natural-corpus check showed why the
-controlled design was necessary: female-targeted posts were more common,
-but male-targeted posts received higher raw LLM perceived attack
-ratings, reflecting confounding between target gender and content
-severity. In the minimal-pair data, all 36 rater-by-scale cells had
+summarized with Cohen’s
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
+Humans and LLMs agreed in direction: all 36 rater-by-scale cells had
 positive
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
-and both humans and LLMs located the largest gender-differential effects
-in sexualization and appearance. The two groups were nevertheless not
-interchangeable. On the 3-point scale, most LLMs showed smaller
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.
+The gap was largest in sexualization and appearance domains for both
+humans and LLMs. Agreement was conditional across stricter comparisons:
+magnitude depended on the human reference group, human
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-than the overall-human and female-participant references, although they
-exceeded the male-participant reference. Across scales, finer rating
-formats dampened human
+was flat or smaller under finer response formats, and most LLM
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-while amplifying most LLM
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-values. LLMs and humans shared the direction and broad content structure
-of gender-differential attack ratings, but differed in effect magnitude,
-scale response, and fine-grained ordering.</p>
+values were larger. These findings indicate that LLM ratings can capture
+broad target-gender patterns in perceived attack ratings, with
+scale-sensitive model rankings still differing across human references
+and alignment metrics. Human–LLM alignment in this setting should be
+reported with explicit reference to human subgroup, attack domain, and
+response scale.</p>
 </div>
 </header>
-<div class="center">
-<p><span><strong>中文题目：同一攻击文本指向女性或男性时——中文性别化攻击评分中的人机相似与分歧</strong></span></p>
+<div class="highlights">
+<p>We constructed 371 Chinese gender-reversal minimal pairs.</p>
+<p>Nine LLMs rated each pair on 3-point, 7-point, and slider scales.</p>
+<p>Human raters completed matched 3-point, 7-point, and slider
+ratings.</p>
+<p>Female-targeted versions received higher perceived-attack
+ratings.</p>
+<p>Sexualization, appearance, and response scale shaped human–LLM
+alignment.</p>
 </div>
-<p><strong>中文摘要：</strong>
-大语言模型正被广泛用于文本标注、内容审核、攻击性评价和计算社会科学编码等主观社会判断任务，而这类判断通常需要同时整合文本语义和社会类别线索。中文性别化攻击评价提供了一个关键情境：当同一攻击内容指向女性或男性目标时，人类和大语言模型是否呈现相同的目标性别敏感性仍不清楚。本研究构建371组性别反转最小配对句，并收集9个主流大语言模型和779个有效人类评分会话在3点类别量表、7点李克特量表和0–100滑动条上的评分。研究以女性目标版本减男性目标版本的感知攻击评分差异（<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>）及其配对标准化效应量Cohen’s
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>为主要指标。初步自然语料分析表明，真实语料中的目标性别与内容严重程度、语境和其他社会类别线索相互混杂，难以直接估计目标性别本身的影响。在最小配对材料中，所有36个评分者-量表组合均呈现正向<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>，且人类和大语言模型均在性化攻击和外貌攻击领域呈现最大的性别差异化评分效应。然而，这种一致性并不意味着两者可以互换：效应大小取决于所选人类参照组，评分量表会改变人机比较结果，细粒度项目层面的一致性仍然有限。本研究表明，性别化攻击评价中的人机一致性应被理解为受测量条件约束的相似与差异。</p>
-<p><strong>关键词：</strong>
-大语言模型；性别化攻击；心理测量；最小配对设计；人机一致性；数据科学</p>
+<div class="keywords">
+<p>large language models ,gendered attacks ,Chinese ,minimal-pair design
+,human–LLM alignment ,rating scales</p>
+</div>
 <h1 id="sec:intro">Introduction</h1>
 <p>Online hate and harassment undermine individual well-being, public
-discourse, and platform governance (Schoenebeck et al., 2023). In much
-of the English-language and Western-centered literature, online hate is
-studied across several protected or minoritized categories, including
-race, ethnicity, religion, nationality, sexuality, and gender (Windisch
-et al., 2022; Dutta et al., 2025; Fontanella et al., 2024). The Chinese
-context is organized differently. Although many forms of prejudice
-circulate in Chinese digital spaces, gender has become one of the most
-visible axes of online conflict in recent years: studies of Chinese
-social media document sexist and misogynistic language, the
-stigmatization of feminism, and platform dynamics that amplify gender
-antagonism on sites such as Weibo (Jiang et al., 2021; Jing-Schmidt
-&amp; Peng, 2018; Liao, 2024). Chinese gender-related hate speech
-nevertheless remains less extensively studied than English-language
-online hate, especially in computational measurement work (Jiang et al.,
-2021). This makes Chinese gendered attacks an important case for
-examining how attack severity is perceived when hostile content is
-directed at female versus male targets.</p>
-<p>LLMs are increasingly used to evaluate offensive and hateful speech.
-They now support text annotation, content-moderation workflows, toxicity
-scoring, and computational social-science coding tasks that previously
-depended primarily on human coders (He et al., 2024; Ziems et al.,
-2024). Their performance in hate-speech evaluation is useful but uneven.
-GPT-style models have shown only moderate zero- and one-shot performance
-in identifying sexist or racist text, with improvement under few-shot
-prompting (Chiu et al., 2022); newer models can make context-sensitive
-moderation judgements that align with humans in some conditions, while
-still showing demographic, lexical, and target-sensitive biases
-(Davidson, 2026; Giorgi et al., 2025). More broadly, prior work on
-subjective annotation cautions against treating model–human similarity
-as a single comparison against a neutral pooled-human reference. LLM
-outputs and learned datasets may align more closely with some annotator
-populations than others (Santy et al., 2023; H. Sun et al., 2025),
-annotator disagreement can encode meaningful subjective perception
-rather than noise (Davani et al., 2022; Larimore et al., 2021), and
-predicting individual-level text perceptions requires more than
-demographic prompting or a single aggregate baseline (Orlikowski et al.,
-2025). These concerns are central for gendered hate because the
-judgement depends on both hostile wording and the social meaning of the
-target identity. In Chinese, existing work has begun to build resources
-for sexism detection, but it remains unclear whether LLM attack ratings
-resemble Chinese human judgements when only target gender changes (Jiang
-et al., 2021).</p>
-<p>Natural-language corpora cannot cleanly answer that question. In
-naturally occurring hate-speech and offensive-language datasets, target
-identity, lexical extremity, topic, context, and intersecting
-social-category cues are selected together rather than experimentally
-controlled (Mathew et al., 2021). A female-versus-male corpus comparison
-can describe which posts receive higher attack ratings, but not whether
-the difference is attributable to target gender rather than to the
-content that co-occurs with it.</p>
-<p>The present study addresses this problem with a controlled Chinese
-minimal-pair design. Each item pairs two attack-laden sentences that
-hold the hostile content constant while reversing only the gender
-referent of the target. This design lets us estimate the paired
-female-minus-male perceived attack-rating gap,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
-as a target-gender manipulation effect rather than as a raw corpus
-contrast confounded by topic or severity. We then compare this gap
-between human raters and LLMs across response formats and analytic
-levels. The comparison is therefore not a general test of hate-speech
-detection accuracy, but a narrower measurement question: whether humans
-and LLMs change their perceived attack ratings in similar ways when the
-same hostile expression is directed at female versus male targets.</p>
-<p>Prior work therefore motivates a conditional-alignment framing rather
-than a simple aggregate-human framing. The present study extends this
-framing to a controlled target-gender manipulation: the hostile content
-is held constant, and only the target gender changes. The question is
-not simply whether LLMs are “human-like,” but which parts of the
-model–human alignment profile remain stable across human reference
-group, response format, and analytic level.</p>
-<p>This framing distinguishes two interpretations of apparent
-similarity. A weak aggregate-reference interpretation would treat a
-close comparison with the pooled human aggregate as evidence that the
-model approximates human judgement. A cue-based similarity
-interpretation would instead predict that LLMs preserve broad,
-high-salience patterns, such as the direction of the target-gender
-effect and the location of high-sensitivity attack domains, while
-diverging in effect magnitude, response-scale behaviour, and item-level
-ordering. The analyses below therefore move from direction, to
-magnitude, to domain profile, to scale response, and finally to
-item-level correspondence.</p>
-<p>We ask five questions. RQ1 asks whether humans and LLMs both rate
-female-targeted versions as more attacking than matched male-targeted
-versions. RQ2 asks whether the magnitude of this gap is similar between
-LLMs and three human references: the pooled aggregate, female
-participants, and male participants. RQ3 asks whether the largest
-gender-differential effects occur in the same attack domains. RQ4 asks
-whether the observed gap changes across 3-point, 7-point, and slider
-scales in similar ways for humans and LLMs. RQ5, an exploratory
-extension, asks whether aggregate and domain-level similarity extend to
-item-level correspondence.</p>
-<h1 id="sec:background">Research background and measurement
-framework</h1>
-<h2
-id="natural-corpus-contrasts-and-minimal-pair-estimation">Natural-corpus
-contrasts and minimal-pair estimation</h2>
-<p>Existing hate-speech and offensive-language datasets, including
-widely used resources such as HateXplain, are valuable for estimating
-prevalence and benchmark performance, but they are weak designs for
-target-gender estimation. In such corpora, target identity is entangled
-with lexical extremity, topic, context, and intersecting social-category
-cues (Mathew et al., 2021). This matters for human–LLM comparison
-because both human annotators and LLMs can be sensitive to annotator
-attributes, target attributes, and social framing (Davani et al., 2022;
-Giorgi et al., 2025; Sap et al., 2019). Natural-corpus ratings can
-therefore show that a post is attacking; they cannot isolate whether its
-perceived attack severity is attributable to the gendered target or to
-the content selected with that target.</p>
-<p>Controlled contrastive tests address this problem by measuring
-responses to targeted input changes rather than only aggregate benchmark
-performance (Ribeiro et al., 2020; Röttger et al., 2021). In the current
-task, each minimal pair holds attack content constant and changes only
-the gender referent. Under this design, the estimand is
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
-the rating assigned to the female-targeted version minus the rating
-assigned to the matched male-targeted version of the same sentence,
-rather than the real-world frequency or objective severity of attacks
-against women or men. A larger
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
-means that the female-targeted version was rated as more attacking by a
-given rater group under a given response format.</p>
-<h2 id="rating-format-as-a-psychometric-condition">Rating format as a
-psychometric condition</h2>
-<p>Response format is part of the measurement design. Attack ratings are
-subjective judgments expressed through a response interface, and
-psychometric research shows that the number and format of response
-categories can affect reliability, validity evidence, discriminating
-power, and respondent behavior (Abulela &amp; Khalaf, 2024; Preston
-&amp; Colman, 2000). Very coarse scales can support applied
-classification but may compress meaningful differences; more graded
-scales can increase discrimination, although gains often level off
-around moderate category numbers (Lozano et al., 2008; Preston &amp;
-Colman, 2000). Comparisons of Likert and visual analogue or slider
-scales likewise show that response format can change response
-distributions and resolution without being automatically superior across
-contexts (Haslbeck et al., 2025; Kloft et al., 2024; Vollbracht et al.,
-2026). The present study therefore treats 3-point, 7-point, and slider
-ratings as measurement conditions, not merely robustness checks.</p>
-<h2 id="human-reference-groups-and-levels-of-similarity">Human reference
-groups and levels of similarity</h2>
-<p>Human–LLM alignment also depends on the human reference group.
-Benchmark-style evaluations often compare model outputs with a pooled
-human label, but subjective annotation research shows that disagreement
-can reflect meaningful differences in perception rather than error
-(Davani et al., 2022; Larimore et al., 2021). In hate-speech annotation,
-labels can vary with annotator and target characteristics, and existing
-datasets and models tend to align with specific demographic subgroups
-rather than equally representing all annotator populations (Santy et
-al., 2023); recent human–LLM comparisons further suggest that LLM rating
-patterns do not simply reproduce human socio-demographic variation
-(Giorgi et al., 2025; H. Sun et al., 2025). Related work on subjective
-text perception also shows that predicting individual-level judgments
-requires more than demographic prompting or a single aggregate baseline
-(Orlikowski et al., 2025). Accordingly, the present study compares LLMs
-with the pooled human aggregate, female participants, and male
-participants.</p>
-<p>These design choices define human–LLM similarity as a multi-level
-comparison. Direction asks whether
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
-is positive for both groups. Magnitude asks whether the effect size is
-similar. Domain structure asks whether the largest gaps occur in the
-same attack domains. Scale response asks whether the gap changes
-similarly across response formats. Item-level correspondence asks
-whether aggregate similarity extends to the ordering of individual
-sentences. Throughout the paper, the term <em>alignment</em> refers to
-behavioural similarity between human and LLM ratings on the same items,
-not to RLHF or value alignment in the safety-tuning sense. Treating the
-levels separately avoids reducing human–LLM alignment to a single
-accuracy score or correlation.</p>
+discourse, and platform governance (Schoenebeck et al., 2023). The
+empirical and methodological literature on hate speech is much larger in
+English-language and Western-centered settings, where research and
+moderation debates have often been organized around protected categories
+such as race, ethnicity, religion, nationality, sexuality, and gender,
+and where racialized hate and racial bias in hate-speech detection have
+been especially visible concerns (Sap et al., 2019; Windisch et al.,
+2022). Chinese hate-speech research is comparatively smaller, and
+Chinese online hostility requires language-specific evidence. In Chinese
+social media, gender antagonism, misogynistic expression, and
+anti-feminist discourse have become highly visible forms of online
+hostility, with linguistic forms and platform dynamics that differ from
+Western corpora (Jiang et al., 2021; Jing-Schmidt &amp; Peng, 2018;
+Liao, 2024). Although Chinese offensive-language resources have expanded
+in recent years (Deng et al., 2022; Lu et al., 2023), research
+specifically on Chinese gendered hate speech remains limited. This
+leaves a linguistic and substantive gap: current evidence gives limited
+guidance on how gendered hostility, including hostility toward women, is
+recognized, interpreted, and perceived as harmful in Chinese online
+contexts.</p>
+<p>LLMs are increasingly proposed as scalable raters for offensive and
+hateful text in content moderation, toxicity scoring, social-bias
+evaluation, and computational social-science annotation (He et al.,
+2024; Ziems et al., 2024). Some studies find that LLMs can approximate
+human annotations or make context-sensitive hate-speech evaluations that
+align with human judgement (Davidson, 2026; He et al., 2024). Other
+evidence shows that LLM judgements can vary across models, prompts,
+annotation instructions, lexical cues, and the social positions of
+annotators and targets (Chiu et al., 2022; Giorgi et al., 2025). This
+mixed evidence is important because hate-speech evaluation depends on
+how people perceive a text as attacking, harmful, or degrading.
+Aggressiveness, offensiveness, and discrimination are social-perceptual
+judgements about how a text is experienced within a language community.
+In these tasks, people are potential recipients of the attack, and their
+perceptions define the human reference that model ratings should be
+compared against. The key question concerns the conditions under which
+LLM ratings converge with, or diverge from, human perceptions of
+gendered hate. This question remains especially unresolved in Chinese:
+existing work provides limited evidence on whether LLMs and humans
+perceive Chinese gendered attacks in the same way under comparable
+materials and rating conditions.</p>
+<p>Evaluating when LLM ratings converge with or diverge from human
+perceptions first requires an appropriate corpus of Chinese gendered
+attacks. Existing hate-speech corpora are valuable because they show how
+hostility appears in real online environments: they preserve naturally
+occurring vocabulary, platform contexts, and the empirical distribution
+of targets and topics. For the present question, prevalence-oriented
+corpora raise three problems. First, many widely used resources are
+English-language datasets, which provide limited coverage of Chinese
+platform language, gendered slang, and local discursive contexts.
+Second, even gender-hate resources in English or Chinese are usually
+natural collections with limited target-gender balancing; female- and
+male-targeted items may differ in wording, severity, and attack form
+simply because those differences exist in the source environment. Third,
+naturally occurring gendered attacks span multiple domains, such as
+appearance, sexuality, competence, morality, and social roles. This
+diversity is substantively important, and it means that ratings can vary
+because of topic and attack type as well as the gendered target. If
+these factors remain entangled, a higher perceived-aggressiveness rating
+for one target group could reflect more severe wording, a different
+attack domain, or a different distribution of topics (Mathew et al.,
+2021).</p>
+<p>To address these limitations, this study uses a Chinese minimal
+gender-reversal design. In this design, each pair contains two attack
+sentences that are identical except for the gendered expression
+referring to the target; the design estimates the female-minus-male
+rating gap while holding hostile content constant. It addresses the
+corpus problems outlined above in three ways. First, all items are
+Chinese attack sentences developed for this study. Second, each
+female-targeted version is paired with a sentence-template-matched
+male-targeted version, so wording, attack content, and attack intensity
+are controlled across target gender. Third, each item is annotated for
+attack domain, including sexualization, appearance, capability,
+morality, and social roles. Domain annotation is included because the
+meaning of a target-gender contrast may differ across forms of attack.
+Online sexism and misogyny are often realized through sexualized
+degradation, appearance policing, and gender-role enforcement
+(Jing-Schmidt &amp; Peng, 2018; Dutta et al., 2025; Fontanella et al.,
+2024). Social-cognition research also treats person evaluation as
+multidimensional, including agency, competence, warmth, and morality
+(Abele &amp; Wojciszke, 2007; Fiske et al., 2007). These literatures
+support treating attack domain as a design feature for locating where
+the female–male perceived-aggressiveness gap is most pronounced.
+Methodologically, this design follows a broader minimal-pair and
+counterfactual tradition in NLP bias research. Winogender and WinoBias,
+for example, use sentence pairs or schemas that differ in gendered
+pronouns or gender-linked references to test whether coreference systems
+behave differently when the gender cue changes (Rudinger et al., 2018;
+Zhao et al., 2018). Related counterfactual data augmentation work
+generates paired texts by swapping gendered words such as
+<em>he/she</em> or <em>man/woman</em>, with additional grammatical
+changes only when a language requires agreement preservation (Lu et al.,
+2018; Zmigrod et al., 2019). The present study applies this logic to
+Chinese gendered attack sentences.</p>
+<p>To evaluate human–LLM alignment in this corpus, the human reference
+must also be disaggregated. A pooled human average is useful as an
+overall benchmark, although it can obscure subgroup differences that are
+substantively central to gendered hate-speech perception. In
+gender-targeted attacks, female and male raters may experience the same
+hostile sentence as differentially aggressive, because the text can be
+closer to one group’s lived vulnerability, social position, or prior
+exposure to gendered derogation. Subjective annotation research shows
+that disagreement can reflect meaningful differences in perception
+(Davani et al., 2022; Larimore et al., 2021), and model outputs may
+align more closely with some annotator groups than others (Santy et al.,
+2023; H. Sun et al., 2025). Recent work further shows that
+individual-level subjective text perceptions are difficult to recover
+from demographic prompting or a single aggregate baseline (Orlikowski et
+al., 2025). Assessing LLM alignment in a gender-hate task requires a
+specified human reference, including female and male raters.</p>
+<p>In addition, perceived aggressiveness is measured through a response
+scale. Scale format can shape human ratings because it defines how much
+distinction a rater can make and how strongly the task encourages
+categorical versus graded judgement. Coarse scales, such as binary or
+very small-category formats, can force respondents toward sharper
+decisions and may increase threshold-dependent or extreme responding.
+More fine-grained scales, such as 7-point, visual-analogue, or slider
+formats, can give respondents more room to express small differences;
+they may also introduce greater dispersion, more idiosyncratic use of
+numerical space, or weaker gains once the number of categories exceeds
+what respondents can use reliably. Psychometric studies show that the
+number of response options affects reliability, validity, discriminating
+power, and response distributions in human ratings (Preston &amp;
+Colman, 2000; Lozano et al., 2008; Simms et al., 2019; Abulela &amp;
+Khalaf, 2024), and recent comparisons of Likert, visual analogue, and
+slider formats show that response interfaces can change the resolution
+and distribution of human judgements (Kloft et al., 2024; Haslbeck et
+al., 2025; Vollbracht et al., 2026). LLM research has rarely treated the
+corresponding issue as a measurement question. It remains unclear
+whether asking an LLM to rate the same content on a 5-point, 7-point, or
+0–100 scale merely rescales the output, or whether the response format
+changes the model’s perceived-severity pattern and its alignment with
+human raters.</p>
+<p>This study asks three research questions. RQ1 tests the target-gender
+equality baseline; two planned follow-up comparisons interpret any
+departure from this baseline.</p>
+<p><strong>RQ1.</strong> When the same Chinese attack sentence differs
+only in the target’s gender, do female-targeted and male-targeted
+versions receive the same perceived-aggressiveness ratings?</p>
+<p><strong>Human–LLM comparison.</strong> If ratings depart from
+target-gender equality, do LLMs and human raters show the same direction
+and similar magnitude of the female-minus-male gap?</p>
+<p><strong>Human subgroup comparison.</strong> If ratings depart from
+target-gender equality, do female and male human raters show the same
+direction and strength?</p>
+<p><strong>RQ2.</strong> Within each attack domain, do female-targeted
+and male-targeted versions receive the same perceived-aggressiveness
+ratings, and do humans and LLMs show the same domain-level pattern?</p>
+<p><strong>RQ3.</strong> Within each response scale, which LLMs show the
+most similar female-minus-male rating pattern to the human references in
+overall effect size and domain profile? Does this closest-model profile
+change across response scales?</p>
 <h1 id="sec:methods">Methods</h1>
-<h2 id="materials-minimal-pair-design">Materials: minimal-pair
-design</h2>
-<p>A native Chinese-speaking research team constructed 371 minimal pairs
-of attack-laden sentences, yielding 742 gender-targeted sentence
-versions. The item pool was built from a three-level coding framework
-derived from prior research on gendered derogation, inductive review of
-hostile expressions in Chinese social-media contexts, and iterative team
-coding. The framework was designed to cover common forms of
-non-discriminatory interpersonal attack and comprised 10 first-level
-attack domains, 71 second-level categories, and more than 180
-third-level categories. The 10 first-level domains were sexualization,
-appearance, gender role/expression, interpersonal relations, moral
-character, economic resources, social status, emotional stability,
-capability/competence, and intellectual rationality; only this first
-level is used in the main analyses.</p>
-<p>Stimulus construction followed an integrative qualitative coding
-procedure. First, we reviewed prior literature on interpersonal
-derogation, gendered hostility, online sexism, and person evaluation to
-identify broad dimensions along which people are commonly attacked or
-negatively evaluated (Cowan &amp; Hodge, 1996; Abele &amp; Wojciszke,
-2007; Fiske et al., 2007; Jing-Schmidt &amp; Peng, 2018; Jiang et al.,
-2021; Dutta et al., 2025; Fontanella et al., 2024). Second, we refined
-this framework through qualitative coding of Chinese online hostile
-discourse. The coding integrated prior conceptual categories with
-inductive review of attack expressions observed on major Chinese
-social-media and forum platforms, including Weibo, Tieba, Xiaohongshu,
-Douban, and Hupu. The first level captured broad attack domains, the
-second level specified the attribute being attacked, and the third level
-described common rhetorical or expressive strategies used to realize
-that attack.</p>
-<p>Sentence templates were then generated under this coding framework.
-Candidate expressions were adapted from naturally occurring online
-attack language and supplemented with AI-assisted drafting. AI was used
-only as a drafting aid; all candidate items were manually reviewed,
-revised, or discarded by the research team. The initial pool contained
-approximately 400 candidate templates. Items were removed or rewritten
-if they sounded unnatural, overly rigid, relied on attack meanings that
-were specific to only one gender target, depended on platform-specific
-context, or could not be reversed without changing the attack content or
-perceived pragmatic force. The final stimulus set contained 371
-templates.</p>
-<p>All items were reviewed by three native Chinese-speaking coders with
-psychology training for naturalness, attack presence, domain fit, and
-minimal-pair equivalence. Disagreements were resolved through
-discussion, and items that could not be revised to satisfy these
-criteria were excluded.</p>
-<p>Within each pair, the two versions are identical except for a
-gender-referent substitution (e.g., <em>she</em>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>↔</mo><annotation encoding="application/x-tex">\leftrightarrow</annotation></semantics></math>
-<em>he</em>; <em>woman</em>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>↔</mo><annotation encoding="application/x-tex">\leftrightarrow</annotation></semantics></math>
-<em>man</em>; female-coded vs. male-coded names; female-coded
-vs. male-coded relational kin terms). The minimal-pair design is the
-design ingredient that lets us causally attribute any residual rating
-gap to the gender manipulation rather than to selection on content
-extremity, a confound that is endemic to natural-language gender
-comparisons (Section <a href="#sec:r1" data-reference-type="ref"
-data-reference="sec:r1">4.1</a>).</p>
-<h2 id="response-formats">Response formats</h2>
-<p>The study used three response formats to operationalize rating
-granularity. The <strong>3-point category</strong> scale was
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><mn>0</mn><mo>=</mo><mtext mathvariant="normal">not attacking</mtext><mo>,</mo><mn>1</mn><mo>=</mo><mtext mathvariant="normal">mildly attacking</mtext><mo>,</mo><mn>2</mn><mo>=</mo><mtext mathvariant="normal">strongly attacking</mtext><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\{0 = \text{not attacking}, 1 = \text{mildly attacking}, 2 = \text{strongly attacking}\}</annotation></semantics></math>
-and represents a coarse, annotation-like format resembling applied
-content moderation decisions. The <strong>7-point Likert-type</strong>
-scale ranged from 0 to 6, where 0 indicates no attack and larger values
-indicate higher perceived attack severity; it represents a conventional
-psychometric compromise that permits graded perceived severity while
-remaining categorical. The <strong>0–100 slider</strong> was a
-continuous numeric response and represents a high-granularity format for
-expressing perceived intensity. All three formats were used for both
-human and LLM ratings.</p>
-<h2 id="llm-panel">LLM panel</h2>
-<p>Nine contemporary LLMs were queried in November 2025 via the OpenAI
-API: Anthropic Claude-Opus-4.5, DeepSeek-R1, DeepSeek-V3.2, Google
-Gemma-4-31B, Meta Llama-4-Maverick, Moonshot Kimi-K2-Thinking, OpenAI
-GPT-5.1, Qwen-2.5-72B-Instruct, and Z-AI GLM-4.6. Each model rated both
-the female-targeted and the male-targeted version of every minimal pair
-under all three rating formats.</p>
-<p>The main analyses use zero-shot responses; chain-of-thought variants
-were collected for the calibration check in Section <a href="#sec:r1"
-data-reference-type="ref" data-reference="sec:r1">4.1</a> but are not
-the focus of the rest of the paper.</p>
-<p><strong>[Placeholder for Appendix zero-shot vs. chain-of-thought
-comparison.]</strong> The appendix will report the Study 1 calibration
-comparison between zero-shot and chain-of-thought prompting. This
-comparison should show that chain-of-thought prompting did not uniformly
-improve the natural-corpus gender-target contrast, and that the main
-minimal-pair analyses therefore use zero-shot ratings as the primary
-specification.</p>
-<h2 id="human-study">Human study</h2>
-<p>We recruited Chinese participants online through social-media
+<h2 id="human-raters">Human raters</h2>
+<p>Chinese participants were recruited online through social-media
 recruitment. After quality-control screening, the analytic sample
-contained 779 valid rating sessions from 712 unique participants.
-Participants were randomly assigned to one of the three rating formats
-and rated a pseudo-random subset of approximately 75 sentence versions
-in their assigned scale, with item presentation order randomized and
-attention checks interleaved. The sampling procedure avoided presenting
-both gender versions of the same template to the same participant. Thus,
-unlike the LLM design in which each model rated both versions of every
-pair, the human study estimated the female- and male-targeted item means
-across participants and then paired those item means at the template
-level.</p>
+contained 779 valid rating sessions from 712 unique participants. Each
+valid session was assigned to one response format and included a
+pseudo-random subset of approximately 75 sentence versions, randomized
+item order, and attention checks. Each participant saw only one gender
+version of any template. Human female- and male-targeted item means were
+estimated across participants and paired at the template level.</p>
 <p>The session-level sample was nearly gender-balanced across scales
 (Table <a href="#tab:session-balance" data-reference-type="ref"
-data-reference="tab:session-balance">1</a>) and concentrated among young
-Chinese internet users (Table <a href="#tab:participant-demographics"
-data-reference-type="ref"
-data-reference="tab:participant-demographics">2</a>). Item-level mean
-ratings were computed within each (rater group, scale) cell separately,
-where “rater group” refers to one of three human strata (overall, female
-participants, male participants) plus the nine LLMs. The participant
-pool is not nationally representative (see Limitations). All experiments
-received host-institution ethics approval.</p>
+data-reference="tab:session-balance">1</a>) and concentrated among
+18–34-year-old Chinese internet users (Table <a
+href="#tab:participant-demographics" data-reference-type="ref"
+data-reference="tab:participant-demographics">2</a>). Item-level means
+were computed separately within each rater group and scale. Human rater
+groups were the pooled aggregate, female participants, and male
+participants; these were compared with the nine LLMs. The participant
+pool is a nonrepresentative online sample (see Limitations). All
+experiments received host-institution ethics approval.</p>
 <div id="tab:session-balance">
 <table>
 <caption>Valid rating sessions by participant gender and assigned rating
@@ -423,7 +308,7 @@ unit.</caption>
 <div id="tab:participant-demographics">
 <table>
 <caption>Participant demographic characteristics by assigned rating
-scale. The three scale groups are structurally comparable, but the
+scale. The three scale groups are structurally comparable, and the
 sample is concentrated among 18–34-year-old Chinese internet
 users.</caption>
 <thead>
@@ -589,9 +474,83 @@ student</em></td>
 </tbody>
 </table>
 </div>
-<h2 id="outcome-and-effect-size-definition">Outcome and effect-size
-definition</h2>
-<p>The primary item-level outcome is the female-minus-male perceived
+<h2 id="llm-raters">LLM raters</h2>
+<p>Nine contemporary LLMs were queried in November 2025 through the
+OpenRouter API using an OpenAI-compatible client: Anthropic
+Claude-Opus-4.5, DeepSeek-R1, DeepSeek-V3.2, Google Gemma-4-31B, Meta
+Llama-4-Maverick, Moonshot Kimi-K2-Thinking, OpenAI GPT-5.1,
+Qwen-2.5-72B-Instruct, and Z-AI GLM-4.6. The panel was selected to cover
+widely used closed- and open-weight model families available through the
+same inference interface. Each model rated both versions of every
+minimal pair under all three response formats. The main minimal-pair
+analyses use zero-shot ratings; temperature was set to 0, and each model
+returned a structured numeric rating for each item. The analysis treats
+each production model as a fixed rater and leaves population-level
+variation across LLMs unestimated.</p>
+<h2 id="materials-minimal-gender-reversal-corpus">Materials: minimal
+gender-reversal corpus</h2>
+<p>A native Chinese-speaking research team constructed 371 minimal pairs
+of attack-laden sentences, yielding 742 gender-targeted sentence
+versions. Within each pair, the two versions were identical except for a
+gender-referent substitution (e.g., <em>she</em>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>↔</mo><annotation encoding="application/x-tex">\leftrightarrow</annotation></semantics></math>
+<em>he</em>; <em>woman</em>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>↔</mo><annotation encoding="application/x-tex">\leftrightarrow</annotation></semantics></math>
+<em>man</em>; female-coded vs. male-coded names or kin terms). This
+construction holds attack content constant while varying the target’s
+gender referent.</p>
+<p>The item pool used a three-level coding framework derived from prior
+work on interpersonal derogation, gendered hostility, online sexism, and
+person evaluation, plus inductive review of Chinese online hostile
+expressions (Cowan &amp; Hodge, 1996; Abele &amp; Wojciszke, 2007; Fiske
+et al., 2007; Jing-Schmidt &amp; Peng, 2018; Jiang et al., 2021; Dutta
+et al., 2025; Fontanella et al., 2024). The first level contained 10
+attack domains: sexualization, appearance, gender role/expression,
+interpersonal relations, moral character, economic resources, social
+status, emotional stability, capability/competence, and intellectual
+rationality. The second and third levels guided stimulus construction
+and are shown in Appendix Table <a href="#tab:stimulus-examples"
+data-reference-type="ref" data-reference="tab:stimulus-examples">8</a>
+for representative examples.</p>
+<p>Candidate expressions were adapted from naturally occurring Chinese
+online attack language and supplemented with AI-assisted drafting. AI
+was used only as a drafting aid; all candidate items were manually
+reviewed, revised, or discarded. Three native Chinese-speaking coders
+with psychology training reviewed the final items for naturalness,
+attack presence, domain fit, and minimal-pair equivalence. Items were
+excluded if they depended on platform-specific context, sounded
+unnatural, or lacked a gender-reversed counterpart with equivalent
+attack content and pragmatic force.</p>
+<h2 id="rating-task-and-response-scales">Rating task and response
+scales</h2>
+<p>The task was to rate the perceived aggressiveness of each sentence.
+Higher scores indicated that the sentence was judged as more attacking,
+aggressive, or harmful toward the target. Human and LLM raters used the
+same three response formats: a <strong>3-point category</strong> scale
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>=</mo></mrow><annotation encoding="application/x-tex">0 =</annotation></semantics></math>
+non-attacking,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>=</mo></mrow><annotation encoding="application/x-tex">1 =</annotation></semantics></math>
+mildly attacking,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mo>=</mo></mrow><annotation encoding="application/x-tex">2 =</annotation></semantics></math>
+strongly attacking), a <strong>7-point Likert-type</strong> scale from 0
+to 6, and a <strong>0–100 slider</strong>. These formats operationalize
+rating granularity from coarse category judgement to finer numerical
+severity judgement while keeping the rated construct constant.</p>
+<h2 id="procedure">Procedure</h2>
+<p>Human participants completed the task online after being assigned to
+one response scale. Each participant saw only one gender version of any
+template, which prevented direct comparison of a female-targeted and
+male-targeted version by the same participant. Item order was
+randomized, and sentence versions were assigned so that female- and
+male-targeted versions could be compared at the template level after
+aggregation.</p>
+<p>LLM ratings followed the same item and scale structure. For each
+model, both gender versions of every template were rated under each
+response format. The prompt specified the rating scale and requested a
+structured numeric response; ratings were then parsed and paired by
+template, target gender, model, and scale before analysis.</p>
+<h2 id="statistical-analysis">Statistical analysis</h2>
+<p>The primary paired-item outcome was the female-minus-male perceived
 attack-rating gap,
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><msubsup><mi>s</mi><mi>F</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>−</mo><msubsup><mi>s</mi><mi>M</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>,</mo></mrow><annotation encoding="application/x-tex">\Delta^{(i)}_{F-M} \;=\; s^{(i)}_F - s^{(i)}_M ,</annotation></semantics></math>
 where
@@ -601,151 +560,122 @@ and
 are the mean perceived attack ratings of the female-targeted and
 male-targeted versions of item
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
-within a given rater group and scale. The summary effect size for a
-(rater group
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>,
-scale
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>)
-cell is Cohen’s
+within a rater group and scale. The summary effect size for a
+rater-by-scale cell was Cohen’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>,
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>r</mi><mo>,</mo><mi>c</mi><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="0.278em"></mspace><mo>=</mo><mspace width="0.278em"></mspace><mfrac><msub><mover><msubsup><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo accent="true">¯</mo></mover><mi>i</mi></msub><mrow><mover><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">D</mi></mrow><mo accent="true">̂</mo></mover><mspace width="-0.167em"></mspace><msub><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mi>i</mi></msub></mrow></mfrac><mo>,</mo></mrow><annotation encoding="application/x-tex">d_z(r, c) \;=\; \frac{\overline{\Delta^{(i)}_{F-M}}_i}{\widehat{\mathrm{SD}}\!\left(\Delta^{(i)}_{F-M}\right)_i},</annotation></semantics></math>
-computed across the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>371</mn></mrow><annotation encoding="application/x-tex">i = 1, \dots, 371</annotation></semantics></math>
-paired items as a paired standardized effect size (Cohen, 1988). The 371
-paired items, not individual rater responses, are the unit of analysis
-for
+computed across the 371 paired items as a paired standardized effect
+size (Cohen, 1988). A positive
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+means that the female-targeted version was rated as more aggressive than
+the matched male-targeted version. The paired item was the unit of
+analysis for
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
-We cross 12 rater groups (9 LLMs
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>+</mo><annotation encoding="application/x-tex">+</annotation></semantics></math>
-3 human strata) with 3 scales for a total of 36 (rater
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
-scale) cells. Where descriptive comparisons are made across scales, item
-means and gaps are normalized by scale-maximum so that the three scales
-are placed on a common 0–1 axis;
+The full design crossed 12 rater groups (9 LLMs plus 3 human strata)
+with 3 scales, yielding 36 rater-by-scale cells. For descriptive
+cross-scale comparisons, item means and gaps were normalized by scale
+maximum to place the three scales on a common 0–1 axis;
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 itself is scale-free.</p>
+<p>The analyses followed the reporting order implied by the research
+questions. RQ1 tested whether
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+differed from zero when only the target gender changed. Two planned
+follow-up comparisons then interpreted this target-gender contrast. The
+first compared human and LLM female–male patterns, with the pooled human
+aggregate and the female- and male-participant strata treated as
+distinct references. The second compared female and male human raters
+directly. For RQ2, we computed
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+within the 10 first-level attack domains and examined which domains
+produced the largest female-minus-male gaps. For RQ3, we fixed response
+scale and human reference group to identify the closest LLM under two
+descriptive alignment metrics: aggregate absolute
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+gap and 10-domain Spearman correlation. These closest-model rankings are
+descriptive because the LLM panel is a fixed set of production models.
+As a measurement check, we also summarized how human and LLM
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values changed from the 3-point scale to the 7-point and slider
+scales.</p>
 <h1 id="sec:results">Results</h1>
-<p>The Results describe where human and LLM perceived attack ratings are
-similar and where they differ. We first show why natural-corpus gender
-contrasts cannot identify the target-gender effect that the paper seeks
-to measure. We then move through progressively stricter comparisons:
-shared direction, matched magnitude, shared content structure, stability
-across response scales, and level-dependent similarity. Each layer adds
-one necessary condition to the preceding result.</p>
-<h2 id="sec:r1">Natural-corpus contrasts do not identify a target-gender
-effect</h2>
-<p>Before testing alignment, we first ask whether raw natural-corpus
-gender contrasts can answer the target-gender question at all. They
-cannot. Figure <a href="#fig:natural-gender-target"
-data-reference-type="ref"
-data-reference="fig:natural-gender-target">1</a> isolates posts whose
-target can be coded as female or male in the English HateXplain subset.
-Female-targeted posts were more common
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>175</mn></mrow><annotation encoding="application/x-tex">n=175</annotation></semantics></math>)
-than male-targeted posts
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>36</mn></mrow><annotation encoding="application/x-tex">n=36</annotation></semantics></math>),
-but the model panel assigned higher mean attack ratings to male-targeted
-posts in every model cell under both zero-shot and chain-of-thought
-prompting. Averaged across the nine models, the male-targeted mean
-exceeded the female-targeted mean by 0.557 points in zero-shot and 0.628
-points in chain-of-thought on the 0–5 HateXplain rating scale.</p>
-<figure id="fig:natural-gender-target">
-<img src="fig_r1_natural_gender_target_confound.png" />
-<figcaption>Natural-corpus gender-target contrasts in the English
-HateXplain subset, using the HateXplain 0–5 attack-rating scale.
-Female-targeted posts are more numerous, but male-targeted posts receive
-higher mean LLM perceived attack ratings. Error bars show standard
-errors over posts within each target-gender subset. The contrast is
-descriptive rather than causal because target gender is confounded with
-the content, lexical extremity, and context of naturally occurring
-posts.</figcaption>
-</figure>
-<p>The reversal clarifies why the natural-corpus contrast is not an
-estimate of a target-gender effect. This first analysis uses an existing
-natural-language hate-speech corpus to diagnose the confounding problem
-that motivates the study design. Prevalence and extremity diverge:
-female-targeted attacks are more common in this subset, whereas the
-smaller male-targeted subset receives more extreme LLM ratings. A second
-confound is also visible in the corpus. Male-targeted hate often
-co-occurs with racialized language and other group cues, making it
-impossible to determine whether a raw rating difference reflects the
-offensive content of the sentence, the gender of the target, or another
-social category invoked in the same post.</p>
-<p>This result rules out a simple natural-corpus interpretation. If the
-goal is to estimate whether the gender referent itself changes perceived
-attack ratings, raw male-target versus female-target comparisons are not
-informative. From the next analysis onward, the paper therefore leaves
-the existing natural corpus and uses the self-constructed 371 Chinese
-minimal pairs. In these materials, each female-targeted sentence is
-matched to a male-targeted sentence with the same attack content. By
-reversing only the gender referent, the design holds the insulting
-content constant and estimates whether the target’s gender changes
-perceived attack severity. The estimand is the paired female-minus-male
-gap,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.</p>
-<h2 id="sec:r2">Direction-level agreement: female-targeted versions
-receive higher ratings</h2>
-<p>Directional agreement is the minimal but necessary form of alignment:
-before asking whether models match humans in magnitude or fine-grained
-structure, they must at least place the average gender effect on the
-same side of zero. This minimal condition was met: all human and LLM
-estimates were positive. Every one of the 36 rater-by-scale cells had
-positive mean
+<p>The Results follow the logic of the research questions without using
+the question labels as section headings. We first test the target-gender
+equality baseline. We then report the two planned follow-up comparisons:
+the female–male pattern between humans and LLMs, and the corresponding
+pattern between female and male human raters. The final sections examine
+whether the target-gender comparison varies across attack domains and
+response scales.</p>
+<h2 id="sec:result-target-gender">Female-targeted versions receive
+higher perceived-aggressiveness ratings</h2>
+<p>We first ask whether two versions of the same Chinese attack sentence
+receive equal perceived-aggressiveness ratings when only the target
+gender changes. The evidence departed consistently from equality in the
+same direction. Every one of the 36 rater-by-scale cells had positive
+mean
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
 (Figure <a href="#fig:direction-agreement" data-reference-type="ref"
-data-reference="fig:direction-agreement">2</a>). Among human raters, the
-female-targeted version received a higher aggregated rating for
-58.2%–74.7% of items, depending on participant group and scale. Among
-LLMs, 3-point-scale ratings frequently produced identical values for the
-female- and male-targeted versions of the same item pair; the mean gap
-was nevertheless positive in every model cell, and all 27 LLM cells
-reached BH-FDR adjusted
+data-reference="fig:direction-agreement">1</a>). Among human raters, the
+female-targeted version received a higher aggregated perceived-attack
+rating for 58.2%–74.7% of items, depending on participant group and
+scale. Among LLMs, 3-point-scale ratings frequently produced identical
+values for the two versions of the same item pair; the mean gap was
+positive in every model cell, and all 27 LLM cells reached BH-FDR
+adjusted
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>&lt;</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>7</mn></mrow></msup></mrow><annotation encoding="application/x-tex">q &lt; 10^{-7}</annotation></semantics></math>
 for
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\Delta_{F-M} &gt; 0</annotation></semantics></math>.</p>
 <figure id="fig:direction-agreement">
 <img src="fig_r2_direction_agreement_forest.png" />
-<figcaption>Direction-level agreement across human and LLM raters on the
-3-point, 7-point, and slider scales. Points show the mean paired
+<figcaption>Overall target-gender difference across human and LLM raters
+on the 3-point, 7-point, and slider scales. Points show the mean paired
 female-minus-male perceived-rating gap normalized by each scale maximum;
-intervals are item-level percentile bootstrap 95% intervals over the 371
-paired items. The zero line marks no gender-differential rating gap. All
-36 rater-by-scale cells are positive, showing that humans and LLMs agree
-on the direction of the perceived-rating effect before any claim about
-magnitude, domain structure, scale response, or item-level agreement is
-made.</figcaption>
+intervals are paired-item percentile bootstrap 95% intervals over the
+371 paired items. The zero line marks no gender-differential rating gap.
+All 36 rater-by-scale cells are positive.</figcaption>
 </figure>
-<p>This result establishes direction-level agreement only. Subsequent
-analyses therefore ask whether the shared positive direction also holds
-in magnitude, domain profile, response-scale behaviour, and item-level
-ordering.</p>
-<h2 id="sec:r3">On the 3-point scale, magnitude alignment depends on the
-human reference group</h2>
-<p>Shared direction does not imply shared magnitude. The next test asks
-whether the size of the female-minus-male perceived-rating gap is close
-to a specified human reference, and that question has no answer until
-the reference group is specified. Because the 3-point format most
-closely resembles applied annotation labels, we use it as the primary
-magnitude benchmark before examining scale dependence in Section <a
-href="#sec:r5" data-reference-type="ref"
-data-reference="sec:r5">4.5</a>. Throughout, “larger gender-differential
-effect” refers to a larger positive
+<p>This first result answers RQ1 directly: female-targeted versions were
+rated as more aggressive on average than matched male-targeted versions.
+This is a direction-level result; effect-size alignment and
+participant-gender differences are examined in the next sections.</p>
+<h2 id="sec:result-human-llm">Human and LLM target-gender patterns share
+direction with reference-dependent magnitude</h2>
+<p>We next ask whether humans and LLMs show the same female–male
+target-gender pattern. At the sign level, they do: both rater types
+produced positive
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
+values across all response scales. The stricter magnitude comparison was
+conditional on the human reference group. We use the 3-point format as
+the primary magnitude benchmark because it most closely resembles
+applied annotation categories; scale dependence is examined separately
+in Section <a href="#sec:result-scale" data-reference-type="ref"
+data-reference="sec:result-scale">3.5</a>. Throughout, “larger
+gender-differential effect” refers only to a larger positive
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-in perceived attack ratings and is not a normative claim. The three
-human reference values on the 3-point scale are
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.219</mn></mrow><annotation encoding="application/x-tex">d_z = 0.219</annotation></semantics></math>
-for male participants,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.621</mn></mrow><annotation encoding="application/x-tex">d_z = 0.621</annotation></semantics></math>
-for the overall human aggregate, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.655</mn></mrow><annotation encoding="application/x-tex">d_z = 0.655</annotation></semantics></math>
-for female participants. The nine LLMs span
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.289</mn></mrow><annotation encoding="application/x-tex">d_z = 0.289</annotation></semantics></math>
-to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.653</mn><annotation encoding="application/x-tex">0.653</annotation></semantics></math>
-on the same scale (Table <a href="#tab:dz-3pt" data-reference-type="ref"
-data-reference="tab:dz-3pt">3</a>); Figure <a href="#fig:reference-gap"
-data-reference-type="ref" data-reference="fig:reference-gap">3</a> shows
-the corresponding model-minus-human gaps.</p>
+in perceived attack ratings.</p>
+<p>On the 3-point scale, the LLMs occupied the interval between the
+male- and female-participant references. Their
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values ranged from 0.289 to 0.653. At the lower end, DeepSeek-R1 and
+DeepSeek-V3.2 both had
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.289</mn></mrow><annotation encoding="application/x-tex">d_z = 0.289</annotation></semantics></math>,
+and GLM-4.6 had
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.297</mn></mrow><annotation encoding="application/x-tex">d_z = 0.297</annotation></semantics></math>;
+these values were above the male-participant reference and well below
+the pooled and female-participant references. At the upper end,
+Qwen-2.5-72B
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.553</mn></mrow><annotation encoding="application/x-tex">d_z = 0.553</annotation></semantics></math>),
+Kimi-K2-Thinking
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.572</mn></mrow><annotation encoding="application/x-tex">d_z = 0.572</annotation></semantics></math>),
+and GPT-5.1
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.653</mn></mrow><annotation encoding="application/x-tex">d_z = 0.653</annotation></semantics></math>)
+approached the pooled and female-participant references. Figure <a
+href="#fig:reference-gap" data-reference-type="ref"
+data-reference="fig:reference-gap">2</a> shows the same comparison as
+model-minus-human gaps, with a separate panel for each human
+reference.</p>
 <figure id="fig:reference-gap">
 <img src="fig_r3_reference_group_delta_dz_forest.png" />
 <figcaption><strong>This figure uses the 3-point scale.</strong>
@@ -754,159 +684,129 @@ an LLM’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 minus the human-reference
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>,
-and intervals are item-level percentile bootstrap 95% intervals over the
-371 paired items. The same model panel is mostly above the
-male-participant reference, split around the overall-human reference,
-and at or below the female-participant reference.</figcaption>
+and intervals are paired-item percentile bootstrap 95% intervals over
+the 371 paired items. The three panels use different human anchors: male
+participants
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.219</mn></mrow><annotation encoding="application/x-tex">d_z=0.219</annotation></semantics></math>),
+overall humans
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.621</mn></mrow><annotation encoding="application/x-tex">d_z=0.621</annotation></semantics></math>),
+and female participants
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.655</mn></mrow><annotation encoding="application/x-tex">d_z=0.655</annotation></semantics></math>).
+The same model panel is mostly above the male-participant reference,
+split around the overall-human reference, and at or below the
+female-participant reference.</figcaption>
 </figure>
-<div id="tab:dz-3pt">
+<p>The reference-group pattern mirrors the male- and female-participant
+separation. Against male participants, all nine LLM point estimates are
+larger, and six bootstrap intervals are entirely above zero. Against
+female participants, no LLM point estimate exceeds the
+female-participant reference; six intervals are entirely below zero, and
+Qwen-2.5-72B, Kimi-K2-Thinking, and GPT-5.1 overlap zero. Against the
+overall human aggregate, five LLMs are clearly lower (DeepSeek-R1,
+DeepSeek-V3.2, GLM-4.6, Llama-4-Maverick, and Gemma-4-31B), and
+Claude-Opus-4.5, Qwen-2.5-72B, Kimi-K2-Thinking, and GPT-5.1 overlap the
+aggregate reference.</p>
+<p>The sign of the model-minus-human gap changes with the selected human
+reference. The same nine models are above male participants, at or below
+female participants, and mixed against the pooled human estimate. This
+follow-up comparison has a two-level answer: humans and LLMs share the
+direction of the female-minus-male pattern, and the apparent magnitude
+of alignment depends on whether the human reference is the pooled
+aggregate, female raters, or male raters.</p>
+<h2 id="sec:result-human-subgroup">Female and male human raters share
+direction and differ in strength</h2>
+<p>Within the human sample, female and male raters shared the same
+positive direction and differed in magnitude. On the 3-point scale, male
+participants showed a small female-minus-male gap: the mean male-target
+rating was 0.573 and the mean female-target rating was 0.602, giving a
+normalized mean gap of 0.030 and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.219</mn></mrow><annotation encoding="application/x-tex">d_z = 0.219</annotation></semantics></math>.
+Female participants showed a much larger gap: the corresponding means
+were 0.552 and 0.642, giving a normalized mean gap of 0.090 and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.655</mn></mrow><annotation encoding="application/x-tex">d_z = 0.655</annotation></semantics></math>.
+The pooled human aggregate fell between these two references, with means
+of 0.562 and 0.622, a normalized mean gap of 0.060, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.621</mn></mrow><annotation encoding="application/x-tex">d_z = 0.621</annotation></semantics></math>.</p>
+<p>The same ordering appeared across response formats (Table <a
+href="#tab:human-rater-gender-dz" data-reference-type="ref"
+data-reference="tab:human-rater-gender-dz">3</a>). Male participants had
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.219</mn></mrow><annotation encoding="application/x-tex">d_z = 0.219</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.198</mn><annotation encoding="application/x-tex">0.198</annotation></semantics></math>,
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.167</mn><annotation encoding="application/x-tex">0.167</annotation></semantics></math>
+on the 3-point, 7-point, and slider scales; female participants had
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.655</mn></mrow><annotation encoding="application/x-tex">d_z = 0.655</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.704</mn><annotation encoding="application/x-tex">0.704</annotation></semantics></math>,
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.590</mn><annotation encoding="application/x-tex">0.590</annotation></semantics></math>.
+Female and male raters both rated female-targeted versions as more
+aggressive on average, with a larger female-minus-male pattern among
+female raters. This within-human separation explains why the human
+reference group matters for the LLM comparison above.</p>
+<div id="tab:human-rater-gender-dz">
 <table>
-<caption>3-point summary, sorted within each block by
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
-Means are normalized to scale max. The overall-human row sits between
-Claude-Opus-4.5 and Qwen-2.5-72B; female participants are at the upper
-boundary of the LLM range, and male participants are well below
-it.</caption>
+<caption>Human female-minus-male target-gender effects by participant
+gender and response scale. Positive
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+values indicate higher perceived-aggressiveness ratings for
+female-targeted versions than for matched male-targeted
+versions.</caption>
 <thead>
 <tr class="header">
-<th style="text-align: left;">Rater</th>
-<th style="text-align: center;">Mean (M)</th>
-<th style="text-align: center;">Mean (F)</th>
-<th
-style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>Δ</mi><mo accent="true">¯</mo></mover><mi>/</mi><mtext mathvariant="normal">max</mtext></mrow><annotation encoding="application/x-tex">\overline{\Delta}/\text{max}</annotation></semantics></math></th>
-<th
-style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+<th style="text-align: left;">Response scale</th>
+<th style="text-align: center;">Overall humans
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+<th style="text-align: center;">Female raters
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+<th style="text-align: center;">Male raters
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Male participants</td>
-<td style="text-align: center;">0.573</td>
-<td style="text-align: center;">0.602</td>
-<td style="text-align: center;">0.030</td>
+<td style="text-align: left;">3-point</td>
+<td style="text-align: center;">0.621</td>
+<td style="text-align: center;">0.655</td>
 <td style="text-align: center;">0.219</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Overall humans</td>
-<td style="text-align: center;">0.562</td>
-<td style="text-align: center;">0.622</td>
-<td style="text-align: center;">0.060</td>
-<td style="text-align: center;">0.621</td>
+<td style="text-align: left;">7-point Likert</td>
+<td style="text-align: center;">0.588</td>
+<td style="text-align: center;">0.704</td>
+<td style="text-align: center;">0.198</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Female participants</td>
-<td style="text-align: center;">0.552</td>
-<td style="text-align: center;">0.642</td>
-<td style="text-align: center;">0.090</td>
-<td style="text-align: center;">0.655</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">DeepSeek-R1</td>
-<td style="text-align: center;">0.892</td>
-<td style="text-align: center;">0.945</td>
-<td style="text-align: center;">0.053</td>
-<td style="text-align: center;">0.289</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">DeepSeek-V3.2</td>
-<td style="text-align: center;">0.807</td>
-<td style="text-align: center;">0.869</td>
-<td style="text-align: center;">0.062</td>
-<td style="text-align: center;">0.289</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">GLM-4.6</td>
-<td style="text-align: center;">0.846</td>
-<td style="text-align: center;">0.907</td>
-<td style="text-align: center;">0.061</td>
-<td style="text-align: center;">0.297</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Llama-4-Maverick</td>
-<td style="text-align: center;">0.784</td>
-<td style="text-align: center;">0.854</td>
-<td style="text-align: center;">0.070</td>
-<td style="text-align: center;">0.379</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Gemma-4-31B</td>
-<td style="text-align: center;">0.902</td>
-<td style="text-align: center;">0.973</td>
-<td style="text-align: center;">0.071</td>
-<td style="text-align: center;">0.408</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Claude-Opus-4.5</td>
-<td style="text-align: center;">0.834</td>
-<td style="text-align: center;">0.934</td>
-<td style="text-align: center;">0.100</td>
-<td style="text-align: center;">0.498</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Qwen-2.5-72B</td>
-<td style="text-align: center;">0.796</td>
-<td style="text-align: center;">0.914</td>
-<td style="text-align: center;">0.117</td>
-<td style="text-align: center;">0.553</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Kimi-K2-Thinking</td>
-<td style="text-align: center;">0.709</td>
-<td style="text-align: center;">0.853</td>
-<td style="text-align: center;">0.144</td>
-<td style="text-align: center;">0.572</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">GPT-5.1</td>
-<td style="text-align: center;">0.737</td>
-<td style="text-align: center;">0.887</td>
-<td style="text-align: center;">0.150</td>
-<td style="text-align: center;">0.653</td>
+<td style="text-align: left;">0–100 slider</td>
+<td style="text-align: center;">0.512</td>
+<td style="text-align: center;">0.590</td>
+<td style="text-align: center;">0.167</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>The comparison changes with the human reference group. Against male
-participants
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.219</mn></mrow><annotation encoding="application/x-tex">d_z = 0.219</annotation></semantics></math>),
-all nine LLM point estimates are larger, and six bootstrap intervals are
-entirely above zero. Against female participants
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.655</mn></mrow><annotation encoding="application/x-tex">d_z = 0.655</annotation></semantics></math>),
-no LLM point estimate exceeds the female-participant reference; six
-intervals are entirely below zero, while Qwen-2.5-72B, Kimi-K2-Thinking,
-and GPT-5.1 overlap zero. Against the overall human aggregate
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.621</mn></mrow><annotation encoding="application/x-tex">d_z = 0.621</annotation></semantics></math>),
-five LLMs are clearly lower (DeepSeek-R1, DeepSeek-V3.2, GLM-4.6,
-Llama-4-Maverick, and Gemma-4-31B), while Claude-Opus-4.5, Qwen-2.5-72B,
-Kimi-K2-Thinking, and GPT-5.1 overlap the aggregate reference.</p>
-<p>The magnitude comparison therefore has no reference-free answer. The
-same nine models were larger than male participants, no larger than
-female participants, and mixed against the pooled human estimate. A
-pooled human baseline is a weighted mixture of subgroups that differ in
-the outcome being evaluated.</p>
-<h2 id="sec:r4">Humans and LLMs locate the largest effects in
-sexualization and appearance</h2>
-<p>At the domain level, both human ratings and the LLM median profile
-locate the largest female-minus-male perceived-rating gaps in
-sexualization and appearance. This section provides a descriptive
-domain-level view; the chance-ranking baseline for domain-profile
-similarity is evaluated later in Section <a href="#sec:r6"
-data-reference-type="ref" data-reference="sec:r6">4.6</a>. Figure <a
-href="#fig:domain-alignment" data-reference-type="ref"
-data-reference="fig:domain-alignment">4</a> shows first-level domain
+<h2 id="sec:result-domain">Sexualization and appearance show the largest
+domain-level gaps</h2>
+<p>At the domain level, we ask whether female-targeted and male-targeted
+versions are rated as equally aggressive within each attack domain, and
+whether humans and LLMs show the same domain-level pattern. The domain
+profile shows uneven departures from equality. Both human ratings and
+the LLM median profile show the largest perceived-rating gaps in
+sexualization and appearance. Figure <a href="#fig:domain-alignment"
+data-reference-type="ref" data-reference="fig:domain-alignment">3</a>
+shows first-level domain
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 values for the three human strata and for the LLM median, with domains
-kept in a fixed order. Sexualization and appearance are the shared
-high-sensitivity domains in both human and LLM ratings.</p>
+kept in a fixed order. Sexualization and appearance have the largest
+values in both human and LLM summaries.</p>
 <figure id="fig:domain-alignment">
 <img src="fig_r4_domain_alignment_forest.png" />
 <figcaption>Forest plot of domain-level Cohen’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-values for the female-minus-male gap across the 3-point, 7-point, and
-slider scales. Points show the three human strata and the LLM median
-within each response format. Domains are kept in a fixed order;
-sexualization and appearance are listed first because they are the
-shared high-sensitivity domains across humans and LLMs.</figcaption>
+values for the female-minus-male perceived-rating gap across the
+3-point, 7-point, and slider scales. Points show the three human strata
+and the LLM median within each response format. Domains are kept in a
+fixed order; sexualization and appearance are listed first because they
+have the largest values in the human and LLM summaries.</figcaption>
 </figure>
 <p>On the human side, sexualization and appearance are the two
 highest-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
@@ -920,29 +820,28 @@ across the three scales, and appearance
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.80</mn><annotation encoding="application/x-tex">0.80</annotation></semantics></math>,
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.61</mn><annotation encoding="application/x-tex">0.61</annotation></semantics></math>.
-Female participants show the same hot zone. Male participants have a
-smaller overall effect, but their largest positive domain effects still
-fall in sexualization and appearance.</p>
-<p>The LLMs share the same broad location but not always the same
-internal ordering. The two hot-zone domains are consistently prominent
-in the LLM median. On the 3-point scale, some models flatten or invert
-the sexualization-above-appearance ordering; for example, DeepSeek-V3.2
-has sexualization
+Female participants show the same two-domain pattern. Male participants
+have a smaller overall effect; their largest positive domain effects
+still fall in sexualization and appearance.</p>
+<p>The LLM median also places the largest values in these domains, with
+some differences in internal ordering. On the 3-point scale, some models
+flatten or invert the sexualization-above-appearance ordering; for
+example, DeepSeek-V3.2 has sexualization
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mo>−</mo><mn>0.06</mn></mrow><annotation encoding="application/x-tex">d_z = -0.06</annotation></semantics></math>
 and appearance
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>z</mi></msub><mo>=</mo><mn>0.37</mn></mrow><annotation encoding="application/x-tex">d_z = 0.37</annotation></semantics></math>.
 On the 7-point and slider scales, most models show sexualization above
-appearance. Domain-level similarity is clearest at the location of the
-two high-sensitivity domains.</p>
+appearance. These results place the target-gender gap most clearly in
+domains tied to gendered bodily evaluation and sexual shaming.</p>
 <div id="tab:hotzone">
 <table>
 <caption>Cohen’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-in the two hot-zone domains, by rater and scale. The four LLMs are
+in the two largest-gap domains, by rater and scale. The four LLMs are
 illustrative and span the range of behaviour observed in the full panel.
-Humans preserve the sexualization-above-appearance ordering at every
-scale. Most LLMs do not preserve this internal ordering on the 3-point
-scale but show it on the 7-point and slider scales.</caption>
+Humans show the sexualization-above-appearance ordering at every scale.
+Most LLMs lack this internal ordering on the 3-point scale and show it
+on the 7-point and slider scales.</caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;"></th>
@@ -1030,15 +929,189 @@ style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998
 </tbody>
 </table>
 </div>
-<h2 id="sec:r5">Rating granularity changes the magnitude comparison</h2>
-<p>Even if direction and broad domain structure align, the magnitude
-comparison changes with response format. Figure <a
-href="#fig:scale-response" data-reference-type="ref"
+<h2 id="sec:result-scale">Closest human–LLM match depends on response
+scale</h2>
+<p>For RQ3, we ask which LLMs show the most similar female-minus-male
+rating pattern to the human references within each response scale. We
+fixed the response scale and human reference group before comparing
+models. The two indicators correspond to distinct scale-conditioned
+alignment claims. At the aggregate level, similarity means a small
+absolute gap between a model’s overall
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+and a human reference group’s overall
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
+At the domain level, similarity means a high Spearman correlation
+between the model and human vectors over the 10 first-level attack
+domains.</p>
+<figure id="fig:multilevel-similarity">
+<img src="fig_r6_similarity_by_analysis_level_forest.png" />
+<figcaption>The model closest to a human reference depends on the
+reference group, response scale, and alignment metric, with all three
+rating formats represented. The left panel shows the model with the
+smallest aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">|</mo><msub><mi>d</mi><mi>z</mi></msub><mo stretchy="true" form="postfix">|</mo></mrow><annotation encoding="application/x-tex">|d_z|</annotation></semantics></math>
+gap in each human-reference-by-scale cell. The right panel shows the
+model with the highest 10-domain Spearman correlation, describing
+similarity in the broad content profile of perceived gender-differential
+attack ratings.</figcaption>
+</figure>
+<p>The two metrics produce different closest-model rankings (Figure <a
+href="#fig:multilevel-similarity" data-reference-type="ref"
+data-reference="fig:multilevel-similarity">4</a>; Table <a
+href="#tab:multilevel-top-models" data-reference-type="ref"
+data-reference="tab:multilevel-top-models">5</a>). At the aggregate
+level, several models nearly match a chosen human reference: the
+smallest absolute
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+gaps are 0.032, 0.010, and 0.002 against overall humans across the three
+scales, and 0.002–0.012 against female participants. At the domain
+level, the best 10-domain Spearman correlations range from 0.56 to 0.85
+across the nine human-reference-by-scale cells. The domain count is
+small
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">k=10</annotation></semantics></math>),
+and Spearman correlations have a wide chance band: a two-sided
+permutation null with two random rankings of 10 items has an approximate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>95</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">95\%</annotation></semantics></math>
+interval of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">[</mo><mo>−</mo><mn>0.65</mn><mo>,</mo><mo>+</mo><mn>0.65</mn><mo stretchy="true" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[-0.65, +0.65]</annotation></semantics></math>.
+Under this null,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">|</mo><mi>ρ</mi><mo stretchy="true" form="postfix">|</mo></mrow><annotation encoding="application/x-tex">|\rho|</annotation></semantics></math>
+must exceed about
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.65</mn><annotation encoding="application/x-tex">0.65</annotation></semantics></math>
+to be distinguishable from random ranking. Per-cell two-sided
+permutation
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
+values are reported in Table <a href="#tab:multilevel-top-models"
+data-reference-type="ref"
+data-reference="tab:multilevel-top-models">5</a> and computed using
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mn>5</mn></msup><annotation encoding="application/x-tex">10^5</annotation></semantics></math>
+random permutations. Seven of the nine best-model cells reach
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>&lt;</mo><mn>0.05</mn></mrow><annotation encoding="application/x-tex">p&lt;0.05</annotation></semantics></math>;
+the remaining two are both anchored on the female-participant reference,
+where the best-model
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+values are 0.56 (3-point,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>0.10</mn></mrow><annotation encoding="application/x-tex">p=0.10</annotation></semantics></math>)
+and 0.64 (7-point,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>0.06</mn></mrow><annotation encoding="application/x-tex">p=0.06</annotation></semantics></math>).
+The female-participant slider cell exceeds chance
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.85</mn></mrow><annotation encoding="application/x-tex">\rho=0.85</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>0.003</mn></mrow><annotation encoding="application/x-tex">p=0.003</annotation></semantics></math>).
+These permutation values provide a chance-ranking baseline for each
+observed domain-profile correlation; they are unadjusted for model
+selection across the nine-model panel. The domain-level result echoes
+the shared sexualization and appearance pattern in Section <a
+href="#sec:result-domain" data-reference-type="ref"
+data-reference="sec:result-domain">3.4</a> for most reference-by-scale
+cells. The female-anchored coarse-scale cells remain within the chance
+band given the available domain count.</p>
+<div id="tab:multilevel-top-models">
+<table>
+<caption>Closest model by response scale and alignment metric. Values in
+the aggregate column are absolute
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+gaps, where smaller is closer. Values in the domain column are Spearman
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+over the 10 first-level attack domains, with the two-sided permutation
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
+value
+(10<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>5</mn></msup><annotation encoding="application/x-tex">^{5}</annotation></semantics></math>
+random rank-pair permutations) for each best-model
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+given alongside.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Human reference</th>
+<th style="text-align: left;">Scale</th>
+<th style="text-align: center;">Closest aggregate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
+<th style="text-align: center;">Closest 10-domain profile
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Overall humans</td>
+<td style="text-align: left;">3-point</td>
+<td style="text-align: center;">GPT-5.1 (.032)</td>
+<td style="text-align: center;">Gemma-4-31B (.66,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.044</mn></mrow><annotation encoding="application/x-tex">p=.044</annotation></semantics></math>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Overall humans</td>
+<td style="text-align: left;">7-point</td>
+<td style="text-align: center;">Qwen-2.5-72B (.010)</td>
+<td style="text-align: center;">Claude-Opus-4.5 (.66,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.044</mn></mrow><annotation encoding="application/x-tex">p=.044</annotation></semantics></math>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Overall humans</td>
+<td style="text-align: left;">Slider</td>
+<td style="text-align: center;">DeepSeek-R1 (.002)</td>
+<td style="text-align: center;">Kimi-K2-Thinking (.76,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.016</mn></mrow><annotation encoding="application/x-tex">p=.016</annotation></semantics></math>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Female participants</td>
+<td style="text-align: left;">3-point</td>
+<td style="text-align: center;">GPT-5.1 (.002)</td>
+<td style="text-align: center;">Gemma-4-31B (.56,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.097</mn></mrow><annotation encoding="application/x-tex">p=.097</annotation></semantics></math>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Female participants</td>
+<td style="text-align: left;">7-point</td>
+<td style="text-align: center;">Claude-Opus-4.5 (.012)</td>
+<td style="text-align: center;">Gemma-4-31B (.64,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.055</mn></mrow><annotation encoding="application/x-tex">p=.055</annotation></semantics></math>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Female participants</td>
+<td style="text-align: left;">Slider</td>
+<td style="text-align: center;">Kimi-K2-Thinking (.003)</td>
+<td style="text-align: center;">DeepSeek-V3.2 (.85,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.003</mn></mrow><annotation encoding="application/x-tex">p=.003</annotation></semantics></math>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Male participants</td>
+<td style="text-align: left;">3-point</td>
+<td style="text-align: center;">DeepSeek-V3.2 (.070)</td>
+<td style="text-align: center;">Qwen-2.5-72B (.72,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.024</mn></mrow><annotation encoding="application/x-tex">p=.024</annotation></semantics></math>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Male participants</td>
+<td style="text-align: left;">7-point</td>
+<td style="text-align: center;">GLM-4.6 (.155)</td>
+<td style="text-align: center;">DeepSeek-V3.2 (.81,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.007</mn></mrow><annotation encoding="application/x-tex">p=.007</annotation></semantics></math>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Male participants</td>
+<td style="text-align: left;">Slider</td>
+<td style="text-align: center;">Llama-4-Maverick (.242)</td>
+<td style="text-align: center;">Kimi-K2-Thinking (.73,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.021</mn></mrow><annotation encoding="application/x-tex">p=.021</annotation></semantics></math>)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Which model is closest depends on response scale, human reference
+group, and alignment metric. GPT-5.1 and Qwen-2.5-72B can be closest in
+aggregate magnitude, while Gemma-4-31B, Claude-Opus-4.5,
+Kimi-K2-Thinking, DeepSeek-V3.2, and Qwen-2.5-72B can be closest in the
+10-domain profile. The data do not support a single global best LLM or
+response format. They support scale-conditional reporting with the human
+reference group and alignment metric stated explicitly.</p>
+<p>As a descriptive measurement check, we also examined whether the size
+of the target-gender effect changed as rating scales became finer.
+Figure <a href="#fig:scale-response" data-reference-type="ref"
 data-reference="fig:scale-response">5</a> shows the cross-scale
 trajectory of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
-Human effects stay flat or decline as the scale becomes finer: overall
-humans move from
+In the present data, human effects stay flat or decline as the scale
+becomes finer: overall humans move from
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.621</mn><annotation encoding="application/x-tex">0.621</annotation></semantics></math>
 to
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.588</mn><annotation encoding="application/x-tex">0.588</annotation></semantics></math>
@@ -1070,18 +1143,17 @@ to
 across the 3-point, 7-point, and slider rating formats. Thin lines show
 the three human references and nine individual LLMs; thick lines show
 descriptive means within each rater type. Human effects flatten or
-decline as the response format becomes finer, while the LLM mean rises.
-These means summarize the scale-response pattern but do not imply
-inferential sampling from a broader population of LLMs.</figcaption>
+decline as the response format becomes finer; the LLM mean rises. These
+means summarize the scale-response pattern without implying inferential
+sampling from a broader population of LLMs.</figcaption>
 </figure>
-<p>This scale dependence changes the descriptive comparison. On the
-3-point scale, five of nine LLMs sit below the overall-human reference.
-On the slider, five of nine sit at or above it. Coarse annotation
-categories place more models below the overall-human reference than the
-slider does. Thus, response format changes the descriptive model–human
-comparison. This scale-response contrast is treated as a
-measurement-level pattern rather than as an inferential test over a
-population of models.</p>
+<p>This scale dependence changes the descriptive human–LLM comparison.
+On the 3-point scale, five of nine LLMs sit below the overall-human
+reference. On the slider, five of nine sit at or above it. The coarse
+annotation categories place more models below the overall-human
+reference than the slider does. This contrast is treated as a
+measurement-level pattern, without inference over a population of
+models.</p>
 <div id="tab:scale-response">
 <table>
 <caption>Cohen’s
@@ -1214,220 +1286,18 @@ The participant-gender by scale interaction was not significant,
 Female participants exceeded male participants within every scale after
 BH-FDR correction. Participant gender is the larger human-side
 determinant of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>,
-and scale also changes the observed effect. The cross-rater human–LLM
-scale contrast remains descriptive because LLMs are deterministic raters
-rather than participant-level random effects.</p>
-<h2 id="sec:r6">Human–LLM similarity is level-dependent</h2>
-<p>Aggregate similarity can hide weaker fine-grained correspondence, so
-the final layer asks which model is closest to a human reference under a
-specified metric. The indicators in this section are not interchangeable
-rankings; they correspond to distinct alignment claims. At the aggregate
-level, similarity means a small absolute gap between a model’s overall
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-and a human reference group’s overall
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>,
-asking whether the model matches the average effect size. At the domain
-level, similarity means a high Spearman correlation between the model
-and human vectors over the 10 first-level attack domains, asking whether
-the model matches the broad content organization of the perceived-rating
-effect. Item-level ICC(2,1) is reported in Table <a
-href="#tab:multilevel-top-models" data-reference-type="ref"
-data-reference="tab:multilevel-top-models">6</a> as a finer-grained
-check over the 371 paired items.</p>
-<figure id="fig:multilevel-similarity">
-<img src="fig_r6_similarity_by_analysis_level_forest.png" />
-<figcaption>The model closest to a human reference depends on the
-reference group, response scale, and analysis level, with all three
-rating formats represented. The left panel shows the model with the
-smallest aggregate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">|</mo><msub><mi>d</mi><mi>z</mi></msub><mo stretchy="true" form="postfix">|</mo></mrow><annotation encoding="application/x-tex">|d_z|</annotation></semantics></math>
-gap in each human-reference-by-scale cell. The right panel shows the
-model with the highest 10-domain Spearman correlation, describing
-similarity in the broad content profile of perceived gender-differential
-attack ratings.</figcaption>
-</figure>
-<p>The levels produce different closest-model rankings (Figure <a
-href="#fig:multilevel-similarity" data-reference-type="ref"
-data-reference="fig:multilevel-similarity">6</a>; Table <a
-href="#tab:multilevel-top-models" data-reference-type="ref"
-data-reference="tab:multilevel-top-models">6</a>). At the aggregate
-level, several models nearly match a chosen human reference: the
-smallest absolute
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-gaps are 0.032, 0.010, and 0.002 against overall humans across the three
-scales, and 0.002–0.012 against female participants. At the domain
-level, the best 10-domain Spearman correlations range from 0.56 to 0.85
-across the nine human-reference-by-scale cells. Because the domain count
-is small
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">k=10</annotation></semantics></math>),
-Spearman correlations have a wide chance band: a two-sided permutation
-null with two random rankings of 10 items has an approximate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>95</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">95\%</annotation></semantics></math>
-interval of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">[</mo><mo>−</mo><mn>0.65</mn><mo>,</mo><mo>+</mo><mn>0.65</mn><mo stretchy="true" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[-0.65, +0.65]</annotation></semantics></math>,
-so
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">|</mo><mi>ρ</mi><mo stretchy="true" form="postfix">|</mo></mrow><annotation encoding="application/x-tex">|\rho|</annotation></semantics></math>
-must exceed about
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.65</mn><annotation encoding="application/x-tex">0.65</annotation></semantics></math>
-to be distinguishable from random ranking. Per-cell two-sided
-permutation
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-values are reported in Table <a href="#tab:multilevel-top-models"
-data-reference-type="ref"
-data-reference="tab:multilevel-top-models">6</a> and computed using
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mn>5</mn></msup><annotation encoding="application/x-tex">10^5</annotation></semantics></math>
-random permutations. Seven of the nine best-model cells reach
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>&lt;</mo><mn>0.05</mn></mrow><annotation encoding="application/x-tex">p&lt;0.05</annotation></semantics></math>;
-the two cells that do not are both anchored on the female-participant
-reference, where the best-model
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
-values are 0.56 (3-point,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>0.10</mn></mrow><annotation encoding="application/x-tex">p=0.10</annotation></semantics></math>)
-and 0.64 (7-point,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>0.06</mn></mrow><annotation encoding="application/x-tex">p=0.06</annotation></semantics></math>).
-The female-participant slider cell does exceed chance
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mn>0.85</mn></mrow><annotation encoding="application/x-tex">\rho=0.85</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>0.003</mn></mrow><annotation encoding="application/x-tex">p=0.003</annotation></semantics></math>).
-These permutation values provide a chance-ranking baseline for each
-observed domain-profile correlation; they are not intended as
-model-selection-adjusted tests across the nine-model panel. The
-domain-level result echoes the shared sexualization and appearance
-pattern in Section <a href="#sec:r4" data-reference-type="ref"
-data-reference="sec:r4">4.4</a> for most reference-by-scale cells, but
-it should not be read as universal: the female-anchored coarse-scale
-cells are not separable from chance with the available domain count.</p>
-<p>At the item level, the best ICC(2,1) in each cell remains low,
-ranging from 0.089 to 0.222. Against overall humans, the best item-level
-ICC rises from 0.089 on the 3-point scale to 0.158 on the 7-point scale
-and 0.222 on the slider, with Claude-Opus-4.5 the closest model on the
-two finer scales. The item-level closest model also varies across
-human-reference-by-scale cells.</p>
-<div id="tab:multilevel-top-models">
-<table>
-<caption>Closest model by analysis level. Values in the aggregate column
-are absolute
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-gaps, where smaller is closer. Values in the domain column are Spearman
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
-over the 10 first-level attack domains, with the two-sided permutation
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-value
-(10<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>5</mn></msup><annotation encoding="application/x-tex">^{5}</annotation></semantics></math>
-random rank-pair permutations) for each best-model
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
-given alongside. Values in the item column are ICC(2,1) over the 371
-paired items.</caption>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Human reference</th>
-<th style="text-align: left;">Scale</th>
-<th style="text-align: center;">Closest aggregate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math></th>
-<th style="text-align: center;">Closest 10-domain profile
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>)</th>
-<th style="text-align: center;">Closest item profile</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Overall humans</td>
-<td style="text-align: left;">3-point</td>
-<td style="text-align: center;">GPT-5.1 (.032)</td>
-<td style="text-align: center;">Gemma-4-31B (.66,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.044</mn></mrow><annotation encoding="application/x-tex">p=.044</annotation></semantics></math>)</td>
-<td style="text-align: center;">Llama-4-Maverick (.089)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Overall humans</td>
-<td style="text-align: left;">7-point</td>
-<td style="text-align: center;">Qwen-2.5-72B (.010)</td>
-<td style="text-align: center;">Claude-Opus-4.5 (.66,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.044</mn></mrow><annotation encoding="application/x-tex">p=.044</annotation></semantics></math>)</td>
-<td style="text-align: center;">Claude-Opus-4.5 (.158)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Overall humans</td>
-<td style="text-align: left;">Slider</td>
-<td style="text-align: center;">DeepSeek-R1 (.002)</td>
-<td style="text-align: center;">Kimi-K2-Thinking (.76,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.016</mn></mrow><annotation encoding="application/x-tex">p=.016</annotation></semantics></math>)</td>
-<td style="text-align: center;">Claude-Opus-4.5 (.222)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Female participants</td>
-<td style="text-align: left;">3-point</td>
-<td style="text-align: center;">GPT-5.1 (.002)</td>
-<td style="text-align: center;">Gemma-4-31B (.56,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.097</mn></mrow><annotation encoding="application/x-tex">p=.097</annotation></semantics></math>)</td>
-<td style="text-align: center;">DeepSeek-R1 (.100)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Female participants</td>
-<td style="text-align: left;">7-point</td>
-<td style="text-align: center;">Claude-Opus-4.5 (.012)</td>
-<td style="text-align: center;">Gemma-4-31B (.64,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.055</mn></mrow><annotation encoding="application/x-tex">p=.055</annotation></semantics></math>)</td>
-<td style="text-align: center;">Claude-Opus-4.5 (.116)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Female participants</td>
-<td style="text-align: left;">Slider</td>
-<td style="text-align: center;">Kimi-K2-Thinking (.003)</td>
-<td style="text-align: center;">DeepSeek-V3.2 (.85,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.003</mn></mrow><annotation encoding="application/x-tex">p=.003</annotation></semantics></math>)</td>
-<td style="text-align: center;">Qwen-2.5-72B (.112)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Male participants</td>
-<td style="text-align: left;">3-point</td>
-<td style="text-align: center;">DeepSeek-V3.2 (.070)</td>
-<td style="text-align: center;">Qwen-2.5-72B (.72,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.024</mn></mrow><annotation encoding="application/x-tex">p=.024</annotation></semantics></math>)</td>
-<td style="text-align: center;">Llama-4-Maverick (.096)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Male participants</td>
-<td style="text-align: left;">7-point</td>
-<td style="text-align: center;">GLM-4.6 (.155)</td>
-<td style="text-align: center;">DeepSeek-V3.2 (.81,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.007</mn></mrow><annotation encoding="application/x-tex">p=.007</annotation></semantics></math>)</td>
-<td style="text-align: center;">GLM-4.6 (.155)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Male participants</td>
-<td style="text-align: left;">Slider</td>
-<td style="text-align: center;">Llama-4-Maverick (.242)</td>
-<td style="text-align: center;">Kimi-K2-Thinking (.73,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mn>.021</mn></mrow><annotation encoding="application/x-tex">p=.021</annotation></semantics></math>)</td>
-<td style="text-align: center;">DeepSeek-R1 (.174)</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Which model is closest depends on the level of analysis. GPT-5.1 and
-Qwen-2.5-72B can be closest in aggregate magnitude, Gemma-4-31B or
-Kimi-K2-Thinking can be closest in the 10-domain profile, and
-Claude-Opus-4.5 is often closest at the item level for overall humans on
-finer scales. These three rankings describe three different alignment
-claims and do not collapse into one global ordering.</p>
-<h2 id="sec:r7">Alignment is conditional on reference group, scale, and
-analytic level</h2>
-<p>The layers above converge on a conditional alignment profile rather
-than a single alignment score (Table <a href="#tab:alignment-summary"
-data-reference-type="ref" data-reference="tab:alignment-summary">7</a>).
-Direction-level agreement is strong. Magnitude agreement depends on the
-human reference group. Domain-level agreement is partial: sexualization
-and appearance form a shared hot zone, but some reference-by-scale cells
-are not separable from a chance-ranking baseline. Scale changes the
-model-human comparison. Item-level agreement remains weak.</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>;
+scale remains a smaller detectable measurement condition. The
+cross-rater human–LLM scale contrast remains descriptive because LLMs
+are deterministic raters and provide no participant-level random
+effects. The overall result is summarized in Table <a
+href="#tab:alignment-summary" data-reference-type="ref"
+data-reference="tab:alignment-summary">7</a>.</p>
 <div id="tab:alignment-summary">
 <table style="width:87%;">
-<caption>Structured alignment profile. The table separates the questions
-that a single alignment coefficient would collapse: direction,
-magnitude, domain structure, scale response, and item-level
-localization.</caption>
+<caption>Results organized by the primary research questions and planned
+comparison order. Aggregate effect-size and domain-profile diagnostics
+are used to describe scale-conditional human–LLM alignment.</caption>
 <colgroup>
 <col style="width: 24%" />
 <col style="width: 18%" />
@@ -1436,7 +1306,7 @@ localization.</caption>
 </colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">Question</th>
+<th style="text-align: left;">Result focus</th>
 <th style="text-align: left;">Answer</th>
 <th style="text-align: left;">Main evidence</th>
 <th style="text-align: left;">Result summary</th>
@@ -1444,236 +1314,299 @@ localization.</caption>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Do humans and LLMs agree on
-direction?</td>
-<td style="text-align: left;">Yes</td>
-<td style="text-align: left;">36/36 rater-by-scale cells have positive
+<td style="text-align: left;">Target-gender equality</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">36/36 cells have positive
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math></td>
-<td style="text-align: left;">Same direction</td>
+<td style="text-align: left;">Female-targeted versions are rated
+higher</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Do they agree in magnitude?</td>
-<td style="text-align: left;">It depends on the human reference</td>
-<td style="text-align: left;">LLMs are above male participants, at or
-below female participants, and mixed against overall humans</td>
-<td style="text-align: left;">Reference-dependent magnitude</td>
+<td style="text-align: left;">Human–LLM pattern</td>
+<td style="text-align: left;">Direction yes; magnitude conditional</td>
+<td style="text-align: left;">Models are above male raters, at or below
+female raters, and mixed against pooled humans</td>
+<td style="text-align: left;">Alignment depends on the human
+reference</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Do they locate the effect in the same
-domains?</td>
-<td style="text-align: left;">Partially</td>
+<td style="text-align: left;">Human rater gender</td>
+<td style="text-align: left;">Direction yes; strength differs</td>
+<td style="text-align: left;">Female-rater
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+exceeds male-rater
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
+on all scales</td>
+<td style="text-align: left;">Female raters show a larger gap</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Domain pattern</td>
+<td style="text-align: left;">Yes</td>
 <td style="text-align: left;">Sexualization and appearance are the
-shared high-sensitivity domains, but some profile correlations do not
-exceed the chance-ranking baseline</td>
-<td style="text-align: left;">Shared hot zone, chance-limited profile
-agreement</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Does scale preserve the human–LLM
-comparison?</td>
-<td style="text-align: left;">No</td>
-<td style="text-align: left;">Human
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-dampens or peaks; most LLM
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-values increase</td>
-<td style="text-align: left;">Opposite scale-response pattern</td>
+shared largest-gap domains</td>
+<td style="text-align: left;">Gap concentrates in gendered attack
+domains</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Does aggregate agreement imply item
-agreement?</td>
-<td style="text-align: left;">No</td>
-<td style="text-align: left;">Best ICC(2,1) is 0.222; closest model
-changes across cells</td>
-<td style="text-align: left;">Weak item-level correspondence</td>
+<td style="text-align: left;">Scale-conditioned model similarity</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Closest model changes by human reference,
+response scale, and metric</td>
+<td style="text-align: left;">No single model is closest across all
+conditions</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Human–LLM alignment in gender-differential attack ratings varies with
-the human reference group, the rating scale, and the level of analysis,
-and cannot be summarized by a single agreement coefficient.</p>
 <h1 id="sec:discussion">Discussion</h1>
-<h2 id="theoretical-implications">Theoretical implications</h2>
-<p>These findings are not well described by a simple aggregate-reference
-interpretation of LLM gendered-attack ratings. The closest human
-reference varied across response formats: it lay in the segment between
-the male-participant and pooled-human references on the 3-point scale,
-and shifted toward and above the female-participant reference on the
-slider. Item-level
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">I</mi><mi mathvariant="normal">C</mi><mi mathvariant="normal">C</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathrm{ICC}(2,1)</annotation></semantics></math>
-values remained in the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.089</mn><annotation encoding="application/x-tex">0.089</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.222</mn><annotation encoding="application/x-tex">0.222</annotation></semantics></math>
-range even when aggregate
+<h2
+id="the-same-attack-is-perceived-as-more-aggressive-when-it-targets-women">The
+same attack is perceived as more aggressive when it targets women</h2>
+<p>The central finding is that target gender systematically changed
+perceived aggressiveness even when attack content was held constant.
+Across all human and LLM rater-by-scale cells, female-targeted versions
+received higher perceived-attack ratings than matched male-targeted
+versions. The result concerns perceived severity in Chinese gendered
+attack language: the same hostile sentence received different ratings
+when the target was female versus male.</p>
+<p>The size of this effect depends on the human reference group. Female
+raters showed a larger female-minus-male gap than male raters, with the
+pooled human estimate falling between them. LLMs mapped differently onto
+different human baselines: on the 3-point scale, they were above the
+male-rater reference, at or below the female-rater reference, and mixed
+relative to the pooled human reference. Claims about LLM alignment in
+this setting require an explicit human reference group.</p>
+<h2
+id="sexualization-and-appearance-are-the-key-attack-domains">Sexualization
+and appearance are the key attack domains</h2>
+<p>The target-gender gap was unevenly distributed across attack content.
+For both humans and LLMs, the largest female-minus-male gaps appeared in
+sexualization and appearance. These domains directly invoke gendered
+bodily evaluation, sexual moral judgement, and appearance-based social
+scrutiny. The additional perceived aggressiveness of female-targeted
+versions is concentrated in domains where Chinese gender hostility is
+especially tied to bodies, sexuality, and gender norms.</p>
+<p>This domain pattern also clarifies the observed human–LLM similarity.
+LLMs produced a positive average gap and placed much of the gap in the
+same broad content regions as human raters. Domain-profile correlations
+show that this similarity depends on the human reference group, response
+scale, and model. The models captured the broad location of the effect,
+especially the prominence of sexualization and appearance.</p>
+<h2 id="response-format-changes-the-humanllm-comparison">Response format
+changes the human–LLM comparison</h2>
+<p>The scale results show that response format is part of the
+measurement design. In the present data, human
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-values nearly coincided. A cue-based similarity interpretation fits the
-pattern more closely: LLMs preserve broad, high-salience structure,
-including the positive direction of the target-gender effect and the
-sexualization/appearance hot zone, while diverging from humans in effect
-magnitude, response-scale behaviour, and item-level ordering. The
-domain-profile results constrain this interpretation: LLMs located the
-effect in the same content regions as humans only when the
-domain-profile alignment exceeded chance (a permutation null for
-Spearman over 10 domains has a
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>95</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">95\%</annotation></semantics></math>
-two-sided interval of approximately
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">[</mo><mo>−</mo><mn>0.65</mn><mo>,</mo><mo>+</mo><mn>0.65</mn><mo stretchy="true" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">[-0.65, +0.65]</annotation></semantics></math>,
-so domain similarities below that band cannot be distinguished from
-random ranking). The cue-based reading therefore concerns the
-<em>granularity</em> of LLM social judgement at the item level, with
-content sensitivity at the aggregate and domain level preserved.</p>
-<p>Cross-model variability is large and is not adjudicated by the
-cue-based interpretation above. Within the present panel,
+values stayed flat or became smaller as the scale moved from 3-point to
+7-point to slider. Most LLM
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-on the 3-point scale ranges from
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.289</mn><annotation encoding="application/x-tex">0.289</annotation></semantics></math>
-to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.653</mn><annotation encoding="application/x-tex">0.653</annotation></semantics></math>,
-and the slope from 3-point to slider ranges from
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>+</mo><mn>0.10</mn></mrow><annotation encoding="application/x-tex">+0.10</annotation></semantics></math>
-(Claude-Opus-4.5, GPT-5.1) to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>+</mo><mn>0.61</mn></mrow><annotation encoding="application/x-tex">+0.61</annotation></semantics></math>
-(Gemma-4-31B). A <em>sensitivity-calibrated</em> sub-account would
-predict that safety- or instruction-tuning makes some models
-systematically more responsive on protected-attribute content as the
-scale gives them more numerical room to express that response, and
-Figure <a href="#fig:scatter-q5" data-reference-type="ref"
-data-reference="fig:scatter-q5">7</a> reports an exploratory descriptive
-view of 3-point
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-against approximate parameter count and tuning regime. The figure is
-explicitly non-inferential: with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">n=9</annotation></semantics></math>
-production LLMs and confounding between parameter count, tuning regime,
-and pretraining corpus, no inferential test is justified. Other
-plausible moderators of LLM-to-LLM variability include the tuning regime
-(instruction-tuning vs. safety-oriented RLHF vs. reasoning-oriented RL),
-system-prompt formulation at inference, and pretraining-corpus
-composition; separating their contributions requires a controlled
-comparison that varies each moderator while holding the others
-fixed.</p>
-<figure id="fig:scatter-q5">
-<img src="fig_r7_llm_3pt_dz_by_params_tuning.png" />
-<figcaption>Exploratory view of 3-point
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-across the nine LLMs in the panel, plotted against the approximate
-parameter count on a
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mo>log</mo><mn>10</mn></msub><annotation encoding="application/x-tex">\log_{10}</annotation></semantics></math>
-axis (closed-source models on the right stripe). Marker shape and colour
-encode the tuning regime. This figure is descriptive only: with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">n=9</annotation></semantics></math>
-and multiple confounded moderators, no statistical test is conducted and
-no claim about which moderator drives between-model differences is
-made.</figcaption>
-</figure>
-<h2 id="methodological-implications">Methodological implications</h2>
-<p>Reporting a single agreement metric against a pooled human reference
-under one response format can support an aggregate-reference reading in
-one slice of the data while other slices undermine it. The same panel of
-nine LLMs that looks above the pooled-human
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-on the slider sits below it on the 3-point scale (Section <a
-href="#sec:r5" data-reference-type="ref"
-data-reference="sec:r5">4.5</a>), and the same panel that nearly matches
-humans in aggregate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-shows item-level ICCs of at most
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.222</mn><annotation encoding="application/x-tex">0.222</annotation></semantics></math>
-(Section <a href="#sec:r6" data-reference-type="ref"
-data-reference="sec:r6">4.6</a>). A pooled-human gold label also hides
-subgroup structure, since female and male participants produced
-systematically different
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>
-values, so an aggregate similarity claim is not interpretable without
-naming the human reference group. Domain-level Spearman correlations
-require an explicit permutation-null baseline because with only 10
-attack domains random ranking already covers a wide band, so a moderate
-Spearman value is not automatically informative. Controlled minimal-pair
-stimuli are needed to isolate target gender from content extremity,
-which is confounded with target identity in natural corpora (Section <a
-href="#sec:r1" data-reference-type="ref"
-data-reference="sec:r1">4.1</a>). For LLM-rater validation studies, the
-alignment construct must be reported as a structured profile across
-direction, aggregate magnitude, domain profile, and item level, and
-across at least two measurement moderators (human reference group and
-response format), rather than as a single global agreement number.</p>
-<h2 id="practical-implications">Practical implications</h2>
-<p>For Chinese social-computing pipelines that use LLM ratings of
-gendered attack content, three concrete uses are constrained by these
-findings. First, an LLM rating against a single pooled-human label
-cannot be interpreted as the LLM’s match to female perceivers’
-judgements even when the aggregate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-values are close, because pooled-human aggregates are mixtures of
-subgroups with materially different
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Δ</mi><mrow><mi>F</mi><mo>−</mo><mi>M</mi></mrow></msub><annotation encoding="application/x-tex">\Delta_{F-M}</annotation></semantics></math>.
-Second, an aggregate-level agreement statistic cannot certify item-level
-interchangeability for moderation pipelines that act on individual
-posts, since aggregate similarity in this study coexists with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">I</mi><mi mathvariant="normal">C</mi><mi mathvariant="normal">C</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo>≤</mo><mn>0.222</mn></mrow><annotation encoding="application/x-tex">\mathrm{ICC}(2,1) \leq 0.222</annotation></semantics></math>
-at the item level, meaning that two LLMs that look indistinguishable in
-mean effect size can still rank individual sentences very differently.
-Third, a model-versus-human comparison conducted on a coarse 3-point
-scale does not transfer to deployment settings that elicit finer-grained
-ratings (such as continuous toxicity scores), because the LLM-to-human
-gap is not monotone in scale granularity: human
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-values flatten or decline as the scale becomes finer, while most LLM
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-values increase. Pipelines that depend on any of these three
-substitutions need an alignment profile specific to their deployed
-reference group, scale, and analytic level rather than a transferred
-single-number agreement claim.</p>
-<p>The methodological recommendation that follows is narrower than
-“report multiple metrics.” Evaluations of LLM social judgements on
-subjective content should specify, at minimum, (a) the human reference
-group, naming subgroups when subgroup gaps are larger than the scale
-main effect; (b) the response scale, treated as a measurement condition
-rather than a robustness check; and (c) the analytic level, separating
-aggregate, domain-profile, and item-level correspondence. Without these
-three pieces, an alignment claim is underspecified and can support
-contradictory readings of the same underlying data.</p>
+values became larger. This pattern changes the descriptive alignment
+conclusion: the same model panel can look more moderate than the pooled
+human reference on a coarse 3-point scale and closer to, or above, that
+reference on the slider.</p>
+<p>This finding matters because LLM evaluation studies often treat the
+response scale as a prompt-design choice. Here, response format changed
+the substantive comparison between human and model judgements. A model
+that appears aligned under one scale may differ under another.
+Evaluations of LLM social judgements should report response format as
+part of the measurement design.</p>
+<h2 id="implications">Implications</h2>
+<p>The theoretical contribution is to frame Chinese gendered hate
+evaluation as a target-gender perception problem. The minimal-pair
+design shows that the same hostile content can be perceived differently
+when the target gender changes, with differences structured by attack
+domain and response scale. The methodological contribution is to specify
+human–LLM alignment as a profile: direction, effect size, human
+reference group, domain structure, and response scale can lead to
+different interpretations.</p>
+<p>For platform governance and model evaluation, the findings caution
+against reliance on a single pooled-human label. Pooled-human aggregates
+hide subgroup differences, and response scales can change the human–LLM
+comparison. If the goal is to simulate human judgement, the human
+reference group and scale must be named. If the goal is content
+moderation or harm screening, closeness to a pooled human average
+requires an explicit policy standard for what kinds of gendered harm
+should be prioritized.</p>
 <h1 id="limitations-and-future-work">Limitations and Future Work</h1>
-<p>The minimal-pair items are Chinese; whether the same pattern of
+<p>The minimal-pair items are Chinese. Whether the same pattern of
 measurement-conditional alignment holds in a parallel English corpus,
-where the gender-marking morphology and pronoun system differ, is an
-open question that we are pursuing in follow-up work. The participant
-pool is a Chinese online sample with a young, urban skew and is not
-nationally representative; the human reference values reported here
-should be read as the values of <em>this</em> pool rather than as
-universal human baselines. The LLM panel is a snapshot of November 2025
-production models; reproducibility under later versions and under
-fine-tuned annotation prompts will require re-evaluation. We used
-zero-shot prompting as the main setting; whether chain-of-thought,
-system-prompt scaffolding, or task-specific fine-tuning attenuate the
-granularity inversion is open. The minimal-pair design isolates the
-gender referent but may not capture all pragmatic and contextual
+where gender-marking morphology and pronoun systems differ, is an open
+question for follow-up work. The participant pool is a nonrepresentative
+Chinese online sample with a young, urban skew; the human reference
+values reported here should be read as the values of <em>this</em> pool.
+The LLM panel is a snapshot of November 2025 production models;
+reproducibility under later versions and under fine-tuned annotation
+prompts will require re-evaluation. We used zero-shot prompting as the
+main setting, leaving chain-of-thought, system-prompt scaffolding, and
+task-specific fine-tuning for future work. The minimal-pair design
+isolates the gender referent and may omit pragmatic and contextual
 features of real hate speech, including multimodal cues, reply context,
 and audience-targeted dog-whistle language. Participant gender is
 treated as binary in the present analysis because the data permit only
 that contrast at sample sizes large enough for stable per-cell
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>;
 future work with larger non-binary samples should examine more nuanced
-identity variables. Finally, the three rating formats may differ not
-only in granularity but also in cognitive demand, time on task, and
-anchor availability; disentangling those mechanisms will require
-dedicated psychophysical follow-up.</p>
+identity variables. Finally, the three rating formats may differ in
+granularity, cognitive demand, time on task, and anchor availability;
+disentangling those mechanisms will require dedicated psychophysical
+follow-up.</p>
 <h1 id="conclusion">Conclusion</h1>
 <p>When attack content is held fixed, humans and LLMs agree on the
 direction of the gender-differential perceived-rating effect:
-female-targeted versions are rated as more attacking on average. They
-also share a broad content structure, with the largest effects
-concentrated in sexualization and appearance. The agreement stops short
-of full interchangeability. Magnitude depends on the human reference
-group, scale changes the model-human comparison, and item-level ICC
-remains low even when aggregate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
-is close. The practical conclusion is that LLM alignment on
-gender-differential attack ratings should be reported as a profile
-across reference groups, response formats, and analytic levels.
-Evaluations should specify which human reference, which response scale,
-and which analytic level the alignment claim applies to before asking
-whether LLM ratings are more or less biased than human ratings.</p>
+female-targeted versions are rated as more attacking on average. Their
+perceived-rating gaps are also largest in sexualization and appearance.
+Model–human similarity depends on the human reference group, response
+scale, and alignment metric. LLM alignment on gender-differential attack
+ratings should be reported as a scale-conditional profile across
+reference groups and response formats. Evaluations should specify
+whether the goal is to reproduce a particular human reference, apply an
+external fairness criterion, or measure variation in human
+perception.</p>
+<h1 id="app:stimulus-examples">Representative minimal-pair stimuli</h1>
+<p>Table <a href="#tab:stimulus-examples" data-reference-type="ref"
+data-reference="tab:stimulus-examples">8</a> shows one representative
+item from each first-level attack domain, with two additional
+high-intensity examples from the appearance and sexualization domains.
+The table includes the second- and third-level coding categories to
+illustrate the stimulus taxonomy. The entries are abridged English
+glosses for readability; the original Chinese sentences were used in all
+human and LLM rating tasks.</p>
+<div id="tab:stimulus-examples">
+<table style="width:93%;">
+<caption>Representative minimal-pair stimuli by first-level attack
+domain, with two additional high-intensity examples from the two
+largest-gap domains. Numbers in parentheses give the number of templates
+in the 371-item stimulus set for that domain. English glosses are
+provided for readability; all rating tasks used the original Chinese
+sentences.</caption>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 15%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">First-level domain</th>
+<th style="text-align: left;">Second-level attribute</th>
+<th style="text-align: left;">Third-level strategy</th>
+<th style="text-align: left;">Female-targeted gloss</th>
+<th style="text-align: left;">Male-targeted gloss</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Appearance (37)</td>
+<td style="text-align: left;">Physical appearance</td>
+<td style="text-align: left;">Ugly / unattractive</td>
+<td style="text-align: left;">This woman is so ugly that even she would
+scare herself in a dream.</td>
+<td style="text-align: left;">This man is so ugly that even he would
+scare himself in a dream.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Appearance</td>
+<td style="text-align: left;">Physical appearance</td>
+<td style="text-align: left;">Ugly / unattractive</td>
+<td style="text-align: left;">This woman looks so repulsive that people
+would lose their appetite just seeing her.</td>
+<td style="text-align: left;">This man looks so repulsive that people
+would lose their appetite just seeing him.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Capability / competence (47)</td>
+<td style="text-align: left;">Work ability</td>
+<td style="text-align: left;">Low efficiency / procrastination</td>
+<td style="text-align: left;">This woman works painfully slowly; even a
+simple project drags on forever.</td>
+<td style="text-align: left;">This man works painfully slowly; even a
+simple project drags on forever.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Intellectual rationality (40)</td>
+<td style="text-align: left;">Intelligence</td>
+<td style="text-align: left;">Stupid / low intelligence</td>
+<td style="text-align: left;">This woman is hopelessly stupid, with a
+brain like paste.</td>
+<td style="text-align: left;">This man is hopelessly stupid, with a
+brain like paste.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Emotional stability (38)</td>
+<td style="text-align: left;">Emotionality label</td>
+<td style="text-align: left;">Too emotional / irrational</td>
+<td style="text-align: left;">This woman gets carried away and starts
+attacking before knowing the facts.</td>
+<td style="text-align: left;">This man gets carried away and starts
+attacking before knowing the facts.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Moral character (52)</td>
+<td style="text-align: left;">Honesty</td>
+<td style="text-align: left;">Hypocritical / two-faced</td>
+<td style="text-align: left;">This woman smiles to your face and betrays
+you behind your back.</td>
+<td style="text-align: left;">This man smiles to your face and betrays
+you behind your back.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sexualization / sexual shaming (33)</td>
+<td style="text-align: left;">Sexual morality shaming</td>
+<td style="text-align: left;">Promiscuity / poor sexual conduct</td>
+<td style="text-align: left;">This woman’s private life is a mess; she
+looks dirty.</td>
+<td style="text-align: left;">This man’s private life is a mess; he
+looks dirty.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sexualization / sexual shaming</td>
+<td style="text-align: left;">Sexual morality shaming</td>
+<td style="text-align: left;">Promiscuity / poor sexual conduct</td>
+<td style="text-align: left;">This woman sleeps around and still
+pretends to be respectable; she looks filthy.</td>
+<td style="text-align: left;">This man sleeps around and still pretends
+to be respectable; he looks filthy.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Interpersonal relations (40)</td>
+<td style="text-align: left;">Social ability</td>
+<td style="text-align: left;">Disliked / not accepted</td>
+<td style="text-align: left;">No one planned to include this woman;
+forcing herself in only makes her look unwanted.</td>
+<td style="text-align: left;">No one planned to include this man;
+forcing himself in only makes him look unwanted.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Social status (36)</td>
+<td style="text-align: left;">Legitimacy of authority</td>
+<td style="text-align: left;">Too junior / unqualified</td>
+<td style="text-align: left;">This woman has only been around for a few
+days and now wants to lecture others. Who gave her the right?</td>
+<td style="text-align: left;">This man has only been around for a few
+days and now wants to lecture others. Who gave him the right?</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Economic resources (34)</td>
+<td style="text-align: left;">Income ability</td>
+<td style="text-align: left;">Poor earning capacity</td>
+<td style="text-align: left;">This kind of woman lives on a tiny salary
+and deserves to stay poor forever.</td>
+<td style="text-align: left;">This kind of man lives on a tiny salary
+and deserves to stay poor forever.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gender role / expression (14)</td>
+<td style="text-align: left;">Gender expression</td>
+<td style="text-align: left;">Insufficient femininity / masculinity</td>
+<td style="text-align: left;">This woman has no femininity at all; what
+kind of woman is she?</td>
+<td style="text-align: left;">This man has no masculinity at all; what
+kind of man is he?</td>
+</tr>
+</tbody>
+</table>
+</div>
 <h1 id="app:domain-mean-gap">Alternative domain-level mean-gap
 visualization</h1>
 <figure id="fig:domain-alignment-ci">
@@ -1685,23 +1618,21 @@ Points show normalized mean
 within each first-level attack domain, and horizontal bars show
 bootstrap 95% confidence intervals. This version emphasizes uncertainty
 around domain-level mean gaps; Figure <a href="#fig:domain-alignment"
-data-reference-type="ref" data-reference="fig:domain-alignment">4</a>
+data-reference-type="ref" data-reference="fig:domain-alignment">3</a>
 emphasizes the scale-free
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>
 comparison.</figcaption>
 </figure>
-<h1 id="app:slider-summary">Slider per-rater summary (counterpart of
-Table <a href="#tab:dz-3pt" data-reference-type="ref"
-data-reference="tab:dz-3pt">3</a>)</h1>
+<h1 id="app:slider-summary">Slider per-rater summary</h1>
 <div id="tab:dz-slider">
 <table>
 <caption>Per-rater slider-scale summary, sorted within each block by
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>z</mi></msub><annotation encoding="application/x-tex">d_z</annotation></semantics></math>.
 Means are normalized to scale max. On the slider scale, five LLMs (Kimi,
 Qwen, GPT-5.1, Claude, Gemma) sit at or above the overall-human
-reference, the inversion of the 3-point pattern in Table <a
-href="#tab:dz-3pt" data-reference-type="ref"
-data-reference="tab:dz-3pt">3</a>.</caption>
+reference, unlike the 3-point pattern reported in Section <a
+href="#sec:result-human-llm" data-reference-type="ref"
+data-reference="sec:result-human-llm">3.2</a>.</caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;">Rater</th>
@@ -1803,11 +1734,10 @@ style="text-align: center;"><math display="inline" xmlns="http://www.w3.org/1998
 </div>
 <h1 class="unnumbered" id="data-and-code">Data and Code</h1>
 <p>All artifacts referenced here, including the revised reference-group
-bootstrap plot, domain forest plot, scale-response trajectory,
-item-level dissociation figure, analysis tables, and source code, are
-available in the project repository.</p>
+bootstrap plot, domain forest plot, scale-response trajectory, analysis
+tables, and source code, are available in the project repository.</p>
 <div class="thebibliography">
-<p><span>32</span></p>
+<p><span>39</span></p>
 <p>Abele, A. E., and Wojciszke, B. (2007). Agency and communion from the
 perspective of self versus others. <em>Journal of Personality and Social
 Psychology</em>, 93(5), 751–763. <a
@@ -1840,6 +1770,12 @@ annotations. <em>Transactions of the Association for Computational
 Linguistics</em>, 10, 92–110. <a
 href="https://doi.org/10.1162/tacl_a_00449"
 class="uri">https://doi.org/10.1162/tacl_a_00449</a></p>
+<p>Deng, J., Zhou, J., Sun, H., Mi, F., and Huang, M. (2022). COLD: A
+benchmark for Chinese offensive language detection. In <em>Proceedings
+of the 2022 Conference on Empirical Methods in Natural Language
+Processing</em> (pp. 11580–11599). Association for Computational
+Linguistics. <a href="https://aclanthology.org/2022.emnlp-main.796"
+class="uri">https://aclanthology.org/2022.emnlp-main.796</a></p>
 <p>Dutta, A., Banducci, S., and Camargo, C. Q. (2025). Divided by
 discipline? A systematic literature review on the quantification of
 online sexism and misogyny using a semi-automated approach.
@@ -1906,6 +1842,19 @@ gender politics, and misogyny in China’s state-market nexus. <em>Media,
 Culture &amp; Society</em>, 46(1), 191–207. <a
 href="https://doi.org/10.1177/01634437221146905"
 class="uri">https://doi.org/10.1177/01634437221146905</a></p>
+<p>Lu, K., Mardziel, P., Wu, F., Amancharla, P., and Datta, A. (2018).
+Gender bias in neural natural language processing. <em>arXiv preprint
+arXiv:1807.11714</em>. <a
+href="https://doi.org/10.48550/arXiv.1807.11714"
+class="uri">https://doi.org/10.48550/arXiv.1807.11714</a></p>
+<p>Lu, J., Xu, B., Zhang, X., Min, C., Yang, L., and Lin, H. (2023).
+Facilitating fine-grained detection of Chinese toxic language:
+Hierarchical taxonomy, resources, and benchmarks. In <em>Proceedings of
+the 61st Annual Meeting of the Association for Computational Linguistics
+(Volume 1: Long Papers)</em> (pp. 16235–16250). Association for
+Computational Linguistics. <a
+href="https://doi.org/10.18653/v1/2023.acl-long.898"
+class="uri">https://doi.org/10.18653/v1/2023.acl-long.898</a></p>
 <p>Lozano, L. M., García-Cueto, E., and Muñiz, J. (2008). Effect of the
 number of response categories on the reliability and validity of rating
 scales. <em>Methodology: European Journal of Research Methods for the
@@ -1938,6 +1887,13 @@ Computational Linguistics</em> (pp. 4902–4912). Association for
 Computational Linguistics. <a
 href="https://doi.org/10.18653/v1/2020.acl-main.442"
 class="uri">https://doi.org/10.18653/v1/2020.acl-main.442</a></p>
+<p>Rudinger, R., Naradowsky, J., Leonard, B., and Van Durme, B. (2018).
+Gender bias in coreference resolution. In <em>Proceedings of the 2018
+Conference of the North American Chapter of the Association for
+Computational Linguistics: Human Language Technologies, Volume 2 (Short
+Papers)</em> (pp. 8–14). Association for Computational Linguistics. <a
+href="https://doi.org/10.18653/v1/N18-2002"
+class="uri">https://doi.org/10.18653/v1/N18-2002</a></p>
 <p>Röttger, P., Vidgen, B., Nguyen, D., Waseem, Z., Margetts, H., and
 Pierrehumbert, J. (2021). HateCheck: Functional tests for hate speech
 detection models. In <em>Proceedings of the 59th Annual Meeting of the
@@ -1967,6 +1923,11 @@ countries. In <em>Proceedings of the 2023 CHI Conference on Human
 Factors in Computing Systems (CHI ’23)</em>, Article 485, pp. 1–16. ACM,
 Hamburg, Germany. <a href="https://doi.org/10.1145/3544548.3581020"
 class="uri">https://doi.org/10.1145/3544548.3581020</a></p>
+<p>Simms, L. J., Zelazny, K., Williams, T. F., and Bernstein, L. (2019).
+Does the number of response options matter? Psychometric perspectives
+using personality questionnaire data. <em>Psychological Assessment</em>,
+31(4), 557–566. <a href="https://doi.org/10.1037/pas0000648"
+class="uri">https://doi.org/10.1037/pas0000648</a></p>
 <p>Sun, H., Pei, J., Choi, M., and Jurgens, D. (2025). Sociodemographic
 prompting is not yet an effective approach for simulating subjective
 judgments with LLMs. In <em>Proceedings of the 2025 Conference of the
@@ -1985,11 +1946,26 @@ Online interventions for reducing hate speech and cyberhate: A
 systematic review. <em>Campbell Systematic Reviews</em>, 18(2), Article
 e1243. <a href="https://doi.org/10.1002/cl2.1243"
 class="uri">https://doi.org/10.1002/cl2.1243</a></p>
+<p>Zhao, J., Wang, T., Yatskar, M., Ordonez, V., and Chang, K.-W.
+(2018). Gender bias in coreference resolution: Evaluation and debiasing
+methods. In <em>Proceedings of the 2018 Conference of the North American
+Chapter of the Association for Computational Linguistics: Human Language
+Technologies, Volume 2 (Short Papers)</em> (pp. 15–20). Association for
+Computational Linguistics. <a
+href="https://doi.org/10.18653/v1/N18-2003"
+class="uri">https://doi.org/10.18653/v1/N18-2003</a></p>
 <p>Ziems, C., Held, W., Shaikh, O., Chen, J., Zhang, Z., and Yang, D.
 (2024). Can large language models transform computational social
 science? <em>Computational Linguistics</em>, 50(1), 237–291. <a
 href="https://doi.org/10.1162/coli_a_00502"
 class="uri">https://doi.org/10.1162/coli_a_00502</a></p>
+<p>Zmigrod, R., Mielke, S. J., Wallach, H., and Cotterell, R. (2019).
+Counterfactual data augmentation for mitigating gender stereotypes in
+languages with rich morphology. In <em>Proceedings of the 57th Annual
+Meeting of the Association for Computational Linguistics</em> (pp.
+1651–1661). Association for Computational Linguistics. <a
+href="https://doi.org/10.18653/v1/P19-1161"
+class="uri">https://doi.org/10.18653/v1/P19-1161</a></p>
 </div>
 </body>
 </html>
