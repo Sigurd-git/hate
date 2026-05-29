@@ -258,150 +258,101 @@ def draw_schematic() -> plt.Figure:
     """Build and return the method-design schematic."""
 
     sns.set_theme(style="white")
-    figure, axis = plt.subplots(figsize=(15.2, 4.9), dpi=220)
-    axis.set_xlim(0, 16)
-    axis.set_ylim(0, 5.6)
+    figure, axis = plt.subplots(figsize=(15.4, 4.65), dpi=220)
+    axis.set_xlim(0, 15.2)
+    axis.set_ylim(0, 4.9)
     axis.axis("off")
 
-    # Shared material source.
+    human_y = 3.45
+    llm_y = 1.45
+    corpus_center = (1.62, 2.45)
+    corpus_width = 2.78
+    corpus_height = 1.38
+
     add_box(
         axis,
-        center=(1.78, 3.02),
-        size=(2.82, 1.46),
+        center=corpus_center,
+        size=(corpus_width, corpus_height),
         title="371 minimal-pair corpus",
         detail="371 paired templates\nfemale + male versions\ndomain labels retained",
         facecolor=COLORS["corpus_fill"],
-        title_size=12.0,
-        detail_size=8.3,
-        linewidth=1.55,
-        rounding=0.18,
-    )
-
-    # Human row.
-    human_y = 4.16
-    llm_y = 1.88
-    add_arrow(axis, (3.19, 3.42), (3.47, human_y), color=COLORS["line"], linewidth=1.2, connectionstyle="arc3,rad=0.05")
-    add_rater_badge(axis, (4.24, human_y), "Human", "sessions", "human")
-
-    add_box(
-        axis,
-        center=(6.34, human_y),
-        size=(2.28, 0.78),
-        title="One response scale",
-        detail="3pt, 7pt, or slider\nbetween-session assignment",
-        facecolor=COLORS["human_fill"],
-        edgecolor=COLORS["human"],
-        title_color=COLORS["human"],
-        title_size=10.2,
-        detail_size=8.1,
-    )
-    add_arrow(axis, (5.00, human_y), (5.20, human_y), color=COLORS["human"], linestyle=(0, (4, 4)), linewidth=1.0)
-    add_box(
-        axis,
-        center=(8.90, human_y),
-        size=(2.22, 0.78),
-        title="75 unique templates",
-        detail="sampled per session\nnot domain-stratified",
-        facecolor=COLORS["box"],
-        edgecolor=COLORS["human"],
-        title_color=COLORS["human"],
-        title_size=10.2,
-        detail_size=8.1,
-    )
-    add_box(
-        axis,
-        center=(11.42, human_y),
-        size=(2.24, 0.78),
-        title="One target version",
-        detail="female or male\napproximately balanced",
-        facecolor=COLORS["box"],
-        edgecolor=COLORS["human"],
-        title_color=COLORS["human"],
-        title_size=10.2,
+        edgecolor=COLORS["line"],
+        title_color=COLORS["ink"],
+        title_size=11.2,
         detail_size=7.9,
+        linewidth=1.45,
+        rounding=0.16,
     )
-    add_box(
-        axis,
-        center=(14.04, human_y),
-        size=(1.92, 0.74),
-        title="75 trials",
-        detail="trial-level data",
-        facecolor=COLORS["domain_fill"],
-        edgecolor=COLORS["human"],
-        title_color=COLORS["human"],
-        title_size=9.5,
-        detail_size=7.6,
-    )
-    add_arrow(axis, (7.48, human_y), (7.79, human_y), color=COLORS["human"], linewidth=1.15)
-    add_arrow(axis, (10.01, human_y), (10.30, human_y), color=COLORS["human"], linewidth=1.15)
-    add_arrow(axis, (12.54, human_y), (13.08, human_y), color=COLORS["human"], linewidth=1.15)
 
-    # LLM row.
-    add_arrow(axis, (3.19, 2.62), (3.47, llm_y), color=COLORS["line"], linewidth=1.2, connectionstyle="arc3,rad=-0.05")
-    add_rater_badge(axis, (4.24, llm_y), "LLM", "9 models", "llm")
-    add_box(
-        axis,
-        center=(6.34, llm_y),
-        size=(2.28, 0.78),
-        title="All response scales",
-        detail="each model completed\n3pt, 7pt, and slider",
-        facecolor=COLORS["llm_fill"],
-        edgecolor=COLORS["llm"],
-        title_color=COLORS["llm"],
-        title_size=10.2,
-        detail_size=8.1,
-    )
-    add_box(
-        axis,
-        center=(8.90, llm_y),
-        size=(2.22, 0.78),
-        title="Full corpus per scale",
-        detail="371 templates x 2 versions\n= 742 sentences",
-        facecolor=COLORS["box"],
-        edgecolor=COLORS["llm"],
-        title_color=COLORS["llm"],
-        title_size=10.2,
-        detail_size=8.1,
-    )
-    add_box(
-        axis,
-        center=(11.42, llm_y),
-        size=(2.24, 0.78),
-        title="Both target versions",
-        detail="female and male ratings\nfor every item",
-        facecolor=COLORS["box"],
-        edgecolor=COLORS["llm"],
-        title_color=COLORS["llm"],
-        title_size=10.2,
-        detail_size=7.9,
-    )
-    add_box(
-        axis,
-        center=(14.04, llm_y),
-        size=(1.92, 0.74),
-        title="Item ratings",
-        detail="model-by-scale",
-        facecolor=COLORS["domain_fill"],
-        edgecolor=COLORS["llm"],
-        title_color=COLORS["llm"],
-        title_size=9.5,
-        detail_size=7.6,
-    )
-    add_arrow(axis, (5.00, llm_y), (5.20, llm_y), color=COLORS["llm"], linewidth=1.15)
-    add_arrow(axis, (7.48, llm_y), (7.79, llm_y), color=COLORS["llm"], linewidth=1.15)
-    add_arrow(axis, (10.01, llm_y), (10.30, llm_y), color=COLORS["llm"], linewidth=1.15)
-    add_arrow(axis, (12.54, llm_y), (13.08, llm_y), color=COLORS["llm"], linewidth=1.15)
+    box_specs = [
+        ("assignment", 4.58, 2.46),
+        ("sample", 7.22, 2.34),
+        ("target", 9.96, 2.44),
+        ("output", 12.98, 2.52),
+    ]
+    row_configs = [
+        {
+            "y": human_y,
+            "color": COLORS["human"],
+            "cells": [
+                ("Human: one scale", "sessions randomly assigned\n3pt, 7pt, or slider", COLORS["human_fill"]),
+                ("75 unique templates", "randomly sampled per session\nnot domain-stratified", COLORS["box"]),
+                ("One target version", "female or male version\napproximately balanced", COLORS["box"]),
+                ("75 trials", "trial-level ratings", COLORS["domain_fill"]),
+            ],
+        },
+        {
+            "y": llm_y,
+            "color": COLORS["llm"],
+            "cells": [
+                ("LLM: all scales", "each model completed\n3pt, 7pt, and slider", COLORS["llm_fill"]),
+                ("Full corpus", "371 templates per scale\nno subsampling", COLORS["box"]),
+                ("Both target versions", "female and male versions\n742 sentences per scale", COLORS["box"]),
+                ("Item ratings", "model-by-scale ratings", COLORS["domain_fill"]),
+            ],
+        },
+    ]
 
-    # A subtle note connecting domains to the human branch.
-    axis.text(
-        8.35,
-        0.62,
-        "Attack domains retained as item-level labels.",
-        ha="center",
-        va="center",
-        fontsize=8.7,
-        color=COLORS["muted"],
-    )
+    for row_config in row_configs:
+        y_position = row_config["y"]
+        row_color = row_config["color"]
+        corpus_right_edge = corpus_center[0] + corpus_width / 2
+
+        previous_right_edge: float | None = None
+        for index, (title, detail, facecolor) in enumerate(row_config["cells"]):
+            _, x_center, width = box_specs[index]
+            height = 0.80
+            left_edge = x_center - width / 2
+            right_edge = x_center + width / 2
+
+            add_box(
+                axis,
+                center=(x_center, y_position),
+                size=(width, height),
+                title=title,
+                detail=detail,
+                facecolor=facecolor,
+                edgecolor=row_color,
+                title_color=row_color,
+                title_size=9.8,
+                detail_size=7.7,
+                linewidth=1.2,
+                rounding=0.13,
+            )
+
+            if previous_right_edge is None:
+                start_y = corpus_center[1] + 0.28 if y_position > corpus_center[1] else corpus_center[1] - 0.28
+                add_arrow(
+                    axis,
+                    (corpus_right_edge + 0.03, start_y),
+                    (left_edge - 0.05, y_position),
+                    color=row_color,
+                    linewidth=1.12,
+                    connectionstyle="arc3,rad=0.10" if y_position > corpus_center[1] else "arc3,rad=-0.10",
+                )
+            else:
+                add_arrow(axis, (previous_right_edge + 0.04, y_position), (left_edge - 0.04, y_position), color=row_color, linewidth=1.12)
+            previous_right_edge = right_edge
 
     figure.tight_layout(pad=0.35)
     return figure
