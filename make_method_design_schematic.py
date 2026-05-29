@@ -225,11 +225,40 @@ def add_small_icon_label(axis: plt.Axes, center: tuple[float, float], label: str
     axis.text(icon_x, icon_y - 0.64, label, ha="center", va="center", fontsize=10.5, color=color, fontweight="semibold")
 
 
+def add_rater_badge(axis: plt.Axes, center: tuple[float, float], title: str, detail: str, kind: str) -> None:
+    """Draw a compact rater badge at the start of a flow row."""
+
+    x_center, y_center = center
+    if kind == "human":
+        color = COLORS["human"]
+        facecolor = "#F8FBFF"
+    else:
+        color = COLORS["llm"]
+        facecolor = "#F8FCF9"
+
+    width = 1.52
+    height = 0.72
+    badge = FancyBboxPatch(
+        (x_center - width / 2, y_center - height / 2),
+        width,
+        height,
+        boxstyle="round,pad=0.03,rounding_size=0.12",
+        facecolor=facecolor,
+        edgecolor=color,
+        linewidth=1.15,
+        zorder=2,
+    )
+    axis.add_patch(badge)
+
+    axis.text(x_center, y_center + 0.09, title, ha="center", va="center", fontsize=9.8, color=color, fontweight="semibold")
+    axis.text(x_center, y_center - 0.14, detail, ha="center", va="center", fontsize=7.7, color=COLORS["muted"])
+
+
 def draw_schematic() -> plt.Figure:
     """Build and return the method-design schematic."""
 
     sns.set_theme(style="white")
-    figure, axis = plt.subplots(figsize=(15.2, 5.1), dpi=220)
+    figure, axis = plt.subplots(figsize=(15.2, 4.9), dpi=220)
     axis.set_xlim(0, 16)
     axis.set_ylim(0, 5.6)
     axis.axis("off")
@@ -237,10 +266,10 @@ def draw_schematic() -> plt.Figure:
     # Shared material source.
     add_box(
         axis,
-        center=(1.85, 3.05),
-        size=(2.95, 1.38),
+        center=(1.78, 3.02),
+        size=(2.82, 1.46),
         title="371 minimal-pair corpus",
-        detail="371 paired templates\n742 target-version sentences\ndomain labels retained",
+        detail="371 paired templates\nfemale + male versions\ndomain labels retained",
         facecolor=COLORS["corpus_fill"],
         title_size=12.0,
         detail_size=8.3,
@@ -249,29 +278,28 @@ def draw_schematic() -> plt.Figure:
     )
 
     # Human row.
-    human_y = 4.22
-    llm_y = 1.96
-    add_arrow(axis, (3.33, 3.30), (4.02, human_y), color=COLORS["line"], linewidth=1.25, connectionstyle="arc3,rad=0.16")
-    add_small_icon_label(axis, (4.35, human_y + 0.16), "Human sessions", "human")
+    human_y = 4.16
+    llm_y = 1.88
+    add_arrow(axis, (3.19, 3.42), (3.47, human_y), color=COLORS["line"], linewidth=1.2, connectionstyle="arc3,rad=0.05")
+    add_rater_badge(axis, (4.24, human_y), "Human", "sessions", "human")
 
     add_box(
         axis,
-        center=(6.15, human_y),
-        size=(2.36, 0.78),
+        center=(6.34, human_y),
+        size=(2.28, 0.78),
         title="One response scale",
-        detail="balanced assignment\n3pt, 7pt, or slider",
+        detail="3pt, 7pt, or slider\nbetween-session assignment",
         facecolor=COLORS["human_fill"],
         edgecolor=COLORS["human"],
         title_color=COLORS["human"],
         title_size=10.2,
         detail_size=8.1,
     )
-    add_arrow(axis, (4.70, human_y), (4.97, human_y), color=COLORS["human"], linestyle=(0, (4, 4)), linewidth=1.0)
-    axis.text(5.38, human_y + 0.56, "random assignment", ha="center", va="center", fontsize=8.1, color=COLORS["human"])
+    add_arrow(axis, (5.00, human_y), (5.20, human_y), color=COLORS["human"], linestyle=(0, (4, 4)), linewidth=1.0)
     add_box(
         axis,
-        center=(8.75, human_y),
-        size=(2.36, 0.78),
+        center=(8.90, human_y),
+        size=(2.22, 0.78),
         title="75 unique templates",
         detail="sampled per session\nnot domain-stratified",
         facecolor=COLORS["box"],
@@ -282,10 +310,10 @@ def draw_schematic() -> plt.Figure:
     )
     add_box(
         axis,
-        center=(11.35, human_y),
-        size=(2.38, 0.78),
+        center=(11.42, human_y),
+        size=(2.24, 0.78),
         title="One target version",
-        detail="female or male version\nrandom, approximately balanced",
+        detail="female or male\napproximately balanced",
         facecolor=COLORS["box"],
         edgecolor=COLORS["human"],
         title_color=COLORS["human"],
@@ -294,8 +322,8 @@ def draw_schematic() -> plt.Figure:
     )
     add_box(
         axis,
-        center=(14.10, human_y),
-        size=(2.00, 0.74),
+        center=(14.04, human_y),
+        size=(1.92, 0.74),
         title="75 trials",
         detail="trial-level data",
         facecolor=COLORS["domain_fill"],
@@ -304,17 +332,17 @@ def draw_schematic() -> plt.Figure:
         title_size=9.5,
         detail_size=7.6,
     )
-    add_arrow(axis, (7.33, human_y), (7.57, human_y), color=COLORS["human"], linewidth=1.15)
-    add_arrow(axis, (9.93, human_y), (10.16, human_y), color=COLORS["human"], linewidth=1.15)
-    add_arrow(axis, (12.54, human_y), (13.10, human_y), color=COLORS["human"], linewidth=1.15)
+    add_arrow(axis, (7.48, human_y), (7.79, human_y), color=COLORS["human"], linewidth=1.15)
+    add_arrow(axis, (10.01, human_y), (10.30, human_y), color=COLORS["human"], linewidth=1.15)
+    add_arrow(axis, (12.54, human_y), (13.08, human_y), color=COLORS["human"], linewidth=1.15)
 
     # LLM row.
-    add_arrow(axis, (3.33, 2.82), (4.02, llm_y), color=COLORS["line"], linewidth=1.25, connectionstyle="arc3,rad=-0.16")
-    add_small_icon_label(axis, (4.35, llm_y + 0.16), "Nine LLMs", "llm")
+    add_arrow(axis, (3.19, 2.62), (3.47, llm_y), color=COLORS["line"], linewidth=1.2, connectionstyle="arc3,rad=-0.05")
+    add_rater_badge(axis, (4.24, llm_y), "LLM", "9 models", "llm")
     add_box(
         axis,
-        center=(6.15, llm_y),
-        size=(2.36, 0.78),
+        center=(6.34, llm_y),
+        size=(2.28, 0.78),
         title="All response scales",
         detail="each model completed\n3pt, 7pt, and slider",
         facecolor=COLORS["llm_fill"],
@@ -325,8 +353,8 @@ def draw_schematic() -> plt.Figure:
     )
     add_box(
         axis,
-        center=(8.75, llm_y),
-        size=(2.36, 0.78),
+        center=(8.90, llm_y),
+        size=(2.22, 0.78),
         title="Full corpus per scale",
         detail="371 templates x 2 versions\n= 742 sentences",
         facecolor=COLORS["box"],
@@ -337,10 +365,10 @@ def draw_schematic() -> plt.Figure:
     )
     add_box(
         axis,
-        center=(11.35, llm_y),
-        size=(2.38, 0.78),
+        center=(11.42, llm_y),
+        size=(2.24, 0.78),
         title="Both target versions",
-        detail="female and male ratings\navailable for every item",
+        detail="female and male ratings\nfor every item",
         facecolor=COLORS["box"],
         edgecolor=COLORS["llm"],
         title_color=COLORS["llm"],
@@ -349,8 +377,8 @@ def draw_schematic() -> plt.Figure:
     )
     add_box(
         axis,
-        center=(14.10, llm_y),
-        size=(2.00, 0.74),
+        center=(14.04, llm_y),
+        size=(1.92, 0.74),
         title="Item ratings",
         detail="model-by-scale",
         facecolor=COLORS["domain_fill"],
@@ -359,9 +387,10 @@ def draw_schematic() -> plt.Figure:
         title_size=9.5,
         detail_size=7.6,
     )
-    add_arrow(axis, (7.33, llm_y), (7.57, llm_y), color=COLORS["llm"], linewidth=1.15)
-    add_arrow(axis, (9.93, llm_y), (10.16, llm_y), color=COLORS["llm"], linewidth=1.15)
-    add_arrow(axis, (12.54, llm_y), (13.10, llm_y), color=COLORS["llm"], linewidth=1.15)
+    add_arrow(axis, (5.00, llm_y), (5.20, llm_y), color=COLORS["llm"], linewidth=1.15)
+    add_arrow(axis, (7.48, llm_y), (7.79, llm_y), color=COLORS["llm"], linewidth=1.15)
+    add_arrow(axis, (10.01, llm_y), (10.30, llm_y), color=COLORS["llm"], linewidth=1.15)
+    add_arrow(axis, (12.54, llm_y), (13.08, llm_y), color=COLORS["llm"], linewidth=1.15)
 
     # A subtle note connecting domains to the human branch.
     axis.text(
