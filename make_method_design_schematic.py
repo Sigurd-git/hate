@@ -1,13 +1,9 @@
-"""Create a method-design schematic for the paper.
-
-The figure mirrors the GPT-image visual direction but keeps the arrow geometry
-deterministic: the LLM branch points to each response-scale cell center.
-"""
+"""Create the method-design schematic for the manuscript."""
 
 from __future__ import annotations
 
 import logging
-from pathlib import Path as FilePath
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -17,17 +13,23 @@ from matplotlib.path import Path as MplPath
 
 LOGGER = logging.getLogger(__name__)
 
-OUTPUT_DIR = FilePath("artifacts/paper_revision")
-HTML_OUTPUT_DIR = FilePath("slides/html")
+OUTPUT_DIR = Path("artifacts/paper_revision")
+HTML_OUTPUT_DIR = Path("slides/html")
 FIGURE_BASENAME = "fig_methods_design_schematic"
 
 
 COLORS = {
     "ink": "#202833",
+    "muted": "#5F6B7A",
     "human": "#0B2A5B",
     "llm": "#0B6B35",
-    "scale_fill": "#F3F6FA",
-    "grid": "#202833",
+    "line": "#26313D",
+    "box": "#FFFFFF",
+    "corpus_fill": "#F7F8FA",
+    "human_fill": "#EEF4FF",
+    "llm_fill": "#EEF8F2",
+    "scale_fill": "#F4F6F8",
+    "domain_fill": "#FFF7EA",
 }
 
 
@@ -36,46 +38,114 @@ def add_arrow(
     start: tuple[float, float],
     end: tuple[float, float],
     *,
-    color: str,
+    color: str = COLORS["line"],
     linestyle: str = "-",
-    linewidth: float = 1.35,
-    mutation_scale: float = 16,
+    linewidth: float = 1.25,
+    mutation_scale: float = 14,
     connectionstyle: str = "arc3,rad=0",
-    zorder: int = 5,
+    zorder: int = 4,
 ) -> None:
-    """Draw a single arrow with a visible head at the requested endpoint."""
+    """Draw an arrow between two points."""
 
-    arrow = FancyArrowPatch(
-        start,
-        end,
-        arrowstyle="-|>",
-        mutation_scale=mutation_scale,
-        linewidth=linewidth,
-        linestyle=linestyle,
-        color=color,
-        shrinkA=0,
-        shrinkB=0,
-        connectionstyle=connectionstyle,
-        zorder=zorder,
+    axis.add_patch(
+        FancyArrowPatch(
+            start,
+            end,
+            arrowstyle="-|>",
+            mutation_scale=mutation_scale,
+            linewidth=linewidth,
+            linestyle=linestyle,
+            color=color,
+            shrinkA=0,
+            shrinkB=0,
+            connectionstyle=connectionstyle,
+            zorder=zorder,
+        )
     )
-    axis.add_patch(arrow)
 
 
-def add_human_icon(axis: plt.Axes, center_x: float, base_y: float) -> None:
+def add_box(
+    axis: plt.Axes,
+    center: tuple[float, float],
+    size: tuple[float, float],
+    title: str,
+    detail: str | None = None,
+    *,
+    facecolor: str = COLORS["box"],
+    edgecolor: str = COLORS["line"],
+    title_color: str = COLORS["ink"],
+    detail_color: str = COLORS["muted"],
+    title_size: float = 11.0,
+    detail_size: float = 8.7,
+    linewidth: float = 1.15,
+    rounding: float = 0.12,
+) -> None:
+    """Draw a rounded labelled box."""
+
+    x_center, y_center = center
+    width, height = size
+    box = FancyBboxPatch(
+        (x_center - width / 2, y_center - height / 2),
+        width,
+        height,
+        boxstyle=f"round,pad=0.03,rounding_size={rounding}",
+        facecolor=facecolor,
+        edgecolor=edgecolor,
+        linewidth=linewidth,
+        zorder=2,
+    )
+    axis.add_patch(box)
+    if detail:
+        axis.text(
+            x_center,
+            y_center + 0.13,
+            title,
+            ha="center",
+            va="center",
+            fontsize=title_size,
+            color=title_color,
+            fontweight="semibold",
+        )
+        axis.text(
+            x_center,
+            y_center - 0.15,
+            detail,
+            ha="center",
+            va="center",
+            fontsize=detail_size,
+            color=detail_color,
+            linespacing=1.25,
+        )
+    else:
+        axis.text(
+            x_center,
+            y_center,
+            title,
+            ha="center",
+            va="center",
+            fontsize=title_size,
+            color=title_color,
+            fontweight="semibold",
+            linespacing=1.2,
+        )
+
+
+def add_human_icon(axis: plt.Axes, center: tuple[float, float], scale: float = 1.0) -> None:
     """Draw a simple line human icon."""
 
-    head = Circle((center_x, base_y + 0.72), 0.22, fill=False, linewidth=2.0, edgecolor=COLORS["human"])
-    neck = Rectangle((center_x - 0.07, base_y + 0.43), 0.14, 0.15, fill=False, linewidth=1.8, edgecolor=COLORS["human"])
-
+    center_x, base_y = center
+    head_radius = 0.14 * scale
+    head = Circle((center_x, base_y + 0.34 * scale), head_radius, fill=False, linewidth=1.8, edgecolor=COLORS["human"])
+    neck = Rectangle((center_x - 0.045 * scale, base_y + 0.18 * scale), 0.09 * scale, 0.08 * scale, fill=False, linewidth=1.6, edgecolor=COLORS["human"])
     shoulder_path = MplPath(
         [
-            (center_x - 0.48, base_y + 0.02),
-            (center_x - 0.48, base_y + 0.35),
-            (center_x - 0.22, base_y + 0.43),
-            (center_x, base_y + 0.43),
-            (center_x + 0.22, base_y + 0.43),
-            (center_x + 0.48, base_y + 0.35),
-            (center_x + 0.48, base_y + 0.02),
+            (center_x - 0.28 * scale, base_y),
+            (center_x - 0.28 * scale, base_y + 0.18 * scale),
+            (center_x - 0.13 * scale, base_y + 0.20 * scale),
+            (center_x, base_y + 0.20 * scale),
+            (center_x + 0.13 * scale, base_y + 0.20 * scale),
+            (center_x + 0.28 * scale, base_y + 0.18 * scale),
+            (center_x + 0.28 * scale, base_y),
         ],
         [
             MplPath.MOVETO,
@@ -87,152 +157,216 @@ def add_human_icon(axis: plt.Axes, center_x: float, base_y: float) -> None:
             MplPath.CURVE4,
         ],
     )
-    shoulder = PathPatch(shoulder_path, fill=False, linewidth=2.0, edgecolor=COLORS["human"], capstyle="round")
-
     axis.add_patch(head)
     axis.add_patch(neck)
-    axis.add_patch(shoulder)
+    axis.add_patch(PathPatch(shoulder_path, fill=False, linewidth=1.8, edgecolor=COLORS["human"], capstyle="round"))
 
 
-def add_robot_icon(axis: plt.Axes, center_x: float, base_y: float) -> None:
+def add_robot_icon(axis: plt.Axes, center: tuple[float, float], scale: float = 1.0) -> None:
     """Draw a simple line robot icon."""
 
+    center_x, base_y = center
+    body_width = 0.50 * scale
+    body_height = 0.38 * scale
     body = FancyBboxPatch(
-        (center_x - 0.38, base_y + 0.12),
-        0.76,
-        0.58,
-        boxstyle="round,pad=0.02,rounding_size=0.13",
-        fill=False,
-        linewidth=2.0,
-        edgecolor=COLORS["llm"],
-    )
-    left_ear = FancyBboxPatch(
-        (center_x - 0.52, base_y + 0.29),
-        0.12,
-        0.22,
-        boxstyle="round,pad=0.01,rounding_size=0.04",
-        fill=False,
-        linewidth=1.8,
-        edgecolor=COLORS["llm"],
-    )
-    right_ear = FancyBboxPatch(
-        (center_x + 0.40, base_y + 0.29),
-        0.12,
-        0.22,
-        boxstyle="round,pad=0.01,rounding_size=0.04",
+        (center_x - body_width / 2, base_y + 0.08 * scale),
+        body_width,
+        body_height,
+        boxstyle=f"round,pad=0.01,rounding_size={0.08 * scale}",
         fill=False,
         linewidth=1.8,
         edgecolor=COLORS["llm"],
     )
     axis.add_patch(body)
-    axis.add_patch(left_ear)
-    axis.add_patch(right_ear)
-    axis.add_patch(Circle((center_x - 0.16, base_y + 0.43), 0.055, fill=False, linewidth=1.9, edgecolor=COLORS["llm"]))
-    axis.add_patch(Circle((center_x + 0.16, base_y + 0.43), 0.055, fill=False, linewidth=1.9, edgecolor=COLORS["llm"]))
-    axis.plot([center_x - 0.10, center_x + 0.10], [base_y + 0.26, base_y + 0.26], color=COLORS["llm"], lw=2.0)
-    axis.plot([center_x, center_x], [base_y + 0.70, base_y + 0.86], color=COLORS["llm"], lw=1.9)
-    axis.add_patch(Circle((center_x, base_y + 0.92), 0.06, fill=False, linewidth=1.9, edgecolor=COLORS["llm"]))
+    axis.add_patch(Circle((center_x - 0.10 * scale, base_y + 0.28 * scale), 0.035 * scale, fill=False, linewidth=1.7, edgecolor=COLORS["llm"]))
+    axis.add_patch(Circle((center_x + 0.10 * scale, base_y + 0.28 * scale), 0.035 * scale, fill=False, linewidth=1.7, edgecolor=COLORS["llm"]))
+    axis.plot([center_x - 0.07 * scale, center_x + 0.07 * scale], [base_y + 0.17 * scale, base_y + 0.17 * scale], color=COLORS["llm"], lw=1.8)
+    axis.plot([center_x, center_x], [base_y + 0.46 * scale, base_y + 0.58 * scale], color=COLORS["llm"], lw=1.7)
+    axis.add_patch(Circle((center_x, base_y + 0.63 * scale), 0.04 * scale, fill=False, linewidth=1.7, edgecolor=COLORS["llm"]))
+
+
+def add_scale_strip(axis: plt.Axes, center: tuple[float, float], width: float, height: float) -> list[tuple[float, float]]:
+    """Draw three response-scale cells and return their centers."""
+
+    x_center, y_center = center
+    x_left = x_center - width / 2
+    cell_width = width / 3
+    centers: list[tuple[float, float]] = []
+    labels = ["3pt", "7pt", "Slider"]
+    for index, label in enumerate(labels):
+        x = x_left + index * cell_width
+        axis.add_patch(
+            Rectangle(
+                (x, y_center - height / 2),
+                cell_width,
+                height,
+                facecolor=COLORS["scale_fill"],
+                edgecolor=COLORS["line"],
+                linewidth=1.0,
+                zorder=1,
+            )
+        )
+        cell_center = (x + cell_width / 2, y_center)
+        centers.append(cell_center)
+        axis.text(cell_center[0], y_center, label, ha="center", va="center", fontsize=9.3, color=COLORS["ink"])
+    return centers
 
 
 def draw_schematic() -> plt.Figure:
     """Build and return the method-design schematic."""
 
     sns.set_theme(style="white")
-    figure, axis = plt.subplots(figsize=(13.5, 7.0), dpi=220)
+    figure, axis = plt.subplots(figsize=(13.8, 7.6), dpi=220)
     axis.set_xlim(0, 14)
-    axis.set_ylim(0, 7)
+    axis.set_ylim(0, 8)
     axis.axis("off")
 
-    # Top corpus block.
-    corpus_box = FancyBboxPatch(
-        (4.7, 5.82),
-        4.6,
-        0.72,
-        boxstyle="round,pad=0.06,rounding_size=0.25",
-        linewidth=1.8,
-        edgecolor=COLORS["ink"],
-        facecolor="#FFFFFF",
-        zorder=2,
-    )
-    axis.add_patch(corpus_box)
-    axis.text(
-        7.0,
-        6.18,
-        "371 minimal-pair corpus",
-        ha="center",
-        va="center",
-        fontsize=20,
-        color="#050505",
-        fontweight="medium",
+    # Shared material source.
+    add_box(
+        axis,
+        center=(7.0, 7.15),
+        size=(5.25, 0.78),
+        title="371 minimal-pair templates",
+        detail="Chinese attack templates; two target-gender versions; domain labels retained",
+        facecolor=COLORS["corpus_fill"],
+        title_size=15.2,
+        detail_size=9.3,
+        linewidth=1.55,
+        rounding=0.18,
     )
 
-    # Branch arrows from corpus to rater types.
-    human_x = 3.775
-    robot_x = 10.475
-    add_arrow(axis, (4.7, 6.18), (human_x, 4.95), color=COLORS["ink"], linewidth=1.6, connectionstyle="angle3,angleA=180,angleB=90")
-    add_arrow(axis, (9.3, 6.18), (robot_x, 4.95), color=COLORS["ink"], linewidth=1.6, connectionstyle="angle3,angleA=0,angleB=90")
+    # Branch headers.
+    human_x = 3.75
+    llm_x = 10.25
+    add_arrow(axis, (5.25, 6.76), (human_x, 6.35), color=COLORS["line"], linewidth=1.35, connectionstyle="angle3,angleA=180,angleB=90")
+    add_arrow(axis, (8.75, 6.76), (llm_x, 6.35), color=COLORS["line"], linewidth=1.35, connectionstyle="angle3,angleA=0,angleB=90")
 
-    add_human_icon(axis, human_x, 3.75)
-    axis.text(human_x, 3.67, "Human", ha="center", va="top", fontsize=16.5, color=COLORS["human"], fontweight="medium")
+    add_human_icon(axis, (human_x, 5.78), scale=1.18)
+    axis.text(human_x, 5.55, "Human sessions", ha="center", va="center", fontsize=13.6, color=COLORS["human"], fontweight="semibold")
+    add_robot_icon(axis, (llm_x, 5.72), scale=1.22)
+    axis.text(llm_x, 5.55, "Nine LLMs", ha="center", va="center", fontsize=13.6, color=COLORS["llm"], fontweight="semibold")
 
-    add_robot_icon(axis, robot_x, 3.78)
-    axis.text(robot_x, 3.67, "LLM", ha="center", va="top", fontsize=16.5, color=COLORS["llm"], fontweight="medium")
-
-    # Matrix.
-    table_x0 = 2.1
-    table_y0 = 0.90
-    cell_width = 3.35
-    cell_height = 0.98
-    table_width = cell_width * 3
-    table_height = cell_height
-
-    axis.add_patch(Rectangle((table_x0, table_y0), table_width, table_height, facecolor=COLORS["scale_fill"], edgecolor="none", zorder=0))
-
-    for column_index in range(4):
-        x_position = table_x0 + column_index * cell_width
-        axis.plot([x_position, x_position], [table_y0, table_y0 + table_height], color=COLORS["grid"], lw=1.15, zorder=1)
-    for row_index in range(2):
-        y_position = table_y0 + row_index * table_height
-        axis.plot([table_x0, table_x0 + table_width], [y_position, y_position], color=COLORS["grid"], lw=1.15, zorder=1)
-
-    for label, x_position in zip(["3pt", "7pt", "Slider"], [table_x0 + 0.5 * cell_width, table_x0 + 1.5 * cell_width, table_x0 + 2.5 * cell_width], strict=True):
-        axis.text(x_position, table_y0 - 0.34, label, ha="center", va="center", fontsize=16.5, color="#050505")
-
-    scale_centers = [(table_x0 + (index + 0.5) * cell_width, table_y0 + 0.5 * cell_height) for index in range(3)]
-
-    # Human participants are randomly assigned to one response scale.
-    selected_human_cell = scale_centers[0]
-    human_path = MplPath(
-        [
-            (human_x, 3.27),
-            selected_human_cell,
-        ],
-        [MplPath.MOVETO, MplPath.LINETO],
+    # Human branch.
+    add_box(
+        axis,
+        center=(human_x, 4.72),
+        size=(3.8, 0.72),
+        title="Balanced assignment to one response scale",
+        detail="each participant used 3pt, 7pt, or slider for all trials",
+        facecolor=COLORS["human_fill"],
+        edgecolor=COLORS["human"],
+        title_color=COLORS["human"],
     )
-    human_arrow = FancyArrowPatch(
-        path=human_path,
-        arrowstyle="-|>",
-        mutation_scale=16,
-        linewidth=1.35,
-        linestyle=(0, (4, 4)),
-        color=COLORS["human"],
-        zorder=6,
-    )
-    axis.add_patch(human_arrow)
-    axis.text(human_x - 0.35, 2.28, "random assignment", ha="right", va="center", fontsize=12.8, color=COLORS["human"])
-
-    # LLM rates all response scales. Endpoints are exact centers.
-    llm_origin = (robot_x, 3.42)
-    for end in scale_centers:
+    human_scale_centers = add_scale_strip(axis, center=(human_x, 3.90), width=3.2, height=0.36)
+    axis.text(human_x - 1.95, 4.02, "random\nassignment", ha="right", va="center", fontsize=8.8, color=COLORS["human"], linespacing=1.05)
+    for scale_center in human_scale_centers:
         add_arrow(
             axis,
-            llm_origin,
-            end,
-            color=COLORS["llm"],
-            linewidth=1.22,
-            mutation_scale=15,
+            (human_x, 4.36),
+            (scale_center[0], scale_center[1] + 0.18),
+            color=COLORS["human"],
+            linestyle=(0, (4, 4)),
+            linewidth=1.05,
+            mutation_scale=11,
             zorder=5,
         )
+
+    add_box(
+        axis,
+        center=(human_x, 2.92),
+        size=(3.8, 0.78),
+        title="75 unique templates sampled per session",
+        detail="sampled from the full pool; not stratified by attack domain",
+        facecolor=COLORS["box"],
+        edgecolor=COLORS["human"],
+        title_color=COLORS["human"],
+    )
+    add_box(
+        axis,
+        center=(human_x, 1.82),
+        size=(3.8, 0.82),
+        title="One target version per sampled template",
+        detail="female or male version assigned at random;\ntarget counts approximately balanced",
+        facecolor=COLORS["box"],
+        edgecolor=COLORS["human"],
+        title_color=COLORS["human"],
+        detail_size=8.3,
+    )
+    add_box(
+        axis,
+        center=(human_x, 0.76),
+        size=(3.8, 0.68),
+        title="75 trial-level ratings",
+        detail="response value + item id + target version + domain labels",
+        facecolor=COLORS["domain_fill"],
+        edgecolor=COLORS["human"],
+        title_color=COLORS["human"],
+        detail_size=8.2,
+    )
+    add_arrow(axis, (human_x, 3.72), (human_x, 3.33), color=COLORS["human"], linewidth=1.25)
+    add_arrow(axis, (human_x, 2.53), (human_x, 2.23), color=COLORS["human"], linewidth=1.25)
+    add_arrow(axis, (human_x, 1.41), (human_x, 1.10), color=COLORS["human"], linewidth=1.25)
+
+    # LLM branch.
+    add_box(
+        axis,
+        center=(llm_x, 4.72),
+        size=(3.8, 0.72),
+        title="Each model completed all response scales",
+        detail="3pt, 7pt, and slider ratings were run for every LLM",
+        facecolor=COLORS["llm_fill"],
+        edgecolor=COLORS["llm"],
+        title_color=COLORS["llm"],
+    )
+    llm_scale_centers = add_scale_strip(axis, center=(llm_x, 3.90), width=3.2, height=0.36)
+    for scale_center in llm_scale_centers:
+        add_arrow(axis, (llm_x, 4.36), (scale_center[0], scale_center[1] + 0.18), color=COLORS["llm"], linewidth=1.05, mutation_scale=11, zorder=5)
+
+    add_box(
+        axis,
+        center=(llm_x, 2.92),
+        size=(3.8, 0.80),
+        title="Full corpus rated under each scale",
+        detail="371 templates x 2 target-gender versions = 742 sentences",
+        facecolor=COLORS["box"],
+        edgecolor=COLORS["llm"],
+        title_color=COLORS["llm"],
+    )
+    add_box(
+        axis,
+        center=(llm_x, 1.82),
+        size=(3.8, 0.82),
+        title="Both female and male versions observed",
+        detail="no template subsampling; paired ratings available for every item",
+        facecolor=COLORS["box"],
+        edgecolor=COLORS["llm"],
+        title_color=COLORS["llm"],
+    )
+    add_box(
+        axis,
+        center=(llm_x, 0.76),
+        size=(3.8, 0.68),
+        title="Model-by-scale item ratings",
+        detail="paired by template, target version, model, and scale",
+        facecolor=COLORS["domain_fill"],
+        edgecolor=COLORS["llm"],
+        title_color=COLORS["llm"],
+        detail_size=8.2,
+    )
+    add_arrow(axis, (llm_x, 3.72), (llm_x, 3.33), color=COLORS["llm"], linewidth=1.25)
+    add_arrow(axis, (llm_x, 2.52), (llm_x, 2.23), color=COLORS["llm"], linewidth=1.25)
+    add_arrow(axis, (llm_x, 1.41), (llm_x, 1.10), color=COLORS["llm"], linewidth=1.25)
+
+    # A subtle note connecting domains to the human branch.
+    axis.text(
+        7.0,
+        0.22,
+        "Attack domains are retained as item-level labels rather than forced to be balanced within each human session.",
+        ha="center",
+        va="center",
+        fontsize=8.7,
+        color=COLORS["muted"],
+    )
 
     figure.tight_layout(pad=0.35)
     return figure
