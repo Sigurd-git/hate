@@ -212,156 +212,162 @@ def add_scale_strip(axis: plt.Axes, center: tuple[float, float], width: float, h
     return centers
 
 
+def add_small_icon_label(axis: plt.Axes, center: tuple[float, float], label: str, kind: str) -> None:
+    """Draw a compact rater icon with a label beneath it."""
+
+    icon_x, icon_y = center
+    if kind == "human":
+        add_human_icon(axis, (icon_x, icon_y - 0.06), scale=0.66)
+        color = COLORS["human"]
+    else:
+        add_robot_icon(axis, (icon_x, icon_y - 0.12), scale=0.70)
+        color = COLORS["llm"]
+    axis.text(icon_x, icon_y - 0.64, label, ha="center", va="center", fontsize=10.5, color=color, fontweight="semibold")
+
+
 def draw_schematic() -> plt.Figure:
     """Build and return the method-design schematic."""
 
     sns.set_theme(style="white")
-    figure, axis = plt.subplots(figsize=(13.8, 7.6), dpi=220)
-    axis.set_xlim(0, 14)
-    axis.set_ylim(0, 8)
+    figure, axis = plt.subplots(figsize=(15.2, 5.1), dpi=220)
+    axis.set_xlim(0, 16)
+    axis.set_ylim(0, 5.6)
     axis.axis("off")
 
     # Shared material source.
     add_box(
         axis,
-        center=(7.0, 7.15),
-        size=(5.25, 0.78),
-        title="371 minimal-pair templates",
-        detail="Chinese attack templates; two target-gender versions; domain labels retained",
+        center=(1.85, 3.05),
+        size=(2.95, 1.38),
+        title="371 minimal-pair corpus",
+        detail="371 paired templates\n742 target-version sentences\ndomain labels retained",
         facecolor=COLORS["corpus_fill"],
-        title_size=15.2,
-        detail_size=9.3,
+        title_size=12.0,
+        detail_size=8.3,
         linewidth=1.55,
         rounding=0.18,
     )
 
-    # Branch headers.
-    human_x = 3.75
-    llm_x = 10.25
-    add_arrow(axis, (5.25, 6.76), (human_x, 6.35), color=COLORS["line"], linewidth=1.35, connectionstyle="angle3,angleA=180,angleB=90")
-    add_arrow(axis, (8.75, 6.76), (llm_x, 6.35), color=COLORS["line"], linewidth=1.35, connectionstyle="angle3,angleA=0,angleB=90")
+    # Human row.
+    human_y = 4.22
+    llm_y = 1.96
+    add_arrow(axis, (3.33, 3.30), (4.02, human_y), color=COLORS["line"], linewidth=1.25, connectionstyle="arc3,rad=0.16")
+    add_small_icon_label(axis, (4.35, human_y + 0.16), "Human sessions", "human")
 
-    add_human_icon(axis, (human_x, 5.78), scale=1.18)
-    axis.text(human_x, 5.55, "Human sessions", ha="center", va="center", fontsize=13.6, color=COLORS["human"], fontweight="semibold")
-    add_robot_icon(axis, (llm_x, 5.72), scale=1.22)
-    axis.text(llm_x, 5.55, "Nine LLMs", ha="center", va="center", fontsize=13.6, color=COLORS["llm"], fontweight="semibold")
-
-    # Human branch.
     add_box(
         axis,
-        center=(human_x, 4.72),
-        size=(3.8, 0.72),
-        title="Balanced assignment to one response scale",
-        detail="each participant used 3pt, 7pt, or slider for all trials",
+        center=(6.15, human_y),
+        size=(2.36, 0.78),
+        title="One response scale",
+        detail="balanced assignment\n3pt, 7pt, or slider",
         facecolor=COLORS["human_fill"],
         edgecolor=COLORS["human"],
         title_color=COLORS["human"],
+        title_size=10.2,
+        detail_size=8.1,
     )
-    human_scale_centers = add_scale_strip(axis, center=(human_x, 3.90), width=3.2, height=0.36)
-    axis.text(human_x - 1.95, 4.02, "random\nassignment", ha="right", va="center", fontsize=8.8, color=COLORS["human"], linespacing=1.05)
-    for scale_center in human_scale_centers:
-        add_arrow(
-            axis,
-            (human_x, 4.36),
-            (scale_center[0], scale_center[1] + 0.18),
-            color=COLORS["human"],
-            linestyle=(0, (4, 4)),
-            linewidth=1.05,
-            mutation_scale=11,
-            zorder=5,
-        )
-
+    add_arrow(axis, (4.70, human_y), (4.97, human_y), color=COLORS["human"], linestyle=(0, (4, 4)), linewidth=1.0)
+    axis.text(5.38, human_y + 0.56, "random assignment", ha="center", va="center", fontsize=8.1, color=COLORS["human"])
     add_box(
         axis,
-        center=(human_x, 2.92),
-        size=(3.8, 0.78),
-        title="75 unique templates sampled per session",
-        detail="sampled from the full pool; not stratified by attack domain",
+        center=(8.75, human_y),
+        size=(2.36, 0.78),
+        title="75 unique templates",
+        detail="sampled per session\nnot domain-stratified",
         facecolor=COLORS["box"],
         edgecolor=COLORS["human"],
         title_color=COLORS["human"],
+        title_size=10.2,
+        detail_size=8.1,
     )
     add_box(
         axis,
-        center=(human_x, 1.82),
-        size=(3.8, 0.82),
-        title="One target version per sampled template",
-        detail="female or male version assigned at random;\ntarget counts approximately balanced",
+        center=(11.35, human_y),
+        size=(2.38, 0.78),
+        title="One target version",
+        detail="female or male version\nrandom, approximately balanced",
         facecolor=COLORS["box"],
         edgecolor=COLORS["human"],
         title_color=COLORS["human"],
-        detail_size=8.3,
+        title_size=10.2,
+        detail_size=7.9,
     )
     add_box(
         axis,
-        center=(human_x, 0.76),
-        size=(3.8, 0.68),
-        title="75 trial-level ratings",
-        detail="response value + item id + target version + domain labels",
+        center=(14.10, human_y),
+        size=(2.00, 0.74),
+        title="75 trials",
+        detail="trial-level data",
         facecolor=COLORS["domain_fill"],
         edgecolor=COLORS["human"],
         title_color=COLORS["human"],
-        detail_size=8.2,
+        title_size=9.5,
+        detail_size=7.6,
     )
-    add_arrow(axis, (human_x, 3.72), (human_x, 3.33), color=COLORS["human"], linewidth=1.25)
-    add_arrow(axis, (human_x, 2.53), (human_x, 2.23), color=COLORS["human"], linewidth=1.25)
-    add_arrow(axis, (human_x, 1.41), (human_x, 1.10), color=COLORS["human"], linewidth=1.25)
+    add_arrow(axis, (7.33, human_y), (7.57, human_y), color=COLORS["human"], linewidth=1.15)
+    add_arrow(axis, (9.93, human_y), (10.16, human_y), color=COLORS["human"], linewidth=1.15)
+    add_arrow(axis, (12.54, human_y), (13.10, human_y), color=COLORS["human"], linewidth=1.15)
 
-    # LLM branch.
+    # LLM row.
+    add_arrow(axis, (3.33, 2.82), (4.02, llm_y), color=COLORS["line"], linewidth=1.25, connectionstyle="arc3,rad=-0.16")
+    add_small_icon_label(axis, (4.35, llm_y + 0.16), "Nine LLMs", "llm")
     add_box(
         axis,
-        center=(llm_x, 4.72),
-        size=(3.8, 0.72),
-        title="Each model completed all response scales",
-        detail="3pt, 7pt, and slider ratings were run for every LLM",
+        center=(6.15, llm_y),
+        size=(2.36, 0.78),
+        title="All response scales",
+        detail="each model completed\n3pt, 7pt, and slider",
         facecolor=COLORS["llm_fill"],
         edgecolor=COLORS["llm"],
         title_color=COLORS["llm"],
+        title_size=10.2,
+        detail_size=8.1,
     )
-    llm_scale_centers = add_scale_strip(axis, center=(llm_x, 3.90), width=3.2, height=0.36)
-    for scale_center in llm_scale_centers:
-        add_arrow(axis, (llm_x, 4.36), (scale_center[0], scale_center[1] + 0.18), color=COLORS["llm"], linewidth=1.05, mutation_scale=11, zorder=5)
-
     add_box(
         axis,
-        center=(llm_x, 2.92),
-        size=(3.8, 0.80),
-        title="Full corpus rated under each scale",
-        detail="371 templates x 2 target-gender versions = 742 sentences",
+        center=(8.75, llm_y),
+        size=(2.36, 0.78),
+        title="Full corpus per scale",
+        detail="371 templates x 2 versions\n= 742 sentences",
         facecolor=COLORS["box"],
         edgecolor=COLORS["llm"],
         title_color=COLORS["llm"],
+        title_size=10.2,
+        detail_size=8.1,
     )
     add_box(
         axis,
-        center=(llm_x, 1.82),
-        size=(3.8, 0.82),
-        title="Both female and male versions observed",
-        detail="no template subsampling; paired ratings available for every item",
+        center=(11.35, llm_y),
+        size=(2.38, 0.78),
+        title="Both target versions",
+        detail="female and male ratings\navailable for every item",
         facecolor=COLORS["box"],
         edgecolor=COLORS["llm"],
         title_color=COLORS["llm"],
+        title_size=10.2,
+        detail_size=7.9,
     )
     add_box(
         axis,
-        center=(llm_x, 0.76),
-        size=(3.8, 0.68),
-        title="Model-by-scale item ratings",
-        detail="paired by template, target version, model, and scale",
+        center=(14.10, llm_y),
+        size=(2.00, 0.74),
+        title="Item ratings",
+        detail="model-by-scale",
         facecolor=COLORS["domain_fill"],
         edgecolor=COLORS["llm"],
         title_color=COLORS["llm"],
-        detail_size=8.2,
+        title_size=9.5,
+        detail_size=7.6,
     )
-    add_arrow(axis, (llm_x, 3.72), (llm_x, 3.33), color=COLORS["llm"], linewidth=1.25)
-    add_arrow(axis, (llm_x, 2.52), (llm_x, 2.23), color=COLORS["llm"], linewidth=1.25)
-    add_arrow(axis, (llm_x, 1.41), (llm_x, 1.10), color=COLORS["llm"], linewidth=1.25)
+    add_arrow(axis, (7.33, llm_y), (7.57, llm_y), color=COLORS["llm"], linewidth=1.15)
+    add_arrow(axis, (9.93, llm_y), (10.16, llm_y), color=COLORS["llm"], linewidth=1.15)
+    add_arrow(axis, (12.54, llm_y), (13.10, llm_y), color=COLORS["llm"], linewidth=1.15)
 
     # A subtle note connecting domains to the human branch.
     axis.text(
-        7.0,
-        0.22,
-        "Attack domains are retained as item-level labels rather than forced to be balanced within each human session.",
+        8.35,
+        0.62,
+        "Attack domains retained as item-level labels.",
         ha="center",
         va="center",
         fontsize=8.7,
