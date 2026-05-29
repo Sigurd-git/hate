@@ -363,26 +363,7 @@ This scale dependence changes the descriptive human--LLM comparison. On the 3-po
   \label{tab:scale-response}
 \end{table}
 
-A human-side repeated-measures ANOVA clarifies the human component of this pattern. In a stimulus-as-unit analysis of normalized $\Delta_{F-M}$, participant gender had a substantially larger effect, $F(1, 370) = 111.17$, $p < .001$, $\eta^2_G = .044$, than scale, $F(2, 740) = 9.44$, Greenhouse--Geisser corrected $p < .001$, $\eta^2_G = .007$. The participant-gender by scale interaction was not significant, $F(2, 740) = 1.79$, $p = .169$. Within every scale, the target-gender gap was larger among female participants than among male participants after BH-FDR correction. In other words, female participants showed a stronger rating increase for female-targeted versions of the same attack. Participant gender is the larger human-side determinant of $\Delta_{F-M}$; scale remains a smaller detectable measurement condition. The cross-rater human--LLM scale contrast remains descriptive because LLMs are deterministic raters and provide no participant-level random effects. The overall result is summarized in Table~\ref{tab:alignment-summary}.
-
-\begin{table}[t]
-  \small
-  \centering
-  \setlength{\tabcolsep}{3pt}
-  \begin{tabular}{p{0.24\linewidth} p{0.18\linewidth} p{0.28\linewidth} p{0.17\linewidth}}
-    \toprule
-    Result focus & Answer & Main evidence & Result summary \\
-    \midrule
-    Target-gender equality & No & 36/36 rater-by-scale combinations have positive $\Delta_{F-M}$ & Female-targeted versions are rated higher \\
-    Human--LLM pattern & Direction yes; magnitude conditional & Models are above male raters, at or below female raters, and mixed against pooled humans & Alignment depends on the human reference \\
-    Human rater gender & Direction yes; strength differs & Female-rater $d_z$ exceeds male-rater $d_z$ on all scales & Female raters show a larger gap \\
-    Domain pattern & Yes & Sexualization and appearance are the shared largest-gap domains & Gap concentrates in gendered attack domains \\
-    Scale-conditioned model similarity & Yes & Closest model changes by human reference, response scale, and metric & No single model is closest across all conditions \\
-    \bottomrule
-  \end{tabular}
-  \caption{Results organized by the primary research questions and planned comparison order. Aggregate effect-size and domain-profile diagnostics are used to describe scale-conditional human--LLM alignment.}
-  \label{tab:alignment-summary}
-\end{table}
+A human-side repeated-measures ANOVA clarifies the human component of this pattern. In a stimulus-as-unit analysis of normalized $\Delta_{F-M}$, participant gender had a substantially larger effect, $F(1, 370) = 111.17$, $p < .001$, $\eta^2_G = .044$, than scale, $F(2, 740) = 9.44$, Greenhouse--Geisser corrected $p < .001$, $\eta^2_G = .007$. The participant-gender by scale interaction was not significant, $F(2, 740) = 1.79$, $p = .169$. Within every scale, the target-gender gap was larger among female participants than among male participants after BH-FDR correction. In other words, female participants showed a stronger rating increase for female-targeted versions of the same attack. Participant gender is the larger human-side determinant of $\Delta_{F-M}$; scale remains a smaller detectable measurement condition. The cross-rater human--LLM scale contrast remains descriptive because LLMs are deterministic raters and provide no participant-level random effects.
 
 \FloatBarrier
 
