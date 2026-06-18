@@ -1,6 +1,6 @@
 % !TEX program = xelatex
 % Compile from project root with:
-%   latexmk -xelatex -interaction=nonstopmode -halt-on-error -outdir=slides slides/paper.tex
+%   latexmk -xelatex -interaction=nonstopmode -halt-on-error -outdir=slides slides/CHB.tex
 %
 % Revised draft. Numerical values are sourced from artifacts under
 %   artifacts/human_model_dz_descriptive_comparison/
@@ -15,15 +15,8 @@
 \usepackage{microtype}
 \usepackage{placeins}
 \usepackage{enumitem}
-\usepackage{etoolbox}
-\usepackage{sansmath}
 \usepackage{lineno}
 \setlist{nosep}
-
-\newcommand{\tablebodyfont}{\sffamily\scriptsize\sansmath}
-\newcolumntype{Y}[1]{>{\raggedright\arraybackslash}p{#1}}
-\AtBeginEnvironment{table}{\tablebodyfont}
-\captionsetup[table]{font={scriptsize,sf},labelfont={bf,sf}}
 
 \ExplSyntaxOn
 \cs_if_exist:NF \vbox_unpack_clear:N
@@ -35,10 +28,8 @@
 % this file), not relative to slides/. Both forms are listed for safety.
 \graphicspath{
   {./}{artifacts/}{artifacts/paper_revision/}{artifacts/paper_followups/}{artifacts/human_model_dz_descriptive_comparison/}
-  {slides/html/}
   {human/outputs/final_clean_long_gender_difference_analysis/figures/}
   {../}{../artifacts/}{../artifacts/paper_revision/}{../artifacts/paper_followups/}{../artifacts/human_model_dz_descriptive_comparison/}
-  {../slides/html/}
   {../human/outputs/final_clean_long_gender_difference_analysis/figures/}
 }
 
@@ -60,7 +51,7 @@
 \cortext[1]{Corresponding author}
 
 \begin{abstract}
-The same hostile sentence may be interpreted differently when its target is marked as female or male. This study asks: do people and large language models (LLMs) give the same aggressiveness rating to the same attack when only the target's gender marking changes? This question is difficult to answer in natural online data, where target gender is usually intertwined with wording, topic, and platform context. We therefore constructed a Chinese minimal gender-reversal corpus of 371 matched attack pairs. Each pair kept the hostile wording and attack domain fixed while changing only the gendered expression marking the target. In a parallel rating task, 779 Chinese participants and nine LLMs judged perceived aggressiveness using 3-point, 7-point, and 0--100 slider scales. We estimated female-minus-male gaps (F-M gaps), located their distribution across attack domains, and compared LLMs with overall-human, female-participant, and male-participant references at aggregate, domain, and item levels. Human raters and LLMs did not give equal ratings: female-targeted versions were rated as more aggressive than matched male-targeted versions. The gap was largest in sexualization and appearance attacks. Model--human similarity changed with the human reference group, response scale, and level of comparison; no model was interchangeable with humans at the item level. These findings indicate that LLMs capture broad human patterns in Chinese gendered hate-speech perception, while alignment claims depend on the human reference, measurement scale, and comparison level.
+This study tests whether the same Chinese attack is judged more aggressive when the attacked person is female rather than male, and whether large language models (LLMs) reproduce the corresponding human rating pattern. In naturally occurring Chinese online text, gendered hostility is usually confounded with wording, topic, and platform context. To isolate the attacked person's gender, we constructed 371 minimal pairs of Chinese attack sentences that held hostile content constant while changing whether the target was female or male. The pairs covered 10 attack domains. Perceived aggressiveness was rated by 779 Chinese participants and nine LLMs using 3-point, 7-point, and 0--100 slider scales. We examined whether female- and male-targeted versions received equal ratings, whether the female-minus-male gap (F-M gap; female-targeted rating minus matched male-targeted rating) differed across attack domains for humans and LLMs, and whether model--human alignment changed across human reference groups, response scales, and analysis levels. Both humans and LLMs rated female-targeted versions as more aggressive than matched male-targeted versions. The F-M gap was largest for sexualization and appearance attacks. Female participants showed larger F-M gaps than male participants, so pooled human averages masked subgroup differences. The closest LLM depended on the human comparison group, response scale, and alignment criterion. These results show that LLMs can reproduce the broad direction and attack-domain pattern of human ratings, but model--human similarity is conditional on the human reference and measurement scale used.
 \end{abstract}
 
 \begin{highlights}
@@ -81,21 +72,47 @@ large language models \sep gendered attacks \sep Chinese \sep minimal-pair desig
 \section{Introduction}
 \label{sec:intro}
 
-Online hate and harassment harm individual well-being, public discussion, and platform governance (Schoenebeck et al., 2023). Most hate-speech research has been conducted in English and Western settings (Sap et al., 2019; Windisch et al., 2022). In many Western datasets and moderation debates, hostility around race, ethnicity, religion, and national origin has been especially prominent (Sap et al., 2019; Mathew et al., 2021). Chinese online hate requires separate evidence. Chinese platforms use different vocabulary, social references, and interaction norms (Jiang et al., 2021; Jing-Schmidt \& Peng, 2018; Liao, 2024; Lu et al., 2023). The salient hostile themes in Chinese social media are not identical to those in Western settings: gender antagonism, misogynistic expression, and anti-feminist discourse are visible forms of hostility (Jiang et al., 2021; Jing-Schmidt \& Peng, 2018; Liao, 2024). Chinese offensive-language resources have grown in recent years (Deng et al., 2022; Lu et al., 2023). Research on Chinese gendered hate speech remains limited. Existing evidence gives limited guidance on how Chinese users perceive gendered attacks as aggressive or harmful.
+Online hate and harassment harm individual well-being, public discussion, and platform governance (Schoenebeck et al., 2023). Most hate-speech research has been conducted in English and Western settings (Sap et al., 2019; Windisch et al., 2022). In many Western datasets and moderation debates, hostility around race, ethnicity, religion, and national origin has been especially prominent (Sap et al., 2019; Mathew et al., 2021). Chinese online hate requires separate evidence. Chinese platforms use different vocabulary, social references, and interaction norms (Jiang et al., 2021; Jing-Schmidt \& Peng, 2018; Liao, 2024; Lu et al., 2023). The salient hostile themes in Chinese social media are not identical to those in Western settings: gender antagonism, misogynistic expression, and anti-feminist discourse are visible forms of hostility (Jiang et al., 2021; Jing-Schmidt \& Peng, 2018; Liao, 2024). Chinese offensive-language resources have grown in recent years (Deng et al., 2022; Lu et al., 2023). Research on Chinese gendered hate speech remains limited.
 
-Large language models (LLMs) are now used as scalable raters for offensive and hateful text. They are used in content moderation, toxicity scoring, social-bias evaluation, and computational social-science annotation (He et al., 2024; Ziems et al., 2024). Prior work does not support a single conclusion about LLM--human alignment in harmful-language rating. LLMs can sometimes approximate human hate-speech judgements or use context in human-like ways (Davidson, 2026; He et al., 2024; Ziems et al., 2024). Yet LLM judgements also vary across models, prompts, instructions, wording, and rater groups (Chiu et al., 2022; Giorgi et al., 2025; Orlikowski et al., 2025; Sun et al., 2025). The alignment question is therefore not whether LLM ratings are generally reliable. It is when, and relative to which human reference, they converge with human perceptions (Davani et al., 2022; Giorgi et al., 2025; Sun et al., 2025). Hate-speech ratings are social-perceptual judgements. A label such as aggressive, offensive, or discriminatory reflects how a text is experienced within a language community (Cowan \& Hodge, 1996; Davani et al., 2022; Larimore et al., 2021; Sap et al., 2022). In this setting, model ratings should be evaluated against clearly specified human perceptual references (Santy et al., 2023; Orlikowski et al., 2025). In Chinese gendered hate speech, it remains unclear when LLMs converge with human perceptions and when they diverge under comparable materials and rating conditions (Jiang et al., 2021; Deng et al., 2022; Lu et al., 2023).
+Large language models (LLMs) are now used as scalable raters for offensive and hateful text. This use raises a measurement problem: judging harmful language is a human perceptual task (Cowan \& Hodge, 1996; Davani et al., 2022; Larimore et al., 2021; Sap et al., 2022). The key question is whether LLM ratings converge with the human reference that defines this task.
 
-Testing this alignment requires an appropriate corpus of Chinese gendered attacks. Natural hate-speech corpora are useful because they show how hostility appears online. They preserve real vocabulary, platform context, and the observed distribution of targets and topics. For the present question, however, such corpora raise three problems. First, many widely used resources are English datasets. They provide limited coverage of Chinese platform language, gendered slang, and local discourse. Second, natural collections usually do not balance target gender. Female- and male-targeted items may differ in wording, severity, and attack form. Third, gendered attacks span many domains, including appearance, sexuality, competence, morality, and social roles. Ratings may therefore vary with attack domain as well as target gender. If these factors remain entangled, a higher rating for one target group could reflect the attacked person's gender, stronger wording, a different attack domain, or a different topic distribution (Mathew et al., 2021).
+This study examines whether Chinese human raters and contemporary LLMs perceive matched female-targeted and male-targeted versions of the same attack sentence differently. The focal contrast is the attacked person's gender marking: whether otherwise matched attack wording refers to a female or male target. The main comparison is the female-minus-male target-gender gap (F-M gap), defined as the rating for the female-targeted version minus the rating for the matched male-targeted version. The study uses a Chinese minimal gender-reversal corpus, human and LLM raters, and three response formats to test whether an F-M gap appears, where it is concentrated by attack domain, and whether human--LLM alignment depends on human reference group, response scale, and analysis level.
+
+\section{Research Background and Measurement Framework}
+\label{sec:background-framework}
+
+\subsection{LLM hate-speech ratings require a human perceptual reference}
+
+LLMs are increasingly used as scalable raters for offensive and hateful text in content moderation, toxicity scoring, social-bias evaluation, and computational social-science annotation (He et al., 2024; Ziems et al., 2024). Prior work does not support a single conclusion about LLM--human alignment in harmful-language rating. LLMs can sometimes approximate human hate-speech judgements or use context in human-like ways (Davidson, 2026; He et al., 2024; Ziems et al., 2024). Yet LLM judgements also vary across models, prompts, instructions, wording, and rater groups (Chiu et al., 2022; Giorgi et al., 2025; Orlikowski et al., 2025; Sun et al., 2025).
+
+The alignment question is therefore not whether LLM ratings are generally reliable. It is when, and relative to which human reference, they converge with human perceptions (Davani et al., 2022; Giorgi et al., 2025; Sun et al., 2025). Hate-speech ratings are social-perceptual judgements. A label such as aggressive, offensive, or discriminatory reflects how a text is experienced within a language community (Cowan \& Hodge, 1996; Davani et al., 2022; Larimore et al., 2021; Sap et al., 2022). In this setting, model ratings should be evaluated against clearly specified human perceptual references (Santy et al., 2023; Orlikowski et al., 2025).
+
+\subsection{Chinese gendered hate requires controlled comparison}
+
+Chinese gendered hate speech requires separate evidence because the social targets and hostile themes of Chinese online interaction are not simply translations of Western hate-speech settings. Chinese platforms use different vocabulary, social references, and interaction norms (Jiang et al., 2021; Jing-Schmidt \& Peng, 2018; Liao, 2024; Lu et al., 2023). In Chinese social media, gender antagonism, misogynistic expression, and anti-feminist discourse are visible forms of hostility (Jiang et al., 2021; Jing-Schmidt \& Peng, 2018; Liao, 2024). Existing Chinese offensive-language resources have expanded (Deng et al., 2022; Lu et al., 2023), but they still give limited guidance on how Chinese users perceive gendered attacks as aggressive or harmful.
+
+Natural hate-speech corpora are useful because they show how hostility appears online. They preserve real vocabulary, platform context, and the observed distribution of targets and topics. For the present question, however, such corpora raise three problems. First, many widely used resources are English datasets. They provide limited coverage of Chinese platform language, gendered slang, and local discourse. Second, natural collections usually do not balance target gender. Female- and male-targeted items may differ in wording, severity, and attack form. Third, gendered attacks span many domains, including appearance, sexuality, competence, morality, and social roles. Ratings may therefore vary with attack domain as well as target gender. If these factors remain entangled, a higher rating for one target group could reflect the attacked person's gender, stronger wording, a different attack domain, or a different topic distribution (Mathew et al., 2021).
+
+\subsection{Minimal gender-reversal design and attack domains}
 
 Minimal-pair and counterfactual designs are commonly used in NLP bias research to hold sentence content stable while changing one focal social cue, such as a gendered pronoun, occupation-linked gender cue, or gender inflection (Lu et al., 2018; Rudinger et al., 2018; Zhao et al., 2018; Zmigrod et al., 2019). This controlled comparison helps reduce alternative explanations based on wording, topic, or sentence content. Similar controlled test-case logic has also been used to diagnose hate-speech models (R\"ottger et al., 2021).
 
-The present study applies this logic to Chinese gendered attack sentences. The focal contrast is whether the same attack wording refers to a female or male target. The resulting corpus balances female- and male-targeted versions while covering multiple attack domains. This design estimates the female-minus-male target-gender gap (F-M gap), defined as the rating for the female-targeted version minus the rating for the matched male-targeted version, while holding wording and attack force constant. The domain labels matter because the same gender contrast can have different meanings in sexualization, appearance, capability, morality, or social-role attacks. Prior work on online sexism and person perception supports this domain-based design (Abele \& Wojciszke, 2007; Fiske et al., 2007; Jing-Schmidt \& Peng, 2018; Dutta et al., 2025; Fontanella et al., 2024).
+The present study applies this logic to Chinese gendered attack sentences. The focal contrast is whether the same attack wording refers to a female or male target. The resulting corpus balances female- and male-targeted versions while covering multiple attack domains. This design estimates the F-M gap while holding wording and attack force constant.
+
+Attack domain is also part of the measurement framework. The same gender contrast can have different meanings in sexualization, appearance, capability, morality, or social-role attacks. Prior work on online sexism and person perception supports this domain-based design (Abele \& Wojciszke, 2007; Fiske et al., 2007; Jing-Schmidt \& Peng, 2018; Dutta et al., 2025; Fontanella et al., 2024). The present study uses attack-domain labels to locate where the F-M gap is concentrated.
+
+\subsection{Human subgroups in gendered hate perception}
 
 Human--LLM alignment also depends on which humans define the reference. A pooled human average is a useful benchmark. It can also hide subgroup differences that matter for gendered hate-speech perception. Female and male raters may perceive the same gender-targeted attack differently. Their ratings may reflect different social positions, exposure histories, or personal relevance. Prior annotation research treats such disagreement as meaningful variation in perception (Davani et al., 2022; Larimore et al., 2021). Prior model-comparison work also shows that model outputs can align more closely with some annotator groups than with others (Santy et al., 2023; H. Sun et al., 2025; Orlikowski et al., 2025). In gendered hate-speech evaluation, female and male human subgroups may therefore need to be examined separately, because an aggregate reference can conceal different perceptual standards for the same hostile text.
 
-Perceived aggressiveness is also measured through a response scale. A scale defines how much distinction a rater can express. A 3-point scale asks for coarse categories. A 7-point scale and a 0--100 slider allow more graded judgements. More response options can increase discrimination. They can also increase dispersion or inconsistent use of the numerical space. Human psychometric research shows that scale format can affect reliability, validity, discrimination, and response distributions (Preston \& Colman, 2000; Lozano et al., 2008; Simms et al., 2019; Abulela \& Khalaf, 2024; Kloft et al., 2024; Haslbeck et al., 2025; Vollbracht et al., 2026). The same issue is less studied for LLMs. A response-scale change may simply rescale model output. It may also change the model's rating pattern and its alignment with human ratings. Scale format is therefore a measurement condition for human--LLM alignment.
+\subsection{Response scales as measurement conditions}
 
-This study asks three research questions.
+Perceived aggressiveness is measured through a response scale. A scale defines how much distinction a rater can express. A 3-point scale asks for coarse categories. A 7-point scale and a 0--100 slider allow more graded judgements. More response options can increase discrimination. They can also increase dispersion or inconsistent use of the numerical space. Human psychometric research shows that scale format can affect reliability, validity, discrimination, and response distributions (Preston \& Colman, 2000; Lozano et al., 2008; Simms et al., 2019; Abulela \& Khalaf, 2024; Kloft et al., 2024; Haslbeck et al., 2025; Vollbracht et al., 2026). The same issue is less studied for LLMs. A response-scale change may simply rescale model output. It may also change the model's rating pattern and its alignment with human ratings. Scale format is therefore a measurement condition for human--LLM alignment.
+
+\section{The Present Study}
+\label{sec:present-study}
+
+The present study tests Chinese gendered hate perception with 371 minimal pairs of attack-laden sentences. Each pair differs only in the target's gender referent. Human raters and nine LLMs rated the same materials under 3-point category, 7-point Likert, and 0--100 slider formats. The primary outcome is the paired F-M gap in perceived attack ratings, $\Delta_{F-M}$, summarized with Cohen's $d_z$ across paired items. The study asks three research questions.
 
 \textbf{RQ1.} When attack content is held constant, are female-targeted and matched male-targeted versions rated as equally aggressive by humans and LLMs?
 
@@ -117,6 +134,7 @@ During recruitment and assignment, participant counts were monitored to keep the
 
 \begin{table}[t]
   \centering
+  \small
   \begin{tabular}{lrrr|r}
     \toprule
     Scale & Female participants & Male participants & Total & Share \\
@@ -135,6 +153,7 @@ During recruitment and assignment, participant counts were monitored to keep the
 
 \begin{table}[t]
   \centering
+  \scriptsize
   \setlength{\tabcolsep}{3.2pt}
   \renewcommand{\arraystretch}{0.94}
   \begin{tabular}{lrrrr}
@@ -219,7 +238,7 @@ Second, we asked how close each LLM was to human ratings under fixed conditions.
 \section{Results}
 \label{sec:results}
 
-We present the results in five steps. First, we establish the direction of the F-M gap. Second, we show how the size of that gap changes with the human reference group. Third, we locate the gap across attack domains. Fourth, we examine response scale as a measurement condition. Fifth, we compare human--LLM similarity across aggregate, domain, and item levels.
+The Results are organized in five steps. First, they establish the direction of the F-M gap. Second, they show how the size of that gap changes with the human reference group. Third, they locate the gap across attack domains. Fourth, they examine response scale as a measurement condition. Fifth, they compare human--LLM similarity across aggregate, domain, and item levels.
 
 \subsection{Female-targeted versions receive higher perceived-aggressiveness ratings}
 \label{sec:result-rq1a}
@@ -273,6 +292,7 @@ The response-scale analysis showed a rater-type contrast in how rating granulari
 \end{figure}
 
 \begin{table}[t]
+  \small
   \centering
   \begin{tabular}{lcccl}
     \toprule
@@ -321,6 +341,7 @@ At the item level, the best ICC(2,1) in each cell remained low, ranging from 0.0
 
 \begin{table}[t]
   \centering
+  \scriptsize
   \setlength{\tabcolsep}{3.2pt}
   \begin{tabular}{llccc}
     \toprule
@@ -388,9 +409,10 @@ When attack content was held fixed, female-targeted versions were rated as more 
 Table~\ref{tab:stimulus-examples} shows one representative item from each first-level attack domain, with two additional high-intensity examples from the appearance and sexualization domains. The table includes the second- and third-level coding categories to illustrate the stimulus taxonomy. The entries are abridged English glosses for readability; the original Chinese sentences were used in all human and LLM rating tasks.
 
 \begin{table}[p]
+  \scriptsize
   \centering
   \setlength{\tabcolsep}{3pt}
-  \begin{tabular}{Y{0.15\linewidth}Y{0.13\linewidth}Y{0.15\linewidth}Y{0.25\linewidth}Y{0.25\linewidth}}
+  \begin{tabular}{p{0.15\linewidth}p{0.13\linewidth}p{0.15\linewidth}p{0.25\linewidth}p{0.25\linewidth}}
     \toprule
     First-level domain & Second-level attribute & Third-level strategy & Female-targeted gloss & Male-targeted gloss \\
     \midrule
@@ -426,6 +448,7 @@ Table~\ref{tab:stimulus-examples} shows one representative item from each first-
 \label{app:slider-summary}
 
 \begin{table}[h]
+  \small
   \centering
   \begin{tabular}{lcccc}
     \toprule

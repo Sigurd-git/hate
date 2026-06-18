@@ -39,6 +39,11 @@ NATURAL_GENDER_TARGET_PATH = (
 
 BOOTSTRAP_SEED = 20260429
 BOOTSTRAP_ITERATIONS = 10_000
+# cas-sc review mode reports \textwidth = 468.3324 pt = 6.48 in.
+LATEX_LINEWIDTH_IN = 6.48
+LATEX_BODY_FONT_PT = 10.0
+BORDER_COLOR = "#2F3338"
+SANS_SERIF_VISUAL_MATCH = 0.88
 
 SCALE_ORDER = ["attack_3pt", "attack_7pt_likert", "attack_slider_0_100"]
 SCALE_LABELS = {
@@ -78,6 +83,17 @@ MODEL_LABEL_ALIASES = {
     "Qwen 2.5 72B": "Qwen-2.5-72B",
     "GPT-5.1": "GPT-5.1",
 }
+MODEL_COLOR_MAP = {
+    "DeepSeek-R1": "#0072B2",
+    "DeepSeek-V3.2": "#56B4E9",
+    "GLM-4.6": "#009E73",
+    "Llama-4-Maverick": "#CC79A7",
+    "Gemma-4-31B": "#D55E00",
+    "Claude-4.5": "#E69F00",
+    "Qwen-2.5-72B": "#332288",
+    "Kimi-K2": "#882255",
+    "GPT-5.1": "#44AA99",
+}
 DOMAIN_ORDER = [
     "性化攻击（性羞辱）",
     "外貌形象攻击",
@@ -105,16 +121,59 @@ DOMAIN_SHORT_LABELS = {
 
 
 def configure_plotting() -> None:
-    sns.set_theme(style="whitegrid", context="paper")
+    sns.set_theme(style="white", context="paper")
     mpl.rcParams.update(
         {
             "font.family": "sans-serif",
             "font.sans-serif": ["Noto Sans CJK SC", "Noto Sans CJK JP", "DejaVu Sans"],
+            "mathtext.fontset": "dejavusans",
+            "mathtext.default": "regular",
+            "mathtext.rm": "DejaVu Sans",
+            "mathtext.it": "DejaVu Sans:italic",
+            "mathtext.bf": "DejaVu Sans:bold",
             "axes.unicode_minus": False,
+            "axes.grid": False,
+            "font.size": LATEX_BODY_FONT_PT * SANS_SERIF_VISUAL_MATCH,
+            "axes.labelsize": LATEX_BODY_FONT_PT * SANS_SERIF_VISUAL_MATCH,
+            "axes.titlesize": LATEX_BODY_FONT_PT * SANS_SERIF_VISUAL_MATCH,
+            "xtick.labelsize": LATEX_BODY_FONT_PT * SANS_SERIF_VISUAL_MATCH,
+            "ytick.labelsize": LATEX_BODY_FONT_PT * SANS_SERIF_VISUAL_MATCH,
+            "legend.fontsize": LATEX_BODY_FONT_PT * SANS_SERIF_VISUAL_MATCH,
+            "legend.title_fontsize": LATEX_BODY_FONT_PT * SANS_SERIF_VISUAL_MATCH,
             "pdf.fonttype": 3,
             "figure.dpi": 120,
             "savefig.dpi": 300,
         }
+    )
+
+
+def source_font_size(figure_width_in: float, include_fraction: float = 1.0) -> float:
+    """Return source font size that renders near body size after LaTeX scaling."""
+
+    return LATEX_BODY_FONT_PT * figure_width_in / (LATEX_LINEWIDTH_IN * include_fraction)
+
+
+def visual_body_font_size(figure_width_in: float, include_fraction: float = 1.0) -> float:
+    """Match sans-serif plot text to the visual size of the serif body text."""
+
+    return source_font_size(figure_width_in, include_fraction) * SANS_SERIF_VISUAL_MATCH
+
+
+def style_boxed_axis(axis: plt.Axes, font_size: float) -> None:
+    """Use a no-grid, four-border axis with body-sized text after scaling."""
+
+    axis.grid(False)
+    for spine in axis.spines.values():
+        spine.set_visible(True)
+        spine.set_linewidth(0.85)
+        spine.set_color(BORDER_COLOR)
+    axis.tick_params(
+        axis="both",
+        which="both",
+        labelsize=font_size,
+        width=0.8,
+        length=3.5,
+        color=BORDER_COLOR,
     )
 
 
@@ -347,7 +406,9 @@ def make_direction_agreement_forest(item_frame: pd.DataFrame) -> None:
     y_positions = np.arange(len(rater_order))
     y_lookup = {rater_id: position for position, rater_id in enumerate(rater_order)}
     color_lookup = {"human": "#1F77B4", "model": "#E45756"}
-    figure, axes = plt.subplots(1, 3, figsize=(13.8, 7.2), sharey=True, sharex=True)
+    figure_width = 13.8
+    font_size = visual_body_font_size(figure_width)
+    figure, axes = plt.subplots(1, 3, figsize=(figure_width, 7.4), sharey=True, sharex=True)
     for axis, condition in zip(axes, SCALE_ORDER, strict=True):
         panel_frame = summary_frame.loc[summary_frame["condition"] == condition].copy()
         for _, row in panel_frame.iterrows():
@@ -368,25 +429,25 @@ def make_direction_agreement_forest(item_frame: pd.DataFrame) -> None:
                 zorder=3,
             )
         axis.axvline(0, color="#333333", linewidth=0.9)
-        axis.set_title(SCALE_LABELS[condition], fontsize=11.0)
-        axis.set_xlabel(r"Mean $\Delta_{F-M}$ / scale maximum")
+        axis.set_title(SCALE_LABELS[condition], fontsize=font_size)
+        axis.set_xlabel("")
         axis.set_xlim(-0.01, 0.17)
-        axis.grid(axis="x", color="#E6EAF0")
-        axis.grid(axis="y", visible=False)
+        style_boxed_axis(axis, font_size)
     axes[0].set_yticks(y_positions)
-    axes[0].set_yticklabels(y_labels)
+    axes[0].set_yticklabels(y_labels, fontsize=font_size)
     axes[0].invert_yaxis()
     handles = [
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="#1F77B4", label="Humans", markersize=6),
-        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="#E45756", label="LLMs", markersize=6),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="#1F77B4", label="Humans", markersize=font_size * 0.55),
+        plt.Line2D([0], [0], marker="o", color="w", markerfacecolor="#E45756", label="LLMs", markersize=font_size * 0.55),
     ]
-    axes[2].legend(handles=handles, frameon=False, loc="lower right")
+    axes[2].legend(handles=handles, frameon=False, loc="lower right", fontsize=font_size)
     figure.suptitle(
         "All human and LLM cells rate female-targeted paired items as more attacking on average",
-        fontsize=13.0,
+        fontsize=font_size,
         y=1.02,
     )
-    figure.subplots_adjust(wspace=0.08)
+    figure.supxlabel(r"Mean $\Delta_{F-M}$ / scale maximum", fontsize=font_size, y=0.02)
+    figure.subplots_adjust(bottom=0.12, wspace=0.08)
     save_figure(figure, "fig_r2_direction_agreement_forest")
 
 
@@ -458,7 +519,9 @@ def make_reference_group_bootstrap_forest(item_frame: pd.DataFrame) -> pd.DataFr
     )
 
     palette = {"above": "#B23A48", "below": "#2F6F9F", "overlaps": "#6F7F8F"}
-    figure, axes = plt.subplots(1, 3, figsize=(12.8, 5.8), sharey=False, sharex=True)
+    figure_width = 12.8
+    font_size = visual_body_font_size(figure_width)
+    figure, axes = plt.subplots(1, 3, figsize=(figure_width, 6.0), sharey=False, sharex=True)
     for axis, reference_id in zip(axes, HUMAN_REFERENCE_ORDER, strict=True):
         panel_frame = bootstrap_frame.loc[
             bootstrap_frame["reference_id"] == reference_id
@@ -469,13 +532,12 @@ def make_reference_group_bootstrap_forest(item_frame: pd.DataFrame) -> pd.DataFr
             axis.hlines(row_index, row["ci_low"], row["ci_high"], color=color, linewidth=2.0)
             axis.scatter(row["delta_dz"], row_index, s=48, color=color, edgecolor="white", zorder=3)
         axis.axvline(0, color="#2B2B2B", linewidth=1.0, linestyle="--")
-        axis.set_title(HUMAN_REFERENCE_LABELS[reference_id], fontsize=11.5)
-        axis.set_xlabel(r"Model $d_z$ $-$ human-reference $d_z$")
-        axis.grid(axis="x", color="#E6EAF0")
-        axis.grid(axis="y", visible=False)
+        axis.set_title(HUMAN_REFERENCE_LABELS[reference_id], fontsize=font_size)
+        axis.set_xlabel(r"Model $d_z$ $-$ human-reference $d_z$", fontsize=font_size)
+        style_boxed_axis(axis, font_size)
         axis.set_yticks(y_positions)
         if axis is axes[0]:
-            axis.set_yticklabels(panel_frame["model_label"], fontsize=9.0)
+            axis.set_yticklabels(panel_frame["model_label"], fontsize=font_size)
             axis.tick_params(axis="y", length=0, labelleft=True)
         else:
             axis.set_yticklabels([])
@@ -483,7 +545,7 @@ def make_reference_group_bootstrap_forest(item_frame: pd.DataFrame) -> pd.DataFr
         axis.set_xlim(-0.58, 0.50)
     figure.suptitle(
         r"The magnitude verdict changes with the human reference group (3-point scale)",
-        fontsize=13.0,
+        fontsize=font_size,
         y=1.02,
     )
     save_figure(figure, "fig_r3_reference_group_delta_dz_forest")
@@ -532,7 +594,9 @@ def make_domain_alignment_forest() -> None:
         {domain: index for index, domain in enumerate(DOMAIN_ORDER)}
     )
 
-    figure, axes = plt.subplots(1, 3, figsize=(13.6, 7.0), sharey=True)
+    figure_width = 13.6
+    font_size = visual_body_font_size(figure_width)
+    figure, axes = plt.subplots(1, 3, figsize=(figure_width, 7.4), sharey=True)
     palette = {
         "Overall humans": "#1f77b4",
         "Female participants": "#d62728",
@@ -546,51 +610,59 @@ def make_domain_alignment_forest() -> None:
         "LLM median": "^",
     }
     y_positions = {domain: len(DOMAIN_ORDER) - 1 - index for index, domain in enumerate(DOMAIN_ORDER)}
-    vertical_offsets = {
-        "Overall humans": 0.24,
-        "Female participants": 0.08,
-        "Male participants": -0.08,
-        "LLM median": -0.24,
-    }
     x_limit = max(1.6, float(combined_frame["dz"].abs().max()) * 1.08)
     for axis, scale_key in zip(axes, SCALE_ORDER, strict=True):
         panel_frame = combined_frame.loc[combined_frame["condition"] == scale_key]
         for domain in DOMAIN_ORDER:
-            axis.axhline(y_positions[domain], color="#e5e7eb", linewidth=0.7, zorder=0)
+            domain_values = panel_frame.loc[
+                panel_frame["dimension_1"] == domain, "dz"
+            ].dropna()
+            if not domain_values.empty:
+                axis.hlines(
+                    y_positions[domain],
+                    domain_values.min(),
+                    domain_values.max(),
+                    color="#CBD5E1",
+                    linewidth=1.15,
+                    zorder=1,
+                )
         axis.axvline(0, color="#6b7280", linestyle="--", linewidth=0.9, zorder=1)
         for rater_group in ["Overall humans", "Female participants", "Male participants", "LLM median"]:
             rater_frame = panel_frame.loc[panel_frame["rater_group"] == rater_group].copy()
-            rater_frame["y"] = (
-                rater_frame["dimension_1"].map(y_positions) + vertical_offsets[rater_group]
-            )
+            rater_frame["y"] = rater_frame["dimension_1"].map(y_positions)
             axis.scatter(
                 rater_frame["dz"],
                 rater_frame["y"],
-                s=38,
+                s=46,
                 marker=marker_map[rater_group],
                 color=palette[rater_group],
                 edgecolor="white",
-                linewidth=0.5,
+                linewidth=0.7,
                 label=rater_group,
-                zorder=3,
+                zorder=4,
             )
-        axis.set_title(SCALE_LABELS[scale_key], fontsize=11.5)
-        axis.set_xlabel(r"Cohen's $d_z$")
+        axis.set_title(SCALE_LABELS[scale_key], fontsize=font_size)
+        axis.set_xlabel(r"Cohen's $d_z$", fontsize=font_size)
         axis.set_xlim(-0.35, x_limit)
         axis.set_ylim(-0.8, len(DOMAIN_ORDER) - 0.2)
         axis.set_yticks([y_positions[domain] for domain in DOMAIN_ORDER])
-        axis.set_yticklabels([DOMAIN_SHORT_LABELS[domain] for domain in DOMAIN_ORDER], fontsize=9.1)
-        axis.tick_params(axis="x", labelsize=8.8)
-        axis.tick_params(axis="y", labelsize=9.1)
-        axis.grid(axis="x", color="#e5e7eb", linewidth=0.7)
-        axis.grid(axis="y", visible=False)
-    axes[0].set_ylabel("First-level attack domain")
+        axis.set_yticklabels([DOMAIN_SHORT_LABELS[domain] for domain in DOMAIN_ORDER], fontsize=font_size)
+        style_boxed_axis(axis, font_size)
+    axes[0].set_ylabel("First-level attack domain", fontsize=font_size)
     for tick_label in axes[0].get_yticklabels()[:2]:
         tick_label.set_fontweight("bold")
     handles, labels = axes[0].get_legend_handles_labels()
-    figure.legend(handles, labels, loc="lower center", ncol=4, frameon=False, bbox_to_anchor=(0.5, -0.01))
-    figure.suptitle("Domain-level effects concentrate in sexualization and appearance", fontsize=13.0, y=0.99)
-    figure.subplots_adjust(bottom=0.13, top=0.91, wspace=0.18)
+    figure.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=4,
+        frameon=False,
+        bbox_to_anchor=(0.5, -0.04),
+        fontsize=font_size,
+    )
+    figure.suptitle("Sexualization and appearance are stable high-gap domains", fontsize=font_size, y=0.99)
+    figure.subplots_adjust(left=0.25, right=0.985, bottom=0.19, top=0.90, wspace=0.07)
     save_figure(figure, "fig_r4_domain_alignment_forest")
 
 
@@ -657,7 +729,9 @@ def make_domain_alignment_errorbar_forest(item_frame: pd.DataFrame) -> None:
     summary_frame = pd.DataFrame(summary_rows)
     summary_frame.to_csv(OUTPUT_DIR / "domain_alignment_errorbar_summary.csv", index=False)
 
-    figure, axes = plt.subplots(1, 3, figsize=(13.8, 7.0), sharey=True)
+    figure_width = 13.8
+    font_size = visual_body_font_size(figure_width)
+    figure, axes = plt.subplots(1, 3, figsize=(figure_width, 7.4), sharey=True)
     palette = {
         "Overall humans": "#1f77b4",
         "Female participants": "#d62728",
@@ -671,23 +745,26 @@ def make_domain_alignment_errorbar_forest(item_frame: pd.DataFrame) -> None:
         "LLM median": "^",
     }
     y_positions = {domain: len(DOMAIN_ORDER) - 1 - index for index, domain in enumerate(DOMAIN_ORDER)}
-    vertical_offsets = {
-        "Overall humans": 0.24,
-        "Female participants": 0.08,
-        "Male participants": -0.08,
-        "LLM median": -0.24,
-    }
     x_limit = max(0.45, float(summary_frame["ci_high"].max()) * 1.12)
     for axis, scale_key in zip(axes, SCALE_ORDER, strict=True):
         panel_frame = summary_frame.loc[summary_frame["condition"] == scale_key].copy()
         for domain in DOMAIN_ORDER:
-            axis.axhline(y_positions[domain], color="#e5e7eb", linewidth=0.7, zorder=0)
+            domain_values = panel_frame.loc[
+                panel_frame["dimension_1"] == domain, "mean_delta_norm"
+            ].dropna()
+            if not domain_values.empty:
+                axis.hlines(
+                    y_positions[domain],
+                    domain_values.min(),
+                    domain_values.max(),
+                    color="#CBD5E1",
+                    linewidth=1.15,
+                    zorder=1,
+                )
         axis.axvline(0, color="#6b7280", linestyle="--", linewidth=0.9, zorder=1)
         for rater_group in ["Overall humans", "Female participants", "Male participants", "LLM median"]:
             rater_frame = panel_frame.loc[panel_frame["rater_group"] == rater_group].copy()
-            rater_frame["y"] = (
-                rater_frame["dimension_1"].map(y_positions) + vertical_offsets[rater_group]
-            )
+            rater_frame["y"] = rater_frame["dimension_1"].map(y_positions)
             lower_error = rater_frame["mean_delta_norm"] - rater_frame["ci_low"]
             upper_error = rater_frame["ci_high"] - rater_frame["mean_delta_norm"]
             axis.errorbar(
@@ -705,23 +782,28 @@ def make_domain_alignment_errorbar_forest(item_frame: pd.DataFrame) -> None:
                 label=rater_group,
                 zorder=3,
             )
-        axis.set_title(SCALE_LABELS[scale_key], fontsize=11.5)
-        axis.set_xlabel(r"Mean $\Delta_{F-M}$ / scale max")
+        axis.set_title(SCALE_LABELS[scale_key], fontsize=font_size)
+        axis.set_xlabel(r"Mean $\Delta_{F-M}$ / scale max", fontsize=font_size)
         axis.set_xlim(-0.08, x_limit)
         axis.set_ylim(-0.8, len(DOMAIN_ORDER) - 0.2)
         axis.set_yticks([y_positions[domain] for domain in DOMAIN_ORDER])
-        axis.set_yticklabels([DOMAIN_SHORT_LABELS[domain] for domain in DOMAIN_ORDER], fontsize=9.1)
-        axis.tick_params(axis="x", labelsize=8.8)
-        axis.tick_params(axis="y", labelsize=9.1)
-        axis.grid(axis="x", color="#e5e7eb", linewidth=0.7)
-        axis.grid(axis="y", visible=False)
-    axes[0].set_ylabel("First-level attack domain")
+        axis.set_yticklabels([DOMAIN_SHORT_LABELS[domain] for domain in DOMAIN_ORDER], fontsize=font_size)
+        style_boxed_axis(axis, font_size)
+    axes[0].set_ylabel("First-level attack domain", fontsize=font_size)
     for tick_label in axes[0].get_yticklabels()[:2]:
         tick_label.set_fontweight("bold")
     handles, labels = axes[0].get_legend_handles_labels()
-    figure.legend(handles, labels, loc="lower center", ncol=4, frameon=False, bbox_to_anchor=(0.5, -0.01))
-    figure.suptitle(r"Per-domain mean $\Delta_{F-M}$ with 95% CI", fontsize=13.0, y=0.99)
-    figure.subplots_adjust(bottom=0.13, top=0.91, wspace=0.18)
+    figure.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=4,
+        frameon=False,
+        bbox_to_anchor=(0.5, -0.04),
+        fontsize=font_size,
+    )
+    figure.suptitle(r"Per-domain mean $\Delta_{F-M}$ with 95% CI", fontsize=font_size, y=0.99)
+    figure.subplots_adjust(left=0.25, right=0.985, bottom=0.19, top=0.90, wspace=0.07)
     save_figure(figure, "fig_r4_domain_alignment_errorbar_forest")
 
 
@@ -736,30 +818,26 @@ def make_scale_response_trajectory(dz_stats: pd.DataFrame) -> None:
     plot_frame.loc[plot_frame["rater_id"] == "human_male", "display_label"] = "Male participants"
     plot_frame.loc[plot_frame["rater_id"] == "human_female", "display_label"] = "Female participants"
 
-    figure, axis = plt.subplots(figsize=(8.2, 5.2))
+    figure_width = 8.2
+    font_size = visual_body_font_size(figure_width, include_fraction=0.92)
+    scale_positions = {"3-point": 0.0, "7-point": 0.78, "Slider": 1.56}
+    plot_frame["scale_position"] = plot_frame["scale_short"].map(scale_positions)
+    figure, axis = plt.subplots(figsize=(figure_width, 5.2))
     model_frame = plot_frame.loc[plot_frame["rater_kind"] == "model"]
     for _, group in model_frame.groupby("rater_id"):
         group = group.sort_values("scale_order")
-        label = display_model_label(group["rater_label"].iloc[0])
-        highlight = label in {"Gemma-4-31B", "GPT-5.1", "Claude-Opus-4.5"}
+        model_id = canonical_model_label(group["rater_label"].iloc[0])
+        label = display_model_label(model_id)
         axis.plot(
-            group["scale_short"],
+            group["scale_position"],
             group["cohens_dz"],
-            color="#7F8790" if not highlight else {"Gemma-4-31B": "#B23A48", "GPT-5.1": "#7A4EA3", "Claude-Opus-4.5": "#D08A24"}[label],
-            linewidth=1.2 if not highlight else 2.3,
-            alpha=0.45 if not highlight else 0.95,
+            color=MODEL_COLOR_MAP[model_id],
+            linewidth=1.55,
+            alpha=0.82,
             marker="o",
-            markersize=3.8 if not highlight else 5.2,
+            markersize=4.5,
+            label=label,
         )
-        if highlight:
-            axis.text(
-                2.04,
-                group.sort_values("scale_order")["cohens_dz"].iloc[-1],
-                label,
-                va="center",
-                fontsize=8.8,
-                color={"Gemma-4-31B": "#B23A48", "GPT-5.1": "#7A4EA3", "Claude-Opus-4.5": "#D08A24"}[label],
-            )
 
     human_styles = {
         "Overall humans": ("#111111", "-", 2.8),
@@ -771,7 +849,7 @@ def make_scale_response_trajectory(dz_stats: pd.DataFrame) -> None:
         label = group["display_label"].iloc[0]
         color, linestyle, linewidth = human_styles[label]
         axis.plot(
-            group["scale_short"],
+            group["scale_position"],
             group["cohens_dz"],
             color=color,
             linestyle=linestyle,
@@ -780,14 +858,50 @@ def make_scale_response_trajectory(dz_stats: pd.DataFrame) -> None:
             markersize=6.0,
             label=label,
         )
-    axis.set_ylabel(r"Cohen's $d_z$ of $\Delta_{F-M}$")
-    axis.set_xlabel("Rating format")
+    axis.set_ylabel(r"Cohen's $d_z$ of $\Delta_{F-M}$", fontsize=font_size)
+    axis.set_xlabel("Rating format", fontsize=font_size)
     axis.set_ylim(0.0, 1.12)
-    axis.set_xlim(-0.06, 2.55)
-    axis.legend(frameon=False, loc="upper left")
-    axis.grid(axis="y", color="#E6EAF0")
-    axis.grid(axis="x", visible=False)
-    axis.set_title("Finer scales dampen human effects but amplify most LLM effects", fontsize=12.5)
+    axis.set_xticks([scale_positions[label] for label in ["3-point", "7-point", "Slider"]])
+    axis.set_xticklabels(["3-point", "7-point", "Slider"], fontsize=font_size)
+    axis.set_xlim(-0.22, 1.78)
+    model_handles = [
+        plt.Line2D(
+            [0],
+            [0],
+            color=MODEL_COLOR_MAP[model_id],
+            marker="o",
+            linewidth=1.55,
+            markersize=4.5,
+            label=display_model_label(model_id),
+        )
+        for model_id in MODEL_ORDER
+    ]
+    human_handles = [
+        plt.Line2D(
+            [0],
+            [0],
+            color=color,
+            linestyle=linestyle,
+            linewidth=linewidth,
+            marker="o",
+            markersize=6.0,
+            label=label,
+        )
+        for label, (color, linestyle, linewidth) in human_styles.items()
+    ]
+    axis.legend(
+        handles=human_handles + model_handles,
+        frameon=False,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.24),
+        title="Rater",
+        ncol=4,
+        fontsize=font_size,
+        title_fontsize=font_size,
+    )
+    style_boxed_axis(axis, font_size)
+    axis.set_title("Humans and LLMs show different scale-response trajectories", fontsize=font_size)
+    figure.subplots_adjust(left=0.22, right=0.78, bottom=0.34, top=0.88)
     save_figure(figure, "fig_r5_scale_response_trajectory")
 
 
@@ -1149,59 +1263,146 @@ def make_multilevel_similarity_profile(
         encoding="utf-8-sig",
     )
 
+    reference_short_labels = {
+        "Overall humans": "Overall",
+        "Female participants": "Female",
+        "Male participants": "Male",
+    }
+    scale_short_labels = {
+        "3-point": "3pt",
+        "7-point": "7pt",
+        "Slider": "Slider",
+    }
     plot_frame = multilevel_summary.copy()
-    plot_frame["cell"] = plot_frame["human_reference"] + "\n" + plot_frame["scale_label"]
+    plot_frame["cell"] = (
+        plot_frame["human_reference"].map(reference_short_labels)
+        + " | "
+        + plot_frame["scale_label"].map(scale_short_labels)
+    )
     cell_order = [
-        f"{reference}\n{scale}"
+        f"{reference_short_labels[reference]} | {scale_short_labels[scale]}"
         for reference in ["Overall humans", "Female participants", "Male participants"]
         for scale in ["3-point", "7-point", "Slider"]
     ]
     plot_frame["cell"] = pd.Categorical(plot_frame["cell"], categories=cell_order, ordered=True)
 
+    aggregate_plot = aggregate_closeness.copy()
+    aggregate_plot["cell"] = (
+        aggregate_plot["human_reference"].map(reference_short_labels)
+        + " | "
+        + aggregate_plot["scale_label"].map(scale_short_labels)
+    )
+    aggregate_plot["cell"] = pd.Categorical(
+        aggregate_plot["cell"], categories=cell_order, ordered=True
+    )
+    aggregate_plot["is_best"] = aggregate_plot.groupby(
+        "cell", observed=False
+    )["abs_dz_gap"].transform("min").eq(aggregate_plot["abs_dz_gap"])
+    domain_plot = domain_similarity.copy()
+    domain_plot["cell"] = (
+        domain_plot["human_reference"].map(reference_short_labels)
+        + " | "
+        + domain_plot["scale_label"].map(scale_short_labels)
+    )
+    domain_plot["cell"] = pd.Categorical(domain_plot["cell"], categories=cell_order, ordered=True)
+    domain_plot["is_best"] = domain_plot.groupby(
+        "cell", observed=False
+    )["spearman_rho"].transform("max").eq(domain_plot["spearman_rho"])
+
+    figure_width = 13.6
+    font_size = visual_body_font_size(figure_width)
     figure, axes = plt.subplots(
         1,
         2,
-        figsize=(11.4, 6.2),
+        figsize=(figure_width, 6.8),
         sharey=True,
-        gridspec_kw={"width_ratios": [1.0, 1.1]},
+        gridspec_kw={"width_ratios": [1.0, 1.05]},
     )
     panel_specs = [
-        ("Aggregate |dz gap|", r"Closest aggregate $|d_z|$ gap", "best_value", "#4C78A8", (0.0, 0.30), True),
-        ("Domain Spearman rho", r"Best 10-domain Spearman $\rho$", "best_value", "#F58518", (0.0, 1.0), False),
+        (
+            aggregate_plot,
+            r"Aggregate $|d_z|$ gap",
+            "abs_dz_gap",
+            (0.0, 0.70),
+            "Lower is closer",
+            "model_display",
+        ),
+        (
+            domain_plot,
+            r"10-domain Spearman $\rho$",
+            "spearman_rho",
+            (-0.40, 1.0),
+            "Higher is closer",
+            "model_display",
+        ),
     ]
-    for axis, (level, title, x_column, color, x_limits, lower_is_better) in zip(
+    for axis, (panel_frame, title, x_column, x_limits, x_label, label_column) in zip(
         axes, panel_specs, strict=True
     ):
-        panel_frame = plot_frame.loc[plot_frame["analysis_level"] == level].copy()
-        axis.scatter(
-            panel_frame[x_column],
-            panel_frame["cell"],
-            s=62,
-            color=color,
-            edgecolor="white",
-            linewidth=0.6,
-            zorder=3,
-        )
-        for _, row in panel_frame.iterrows():
-            text_offset = 0.012
-            horizontal_alignment = "left"
-            axis.text(
-                row[x_column] + text_offset,
-                row["cell"],
-                row["best_model"],
-                va="center",
-                ha=horizontal_alignment,
-                fontsize=7.4,
+        for model_id in MODEL_ORDER:
+            model_frame = panel_frame.loc[panel_frame["model"] == model_id].copy()
+            axis.scatter(
+                model_frame[x_column],
+                model_frame["cell"],
+                s=32,
+                color=MODEL_COLOR_MAP[model_id],
+                alpha=0.78,
+                edgecolor="white",
+                linewidth=0.45,
+                zorder=3,
             )
-        axis.set_title(title, fontsize=10.8)
-        axis.set_xlabel("Lower is closer" if lower_is_better else "Higher is closer")
+        best_frame = panel_frame.loc[panel_frame["is_best"]].copy()
+        axis.scatter(
+            best_frame[x_column],
+            best_frame["cell"],
+            s=116,
+            facecolors="none",
+            edgecolors="#111827",
+            linewidth=1.2,
+            zorder=5,
+        )
+        axis.set_title(title, fontsize=font_size)
+        axis.set_xlabel(x_label, fontsize=font_size)
         axis.set_xlim(*x_limits)
-        axis.grid(axis="x", color="#E6EAF0")
-        axis.grid(axis="y", visible=False)
-        axis.tick_params(axis="y", labelsize=9.0)
+        style_boxed_axis(axis, font_size)
     axes[0].set_ylabel("")
-    figure.suptitle("The most human-like model depends on reference group, scale, and analysis level", fontsize=13.0, y=1.02)
-    figure.subplots_adjust(wspace=0.12)
+    axes[0].invert_yaxis()
+    model_handles = [
+        plt.Line2D(
+            [0],
+            [0],
+            color=MODEL_COLOR_MAP[model_id],
+            marker="o",
+            linestyle="",
+            markersize=5,
+            label=display_model_label(model_id),
+        )
+        for model_id in MODEL_ORDER
+    ]
+    best_handle = plt.Line2D(
+        [0],
+        [0],
+        marker="o",
+        linestyle="",
+        markersize=8,
+        markerfacecolor="none",
+        markeredgecolor="#111827",
+        label="Closest in row",
+    )
+    figure.legend(
+        handles=model_handles + [best_handle],
+        loc="lower center",
+        ncol=5,
+        frameon=False,
+        fontsize=font_size,
+        bbox_to_anchor=(0.5, -0.09),
+    )
+    figure.suptitle(
+        "Closest-model labels are row-specific summaries within the full nine-model panel",
+        fontsize=font_size,
+        y=1.02,
+    )
+    figure.subplots_adjust(left=0.16, right=0.985, wspace=0.12, bottom=0.28, top=0.88)
     save_figure(figure, "fig_r6_similarity_by_analysis_level_forest")
 
 

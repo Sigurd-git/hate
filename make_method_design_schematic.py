@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, PathPatch, Rectangle
@@ -16,6 +17,10 @@ LOGGER = logging.getLogger(__name__)
 OUTPUT_DIR = Path("artifacts/paper_revision")
 HTML_OUTPUT_DIR = Path("slides/html")
 FIGURE_BASENAME = "fig_methods_design_schematic"
+# cas-sc review mode reports \textwidth = 468.3324 pt = 6.48 in.
+LATEX_LINEWIDTH_IN = 6.48
+LATEX_BODY_FONT_PT = 10.0
+SANS_SERIF_VISUAL_MATCH = 0.88
 
 
 COLORS = {
@@ -31,6 +36,34 @@ COLORS = {
     "scale_fill": "#F4F6F8",
     "domain_fill": "#FFF7EA",
 }
+
+
+def source_font_size(figure_width_in: float) -> float:
+    """Return source font size that renders near body size after LaTeX scaling."""
+
+    return LATEX_BODY_FONT_PT * figure_width_in / LATEX_LINEWIDTH_IN
+
+
+def visual_body_font_size(figure_width_in: float) -> float:
+    """Match sans-serif figure text to the visual size of the serif body text."""
+
+    return source_font_size(figure_width_in) * SANS_SERIF_VISUAL_MATCH
+
+
+def configure_plotting() -> None:
+    sns.set_theme(style="white")
+    mpl.rcParams.update(
+        {
+            "font.family": "sans-serif",
+            "font.sans-serif": ["Noto Sans CJK SC", "Noto Sans CJK JP", "DejaVu Sans"],
+            "mathtext.fontset": "dejavusans",
+            "mathtext.default": "regular",
+            "mathtext.rm": "DejaVu Sans",
+            "mathtext.it": "DejaVu Sans:italic",
+            "mathtext.bf": "DejaVu Sans:bold",
+            "axes.unicode_minus": False,
+        }
+    )
 
 
 def add_arrow(
@@ -98,7 +131,7 @@ def add_box(
     if detail:
         axis.text(
             x_center,
-            y_center + 0.13,
+            y_center + 0.22,
             title,
             ha="center",
             va="center",
@@ -108,7 +141,7 @@ def add_box(
         )
         axis.text(
             x_center,
-            y_center - 0.15,
+            y_center - 0.22,
             detail,
             ha="center",
             va="center",
@@ -257,71 +290,74 @@ def add_rater_badge(axis: plt.Axes, center: tuple[float, float], title: str, det
 def draw_schematic() -> plt.Figure:
     """Build and return the method-design schematic."""
 
-    sns.set_theme(style="white")
-    figure, axis = plt.subplots(figsize=(15.4, 4.65), dpi=220)
+    configure_plotting()
+    figure_width = 15.4
+    font_size = visual_body_font_size(figure_width)
+    figure, axis = plt.subplots(figsize=(figure_width, 5.25), dpi=220)
     axis.set_xlim(0, 15.2)
-    axis.set_ylim(0, 4.9)
+    axis.set_ylim(0, 5.35)
     axis.axis("off")
 
-    human_y = 3.45
-    llm_y = 1.45
-    corpus_center = (1.62, 2.45)
-    corpus_width = 2.78
-    corpus_height = 1.38
+    human_y = 3.62
+    llm_y = 1.62
+    corpus_center = (1.62, 2.62)
+    corpus_width = 2.92
+    corpus_height = 1.62
 
     add_box(
         axis,
         center=corpus_center,
         size=(corpus_width, corpus_height),
-        title="371 minimal-pair corpus",
-        detail="371 paired templates\nfemale + male versions\ndomain labels retained",
+        title="371 matched pairs\nfemale + male targets\n10 attack domains",
+        detail=None,
         facecolor=COLORS["corpus_fill"],
         edgecolor=COLORS["line"],
         title_color=COLORS["ink"],
-        title_size=11.2,
-        detail_size=7.9,
-        linewidth=1.45,
+        title_size=font_size * 0.82,
+        linewidth=1.55,
         rounding=0.16,
     )
 
     box_specs = [
-        ("assignment", 4.58, 2.46),
-        ("sample", 7.22, 2.34),
-        ("target", 9.96, 2.44),
-        ("output", 12.98, 2.52),
+        (4.84, 2.80),
+        (8.35, 2.95),
+        (12.00, 3.08),
     ]
     row_configs = [
         {
             "y": human_y,
             "color": COLORS["human"],
             "cells": [
-                ("Human: one scale", "sessions randomly assigned\n3pt, 7pt, or slider", COLORS["human_fill"]),
-                ("75 unique templates", "randomly sampled per session\nnot domain-stratified", COLORS["box"]),
-                ("One target version", "female or male version\napproximately balanced", COLORS["box"]),
-                ("75 trials", "trial-level ratings", COLORS["domain_fill"]),
+                ("779 human raters\none scale\none target version", COLORS["human_fill"]),
+                ("Aggressiveness\nratings\n3pt / 7pt / slider", COLORS["box"]),
+                ("Human F-M gaps\noverall / female\n/ male", COLORS["domain_fill"]),
             ],
         },
         {
             "y": llm_y,
             "color": COLORS["llm"],
             "cells": [
-                ("LLM: all scales", "each model completed\n3pt, 7pt, and slider", COLORS["llm_fill"]),
-                ("Full corpus", "371 templates per scale\nno subsampling", COLORS["box"]),
-                ("Both target versions", "female and male versions\n742 sentences per scale", COLORS["box"]),
-                ("Item ratings", "model-by-scale ratings", COLORS["domain_fill"]),
+                ("Nine LLMs\nall scales\nboth target versions", COLORS["llm_fill"]),
+                ("Aggressiveness\nratings\nsame scale formats", COLORS["box"]),
+                ("Model comparison\naggregate / domain\n/ item", COLORS["domain_fill"]),
             ],
         },
     ]
 
+    corpus_right_edge = corpus_center[0] + corpus_width / 2
+    first_box_left_edge = box_specs[0][0] - box_specs[0][1] / 2
+    branch_x = corpus_right_edge + (first_box_left_edge - corpus_right_edge) * 0.38
+    axis.plot([corpus_right_edge + 0.02, branch_x], [corpus_center[1], corpus_center[1]], color=COLORS["line"], lw=1.1, zorder=3)
+    axis.plot([branch_x, branch_x], [llm_y, human_y], color=COLORS["line"], lw=1.1, zorder=3)
+
     for row_config in row_configs:
         y_position = row_config["y"]
         row_color = row_config["color"]
-        corpus_right_edge = corpus_center[0] + corpus_width / 2
 
         previous_right_edge: float | None = None
-        for index, (title, detail, facecolor) in enumerate(row_config["cells"]):
-            _, x_center, width = box_specs[index]
-            height = 0.80
+        for index, (title, facecolor) in enumerate(row_config["cells"]):
+            x_center, width = box_specs[index]
+            height = 1.34
             left_edge = x_center - width / 2
             right_edge = x_center + width / 2
 
@@ -330,28 +366,19 @@ def draw_schematic() -> plt.Figure:
                 center=(x_center, y_position),
                 size=(width, height),
                 title=title,
-                detail=detail,
+                detail=None,
                 facecolor=facecolor,
                 edgecolor=row_color,
                 title_color=row_color,
-                title_size=9.8,
-                detail_size=7.7,
-                linewidth=1.2,
+                title_size=font_size * 0.82,
+                linewidth=1.3,
                 rounding=0.13,
             )
 
             if previous_right_edge is None:
-                start_y = corpus_center[1] + 0.28 if y_position > corpus_center[1] else corpus_center[1] - 0.28
-                add_arrow(
-                    axis,
-                    (corpus_right_edge + 0.03, start_y),
-                    (left_edge - 0.05, y_position),
-                    color=row_color,
-                    linewidth=1.12,
-                    connectionstyle="arc3,rad=0.10" if y_position > corpus_center[1] else "arc3,rad=-0.10",
-                )
+                add_arrow(axis, (branch_x, y_position), (left_edge - 0.05, y_position), color=row_color, linewidth=1.25, mutation_scale=16)
             else:
-                add_arrow(axis, (previous_right_edge + 0.04, y_position), (left_edge - 0.04, y_position), color=row_color, linewidth=1.12)
+                add_arrow(axis, (previous_right_edge + 0.04, y_position), (left_edge - 0.04, y_position), color=row_color, linewidth=1.25, mutation_scale=16)
             previous_right_edge = right_edge
 
     figure.tight_layout(pad=0.35)

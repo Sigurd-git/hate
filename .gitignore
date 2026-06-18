@@ -228,3 +228,8 @@ extracted_images
 7744191f-c8ce-42f6-bf06-62457589bfc7_视觉llm文献大纲.docx
 视觉llm文献大纲(1).docx
 outline.docx
+build_presentation_assets/cell_grid_*
+
+build_deeperbrain_assets/*
+slides/deeperbrain*
+slides/cell_grid*
